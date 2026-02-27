@@ -1,34 +1,21 @@
-### IntelliJ IDEA ###
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-.kotlin
+# Project-specific ignored files
+/shelf/
+/workspace.xml
+/mavenHomeManager.xml
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+# IntelliJ IDEA files
+/.idea/
+*.iml
+*.iws
+*.ipr
+/.idea/workspace.xml
+/.idea/material_theme_project_new.xml
+/.idea/vcs.xml
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
+# VS Code files
 .vscode/
 
-### Mac OS ###
-.DS_Sto
-
+# Compiled output
 /out/
-/.idea/
-*.imlre
+/target/
+*.class
