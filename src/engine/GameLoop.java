@@ -45,8 +45,10 @@ public class GameLoop implements Runnable {
             }
         }
     }
+
     public void update() {
-        gamePanel.player.update();
+        // Route the update through the gamepanel
+        gamePanel.update();
     }
 
 }
