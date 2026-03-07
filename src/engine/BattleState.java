@@ -7,12 +7,12 @@ public class BattleState extends GameState {
 
     public BattleState(GameStateManager gsm) {
         super(gsm);
-        // Initialize BattleManager, TurnManager, etc.
+        //TODO: Initialize BattleManager, TurnManager, etc.
     }
 
     @Override
     public void update() {
-        // Battle Turn Logic dirii
+        //TODO: Battle Turn Logic dirii
     }
 
     @Override

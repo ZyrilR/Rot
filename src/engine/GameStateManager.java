@@ -15,7 +15,7 @@ public class GameStateManager {
     public GameStateManager(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
         // Start the game at the Menu
-        setState(MENU_STATE);
+        setState(OVERWORLD_STATE);
     }
 
     public void setState(int state) {
