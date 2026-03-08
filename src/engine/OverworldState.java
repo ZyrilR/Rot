@@ -3,26 +3,30 @@ package engine;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
+import overworld.Player;
+
 public class OverworldState extends GameState {
 
-    // declare your Player object here
+    //TODO: declare your Player object here
     // private Player player;
+    private Player player;
 
     public OverworldState(GameStateManager gsm) {
         super(gsm);
-        // Initialize player here
-        // player = new Player(gsm.gamePanel, gsm.gamePanel.input);
+        //TODO: Initialize player here
+         player = new Player(gsm.gamePanel, gsm.gamePanel.input);
     }
 
     @Override
     public void update() {
-        // player.update();
+        player.update();
     }
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(Color.GREEN);
-        g.drawString("OVERWORLD STATE - Map and Player go here", 100, 100);
-        // player.draw(g);
+        g.setColor(Color.DARK_GRAY);
+        g.fillRect(0 , 0, gsm.gamePanel.SCREEN_WIDTH, gsm.gamePanel.SCREEN_HEIGHT);
+
+        player.draw(g);
     }
 }

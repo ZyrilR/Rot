@@ -11,7 +11,7 @@ public class MenuState extends GameState {
 
     @Override
     public void update() {
-        /* example: if the user presses ENTER, switch to the Overworld
+        /*TODO: example: if the user presses ENTER, switch to the Overworld
              if (gsm.gamePanel.input.enterPressed) {
             gsm.setState(GameStateManager.OVERWORLD_STATE);
          } */
