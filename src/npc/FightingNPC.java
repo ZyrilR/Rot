@@ -1,4 +1,4 @@
-package trainers;
+package npc;
 
 public class FightingNPC {
 }

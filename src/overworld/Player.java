@@ -4,7 +4,7 @@ import engine.GamePanel;
 import input.KeyboardHandler;
 import java.awt.*;
 
-public class Player{
+public class Player {
 
     GamePanel gp;
     KeyboardHandler kh;
@@ -12,37 +12,24 @@ public class Player{
     public int x, y;
     public int speed;
 
-    public Player(GamePanel gp, KeyboardHandler kh){
+    public Player(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
         this.kh = kh;
-
         setDefaultValues();
     }
 
-    public void setDefaultValues(){
-        x= 100;
-        y= 100;
-        speed= 4;
+    public void setDefaultValues() {
+        x = 100;
+        y = 100;
+        speed = 4;
     }
 
-    public void update(){
-        if(kh.upPressed) {
-            y -= speed;
-        }
-        if(kh.downPressed){
-            y += speed;
-        }
-        if(kh.leftPressed){
-            x -= speed;
-        }
-        if(kh.rightPressed){
-            x += speed;
-        }
+    public void update() {
+
     }
 
-        public void draw(Graphics2D g){
-            g.setColor(Color.WHITE);
-            g.fillRect(x, y, gp.TILE_SIZE, gp.TILE_SIZE);
-        }
+    public void draw(Graphics2D g) {
+        g.setColor(Color.WHITE);
+        g.fillRect(x, y, gp.TILE_SIZE, gp.TILE_SIZE);
     }
-
+}
