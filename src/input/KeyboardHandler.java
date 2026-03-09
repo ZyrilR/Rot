@@ -7,7 +7,6 @@ public class KeyboardHandler implements KeyListener {
 
     public boolean upPressed, downPressed, leftPressed, rightPressed;
 
-
     @Override
     public void keyTyped(KeyEvent e) {
 
@@ -51,5 +50,9 @@ public class KeyboardHandler implements KeyListener {
                 rightPressed = false;
                 break;
         }
+    }
+
+    public boolean isMoving() {
+        return upPressed || downPressed || leftPressed || rightPressed;
     }
 }
