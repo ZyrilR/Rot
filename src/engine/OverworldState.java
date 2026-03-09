@@ -13,6 +13,7 @@ public class OverworldState extends GameState {
 
     public OverworldState(GameStateManager gsm) {
         super(gsm);
+
         player = new Player(gsm.gamePanel, gsm.gamePanel.input);
         movementSystem = new MovementSystem(gsm.gamePanel);
     }
