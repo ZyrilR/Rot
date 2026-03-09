@@ -19,7 +19,7 @@ public class GamePanel extends JPanel {
     public final int SCREEN_WIDTH = TILE_SIZE * MAX_SCREEN_COL;
     public final int SCREEN_HEIGHT = TILE_SIZE * MAX_SCREEN_ROW;
 
-    public final int FPS = 60;
+    public final int FPS = 144;
 
     public KeyboardHandler input = new KeyboardHandler();
     public GameStateManager gsm;
