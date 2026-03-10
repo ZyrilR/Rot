@@ -17,16 +17,16 @@ public class KeyboardHandler implements KeyListener {
         int code = e.getKeyCode();
 
         switch(code) {
-            case KeyEvent.VK_W:
+            case KeyEvent.VK_W, KeyEvent.VK_UP:
                 upPressed = true;
                 break;
-            case KeyEvent.VK_A:
+            case KeyEvent.VK_A, KeyEvent.VK_LEFT:
                 leftPressed = true;
                 break;
-            case KeyEvent.VK_S:
+            case KeyEvent.VK_S, KeyEvent.VK_DOWN:
                 downPressed = true;
                 break;
-            case KeyEvent.VK_D:
+            case KeyEvent.VK_D, KeyEvent.VK_RIGHT:
                 rightPressed = true;
                 break;
         }
@@ -37,16 +37,16 @@ public class KeyboardHandler implements KeyListener {
         int code = e.getKeyCode();
 
         switch(code) {
-            case KeyEvent.VK_W:
+            case KeyEvent.VK_W, KeyEvent.VK_UP:
                 upPressed = false;
                 break;
-            case KeyEvent.VK_A:
+            case KeyEvent.VK_A, KeyEvent.VK_LEFT:
                 leftPressed = false;
                 break;
-            case KeyEvent.VK_S:
+            case KeyEvent.VK_S, KeyEvent.VK_DOWN:
                 downPressed = false;
                 break;
-            case KeyEvent.VK_D:
+            case KeyEvent.VK_D, KeyEvent.VK_RIGHT:
                 rightPressed = false;
                 break;
         }

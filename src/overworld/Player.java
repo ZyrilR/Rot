@@ -8,10 +8,10 @@ import java.nio.Buffer;
 import java.util.ArrayList;
 
 import static utils.AssetManager.getImage;
+import static utils.Constants.*;
 
 public class Player {
 
-    GamePanel gp;
     KeyboardHandler kh;
 
     public int x, y;
@@ -29,8 +29,21 @@ public class Player {
 
     private int spriteCounter;
 
-    public Player(GamePanel gp, KeyboardHandler kh) {
-        this.gp = gp;
+    public Player() {
+        this.kh = new KeyboardHandler();
+        x = 100;
+        y = 100;
+        speed = 6;
+        direction = "down";
+        walk_up = new ArrayList<>();
+        walk_down = new ArrayList<>();
+        walk_right = new ArrayList<>();
+        walk_left = new ArrayList<>();
+        resetSpriteCounter();
+        isMoving = false;
+        loadImage();
+    }
+    public Player(KeyboardHandler kh) {
         this.kh = kh;
         x = 100;
         y = 100;
@@ -48,7 +61,6 @@ public class Player {
     public void setDirection(String direction) {
         this.direction = direction;
     }
-
     public void loadImage() {
         walk_down.add(getImage("player_down1"));
         walk_down.add(getImage("player_down2"));
@@ -67,7 +79,6 @@ public class Player {
         walk_left.add(getImage("player_left3"));
         walk_left.add(getImage("player_left4"));
     }
-
     public void resetSpriteCounter() {
         spriteCounter = 0;
     }
@@ -101,6 +112,31 @@ public class Player {
         spriteCounter++;
 
         if (img != null)
-            g.drawImage(img, x, y, gp.TILE_SIZE, gp.TILE_SIZE, null);
+            g.drawImage(img, x, y, TILE_SIZE, TILE_SIZE, null);
+
+        movePlayer();
+    }
+
+    public void movePlayer() {
+        boolean moving = false;
+
+        if (kh.upPressed) {
+            setDirection("up");
+            y -= speed;
+            moving = true;
+        } else if (kh.downPressed) {
+            setDirection("down");
+            y += speed;
+            moving = true;
+        } else if (kh.leftPressed) {
+            setDirection("left");
+            x -= speed;
+            moving = true;
+        } else if (kh.rightPressed) {
+            setDirection("right");
+            x += speed;
+            moving = true;
+        }
+        setIsMoving(moving);
     }
 }

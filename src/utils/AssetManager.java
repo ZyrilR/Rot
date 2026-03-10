@@ -9,6 +9,9 @@ import javax.imageio.ImageIO;
 public class AssetManager {
     private static final HashMap<String, BufferedImage> images = new HashMap<>(); // cache storing all images
 
+    public static final int tiles = 8;
+    public static final int sprites = 1;
+
     public static void loadImage(String key, String path) {
         try {
             BufferedImage img = ImageIO.read(
@@ -39,14 +42,8 @@ public class AssetManager {
         loadImage("player_left4", "/assets/Sprites/player/14.png");
 
         // ---------------- Tiles/grass ----------------
-        AssetManager.loadImage("grass_tile1", "/assets/Tiles/grass/1.png");
-        AssetManager.loadImage("grass_tile2", "/assets/Tiles/grass/2.png");
-        AssetManager.loadImage("grass_tile3", "/assets/Tiles/grass/3.png");
-        AssetManager.loadImage("grass_tile4", "/assets/Tiles/grass/4.png");
-        AssetManager.loadImage("grass_tile5", "/assets/Tiles/grass/5.png");
-        AssetManager.loadImage("grass_tile6", "/assets/Tiles/grass/6.png");
-        AssetManager.loadImage("grass_tile7", "/assets/Tiles/grass/7.png");
-        AssetManager.loadImage("grass_tile8", "/assets/Tiles/grass/8.png");
+        for (int i = 1; i <= tiles; i++)
+            AssetManager.loadImage("tiles_" + i, "/assets/Tiles/grass/" + i + ".png");
     }
 
     public static BufferedImage getImage(String key) {

@@ -1,6 +1,10 @@
 package engine;
 
+import overworld.Player;
+
 import java.awt.*;
+import java.util.ArrayList;
+import static utils.Constants.*;
 
 public class GameLoop implements Runnable {
 
@@ -11,14 +15,14 @@ public class GameLoop implements Runnable {
         this.gamePanel = gamePanel;
     }
 
-    public void startGameThread(GamePanel gamePanel) {
+    public void startGameThread() {
         gameThread = new Thread(this);
         gameThread.start();
     }
 
     @Override
     public void run() {
-        double drawInterval = 1000000000.0/gamePanel.FPS;
+        double drawInterval = 1000000000.0/FPS;
         double delta = 0;
         long lastTime = System.nanoTime();
         long currentTime = 0;
@@ -33,7 +37,6 @@ public class GameLoop implements Runnable {
 
             if (delta >= 1) {
                 update();
-                gamePanel.repaint();
                 delta--;
                 drawCount++;
             }
@@ -48,6 +51,7 @@ public class GameLoop implements Runnable {
 
     public void update() {
         // Route the update through the gamepanel
+        gamePanel.repaint();
         gamePanel.update();
     }
 

@@ -4,6 +4,8 @@ public abstract class Item {
     protected String name;
     protected String description;
     protected String assetPath; // For UI reference
+    //assetpath should not be a variable
+    //protected BufferredImage img = loadImage(assetPath);
 
     public Item(String name, String description, String assetPath) {
         this.name = name;
