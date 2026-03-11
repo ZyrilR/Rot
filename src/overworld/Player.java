@@ -11,56 +11,48 @@ import static utils.AssetManager.getImage;
 import static utils.Constants.*;
 
 public class Player {
-
+    GamePanel gp;
     KeyboardHandler kh;
 
-    public int x, y;
+    public int worldX, worldY; // map position
+    public final int screenX, screenY; // where we draw player on screen (always on center)
     public int speed;
 
     private String direction;
     private boolean isMoving;
 
+    //Handle Sprite Images
+    ArrayList<BufferedImage> walk_up, walk_down, walk_right, walk_left;
+    private int spriteCounter;
+
+    public Player(GamePanel gp, KeyboardHandler kh) {
+        this.gp = gp;
+        this.kh = kh;
+
+        worldX = TILE_SIZE * 25; // starting position
+        worldY = TILE_SIZE * 25; // starting position
+        screenX = (SCREEN_WIDTH / 2) - (TILE_SIZE / 2); // center of the screen
+        screenY = (SCREEN_HEIGHT / 2) - (TILE_SIZE / 2);
+        speed = 6;
+
+        direction = "down";
+        walk_up = new ArrayList<>();
+        walk_down = new ArrayList<>();
+        walk_right = new ArrayList<>();
+        walk_left = new ArrayList<>();
+        resetSpriteCounter();
+        isMoving = false;
+
+        loadImage();
+    }
+
     public void setIsMoving(boolean isMoving) {
         this.isMoving = isMoving;
     }
-
-    //Handle Sprite Images
-    ArrayList<BufferedImage> walk_up, walk_down, walk_right, walk_left;
-
-    private int spriteCounter;
-
-    public Player() {
-        this.kh = new KeyboardHandler();
-        x = 100;
-        y = 100;
-        speed = 6;
-        direction = "down";
-        walk_up = new ArrayList<>();
-        walk_down = new ArrayList<>();
-        walk_right = new ArrayList<>();
-        walk_left = new ArrayList<>();
-        resetSpriteCounter();
-        isMoving = false;
-        loadImage();
-    }
-    public Player(KeyboardHandler kh) {
-        this.kh = kh;
-        x = 100;
-        y = 100;
-        speed = 6;
-        direction = "down";
-        walk_up = new ArrayList<>();
-        walk_down = new ArrayList<>();
-        walk_right = new ArrayList<>();
-        walk_left = new ArrayList<>();
-        resetSpriteCounter();
-        isMoving = false;
-        loadImage();
-    }
-
     public void setDirection(String direction) {
         this.direction = direction;
     }
+
     public void loadImage() {
         walk_down.add(getImage("player_down1"));
         walk_down.add(getImage("player_down2"));
@@ -112,7 +104,7 @@ public class Player {
         spriteCounter++;
 
         if (img != null)
-            g.drawImage(img, x, y, TILE_SIZE, TILE_SIZE, null);
+            g.drawImage(img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
 
         movePlayer();
     }
@@ -122,19 +114,19 @@ public class Player {
 
         if (kh.upPressed) {
             setDirection("up");
-            y -= speed;
+            worldY -= speed;
             moving = true;
         } else if (kh.downPressed) {
             setDirection("down");
-            y += speed;
+            worldY += speed;
             moving = true;
         } else if (kh.leftPressed) {
             setDirection("left");
-            x -= speed;
+            worldX -= speed;
             moving = true;
         } else if (kh.rightPressed) {
             setDirection("right");
-            x += speed;
+            worldX += speed;
             moving = true;
         }
         setIsMoving(moving);

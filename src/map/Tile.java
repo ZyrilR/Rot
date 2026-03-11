@@ -3,7 +3,7 @@ package map;
 import java.awt.image.BufferedImage;
 
 public class Tile {
-    private BufferedImage img;
+    public BufferedImage img;
     private boolean collision;
     private String role;
 
@@ -13,16 +13,15 @@ public class Tile {
         this.collision = false;
         this.role = "Background";
     }
-    public Tile(BufferedImage img, String role) {
+
+    public Tile(BufferedImage img, boolean collision, String role) {
         this.img = img;
-        this.collision = false;
+        this.collision = collision;
         this.role = role;
     }
 
     public void setCollision(boolean collision) {
         this.collision = collision;
     }
-    public BufferedImage getImg() {
-        return img;
-    }
+
 }

@@ -14,11 +14,8 @@ public class Main {
         windows.setTitle("Rot");
 
         GamePanel gamePanel = new GamePanel();
-
         windows.add(gamePanel);
-
         windows.pack();
-
         windows.setLocationRelativeTo(null);
         windows.setVisible(true);
 
