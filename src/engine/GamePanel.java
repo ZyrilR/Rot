@@ -2,7 +2,7 @@ package engine;
 
 import input.KeyboardHandler;
 import overworld.Player;
-import utils.TileManager;
+import map.TileManager;
 
 import javax.swing.JPanel;
 import java.awt.Color;

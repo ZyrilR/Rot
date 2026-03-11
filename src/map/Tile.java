@@ -3,25 +3,26 @@ package map;
 import java.awt.image.BufferedImage;
 
 public class Tile {
-    private final BufferedImage image;
-    private final boolean walkable;
-    private final String type;
+    private BufferedImage img;
+    private boolean collision;
+    private String role;
 
-    public Tile(BufferedImage image, boolean walkable, String type) {
-        this.image = image;
-        this.walkable = walkable;
-        this.type = type;
+    //Role: Background, Teleporter, Spawner
+    public Tile(BufferedImage img) {
+        this.img = img;
+        this.collision = false;
+        this.role = "Background";
+    }
+    public Tile(BufferedImage img, String role) {
+        this.img = img;
+        this.collision = false;
+        this.role = role;
     }
 
-    public BufferedImage getImage() {
-        return image;
+    public void setCollision(boolean collision) {
+        this.collision = collision;
     }
-
-    public boolean isWalkable() {
-        return walkable;
-    }
-
-    public String getType() {
-        return type;
+    public BufferedImage getImg() {
+        return img;
     }
 }
