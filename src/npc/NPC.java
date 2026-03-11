@@ -3,6 +3,8 @@ package npc;
 import engine.GamePanel;
 import java.awt.*;
 
+import static utils.Constants.*;
+
 public abstract class NPC {
 
     public String name;
@@ -19,9 +21,8 @@ public abstract class NPC {
     public abstract void interact();
 
     public void draw(Graphics2D g){
-
         g.setColor(Color.BLUE);
-        g.fillRect(x, y, gp.TILE_SIZE, gp.TILE_SIZE);
+        g.fillRect(x, y, TILE_SIZE, TILE_SIZE);
         g.setColor(Color.WHITE);
         g.drawString(name, x, y - 10);
     }

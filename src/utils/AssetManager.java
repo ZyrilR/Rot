@@ -1,13 +1,22 @@
 package utils;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 
 public class AssetManager {
     private static final HashMap<String, BufferedImage> images = new HashMap<>(); // cache storing all images
+
+    public static int tiles;
+    public static int sprites = 1;
 
     public static void loadImage(String key, String path) {
         try {
@@ -22,6 +31,40 @@ public class AssetManager {
     }
 
     public static void loadAll() {
+
+        // 1. Correct the base path (Relative to your project root)
+        Path tilesDir = Paths.get("src/assets/Tiles");
+
+        try (Stream<Path> subFolders = Files.list(tilesDir)) {
+            // We get all folders inside "Tiles" (e.g., "grass")
+            subFolders.forEach(subFolder -> {
+                String folderName = subFolder.getFileName().toString();
+
+                try (Stream<Path> fileStream = Files.list(subFolder)) {
+                    // Now we iterate through every image in that folder
+                    fileStream.forEach(filePath -> {
+                        String fileName = filePath.getFileName().toString();
+
+                        // We need to format the path for getResourceAsStream
+                        // It should look like: "/assets/Tiles/grass/1.png"
+                        String resourcePath = "/assets/Tiles/" + folderName + "/" + fileName;
+
+                        // Generate a unique key, e.g., "tiles_1"
+                        String key = "tiles_" + (images.size() + 1);
+
+                        loadImage(key, resourcePath);
+                        System.out.println("Loaded: " + key + " from " + resourcePath);
+                    });
+                } catch (IOException e) {
+                    System.err.println("Error reading subfolder: " + folderName);
+                }
+            });
+        } catch (IOException e) {
+            System.err.println("Could not find Tiles directory at: " + tilesDir.toAbsolutePath());
+        }
+
+        tiles = images.size();
+
         // ---------------- Sprites/player ----------------
         loadImage("player_down1", "/assets/Sprites/player/1.png");
         loadImage("player_down2", "/assets/Sprites/player/2.png");
@@ -37,16 +80,6 @@ public class AssetManager {
         loadImage("player_left2", "/assets/Sprites/player/12.png");
         loadImage("player_left3", "/assets/Sprites/player/13.png");
         loadImage("player_left4", "/assets/Sprites/player/14.png");
-
-        // ---------------- Tiles/grass ----------------
-        AssetManager.loadImage("grass_tile1", "/assets/Tiles/grass/1.png");
-        AssetManager.loadImage("grass_tile2", "/assets/Tiles/grass/2.png");
-        AssetManager.loadImage("grass_tile3", "/assets/Tiles/grass/3.png");
-        AssetManager.loadImage("grass_tile4", "/assets/Tiles/grass/4.png");
-        AssetManager.loadImage("grass_tile5", "/assets/Tiles/grass/5.png");
-        AssetManager.loadImage("grass_tile6", "/assets/Tiles/grass/6.png");
-        AssetManager.loadImage("grass_tile7", "/assets/Tiles/grass/7.png");
-        AssetManager.loadImage("grass_tile8", "/assets/Tiles/grass/8.png");
     }
 
     public static BufferedImage getImage(String key) {
