@@ -1,11 +1,10 @@
-package map;
+package tile;
 
 import engine.GamePanel;
 import utils.AssetManager;
 
 import java.awt.*;
 import java.io.*;
-import java.util.*;
 
 import static utils.Constants.*;
 
