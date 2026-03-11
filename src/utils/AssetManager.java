@@ -50,7 +50,7 @@ public class AssetManager {
                         String resourcePath = "/assets/Tiles/" + folderName + "/" + fileName;
 
                         // Generate a unique key, e.g., "tiles_1"
-                        String key = "tiles_" + (images.size() + 1);
+                        String key = "tile_" + (images.size() + 1);
 
                         loadImage(key, resourcePath);
                         System.out.println("Loaded: " + key + " from " + resourcePath);

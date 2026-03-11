@@ -17,10 +17,10 @@ public class GamePanel extends JPanel {
     public KeyboardHandler keyboardHandler = new KeyboardHandler();
 
     //Entities
-    private Player player = new Player(keyboardHandler);
-    private TileManager background = new TileManager();
-    private TileManager decorations = new TileManager();
-    private TileManager rooms = new TileManager();
+    public Player player = new Player(this, keyboardHandler);
+    private TileManager background = new TileManager(this);
+    private TileManager decorations = new TileManager(this);
+    private TileManager rooms = new TileManager(this);
     //decorationmanager
     //uimanager
 
@@ -30,7 +30,11 @@ public class GamePanel extends JPanel {
         this.setDoubleBuffered(true);
         this.setFocusable(true);
         this.addKeyListener(keyboardHandler);
-        background.loadMap(1);
+        System.out.println("Before loading map");  // <-- test print
+
+        background.loadMap("/assets/Maps/world_1.txt");  // <-- must match actual classpath
+
+        System.out.println("After loading map");  // <-- test print
     }
 
     public void update() {
