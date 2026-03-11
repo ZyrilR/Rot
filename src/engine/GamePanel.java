@@ -20,6 +20,7 @@ public class GamePanel extends JPanel {
     private Player player = new Player(keyboardHandler);
     private TileManager background = new TileManager();
     private TileManager decorations = new TileManager();
+    private TileManager rooms = new TileManager();
     //decorationmanager
     //uimanager
 
@@ -29,6 +30,7 @@ public class GamePanel extends JPanel {
         this.setDoubleBuffered(true);
         this.setFocusable(true);
         this.addKeyListener(keyboardHandler);
+        background.loadMap(1);
     }
 
     public void update() {
@@ -42,11 +44,14 @@ public class GamePanel extends JPanel {
         graphics2D.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         //LAYER 1: Tiles
-        background.loadMap(2);
         background.draw(graphics2D);
 
         //LAYER 2: Decorations
 //        decorations.draw(graphics2D);
+
+        //OVERLAY: Rooms
+        //Problem: Rooms should be loaded only when the player touches the teleport tile
+//        rooms.draw(graphics2D);
 
         //player layer
         player.draw(graphics2D);
