@@ -27,7 +27,7 @@ public class TileManager {
 
     public void getTileAssets(){
         tile[0] = new Tile(AssetManager.getImage("tile_1"));
-        tile[1] = new Tile(AssetManager.getImage("tile_2"));
+        tile[1] = new Tile(AssetManager.getImage("tile_9")); // sample
     }
 
     public void loadMap(String filePath){

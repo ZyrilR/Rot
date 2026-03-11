@@ -29,8 +29,8 @@ public class Player {
         this.gp = gp;
         this.kh = kh;
 
-        worldX = TILE_SIZE * 25; // starting position
-        worldY = TILE_SIZE * 25; // starting position
+        worldX = TILE_SIZE * 24; // starting position
+        worldY = TILE_SIZE * 24; // starting position
         screenX = (SCREEN_WIDTH / 2) - (TILE_SIZE / 2); // center of the screen
         screenY = (SCREEN_HEIGHT / 2) - (TILE_SIZE / 2);
         speed = 6;
