@@ -36,31 +36,32 @@ public class AssetManager {
         Path tilesDir = Paths.get("src/assets/Tiles");
 
         try (Stream<Path> subFolders = Files.list(tilesDir)) {
-            // We get all folders inside "Tiles" (e.g., "grass")
             subFolders.forEach(subFolder -> {
                 String folderName = subFolder.getFileName().toString();
 
                 try (Stream<Path> fileStream = Files.list(subFolder)) {
-                    // Now we iterate through every image in that folder
-                    fileStream.forEach(filePath -> {
+                    // 1. Sort the files numerically so 2 comes before 10
+                    fileStream.sorted((p1, p2) -> {
+                        String name1 = p1.getFileName().toString().replace(".png", "");
+                        String name2 = p2.getFileName().toString().replace(".png", "");
+                        return Integer.compare(Integer.parseInt(name1), Integer.parseInt(name2));
+                    }).forEach(filePath -> {
                         String fileName = filePath.getFileName().toString();
-
-                        // We need to format the path for getResourceAsStream
-                        // It should look like: "/assets/Tiles/grass/1.png"
                         String resourcePath = "/assets/Tiles/" + folderName + "/" + fileName;
 
-                        // Generate a unique key, e.g., "tiles_1"
+                        // 2. Generate key based on the actual filename
+                        // This makes it "tile_1", "tile_2", etc.
                         String key = "tile_" + (images.size() + 1);
 
                         loadImage(key, resourcePath);
                         System.out.println("Loaded: " + key + " from " + resourcePath);
                     });
-                } catch (IOException e) {
-                    System.err.println("Error reading subfolder: " + folderName);
+                } catch (IOException | NumberFormatException e) {
+                    System.err.println("Error sorting or reading files in: " + folderName);
                 }
             });
         } catch (IOException e) {
-            System.err.println("Could not find Tiles directory at: " + tilesDir.toAbsolutePath());
+            System.err.println("Could not find Tiles directory!");
         }
 
         tiles = images.size();

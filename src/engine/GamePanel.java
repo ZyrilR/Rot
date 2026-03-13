@@ -32,7 +32,7 @@ public class GamePanel extends JPanel {
         this.addKeyListener(keyboardHandler);
         System.out.println("Before loading map");  // <-- test print
 
-        background.loadMap("/assets/Maps/world_1.txt");  // <-- must match actual classpath
+        background.loadMap(1);  // <-- must match actual classpath
 
         System.out.println("After loading map");  // <-- test print
     }
@@ -44,7 +44,7 @@ public class GamePanel extends JPanel {
         super.paintComponent(g);
         Graphics2D graphics2D = (Graphics2D) g;
 
-        graphics2D.setColor(Color.GRAY);
+        graphics2D.setColor(Color.BLACK);
         graphics2D.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         //LAYER 1: Tiles
