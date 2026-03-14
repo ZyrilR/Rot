@@ -19,7 +19,8 @@ public class Tile {
         this.collision = collision;
         this.role = role;
     }
-
+    // Inside tile.Tile
+    public boolean isCollision() {return collision;}
     public void setCollision(boolean collision) {
         this.collision = collision;
     }

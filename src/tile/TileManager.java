@@ -20,6 +20,7 @@ public class TileManager {
         tiles = new ArrayList<>();
         map = new int[MAX_WORLD_COL][MAX_WORLD_ROW];
         getTileAssets();
+        setupCollision();
     }
 
     public void draw(Graphics2D g2){
@@ -159,5 +160,29 @@ public class TileManager {
 //            }
 //        }
 //    }
+
+    private void setupCollision() {
+        // Loop through ALL loaded tiles and make them solid (collision = true)
+        for (Tile t : tiles) {
+            t.setCollision(true);
+        }
+
+        // 2. Make the Grass tile walkable (collision = false)
+        // reads Folder '1' first, our Grass tile is loaded at index 0.
+        if (!tiles.isEmpty()) {
+            tiles.get(0).setCollision(false);
+        }
+
+        // add new walkable floors (like dirt or paths), just add them here
+        // tiles.get(1).setCollision(false);
+    }
+
+    public int[][] getMap() {
+        return map;
+    }
+
+    public ArrayList<Tile> getTiles() {
+        return tiles;
+    }
 
 }

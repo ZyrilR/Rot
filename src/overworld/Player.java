@@ -25,6 +25,12 @@ public class Player {
     ArrayList<BufferedImage> walk_up, walk_down, walk_right, walk_left;
     private int spriteCounter;
 
+    public Rectangle solidArea;
+    public boolean collisionOn = false;
+
+    private int moveDelay = 0;
+    private final int MOVE_DELAY_THRESHOLD = 5; // How many frames to hold before walking
+
     public Player(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
         this.kh = kh;
@@ -43,12 +49,15 @@ public class Player {
         resetSpriteCounter();
         isMoving = false;
 
+        solidArea = new Rectangle(8, 16, 32, 32);
+
         loadImage();
     }
 
     public void setIsMoving(boolean isMoving) {
         this.isMoving = isMoving;
     }
+    public String getDirection() { return direction; }
     public void setDirection(String direction) {
         this.direction = direction;
     }
@@ -110,25 +119,81 @@ public class Player {
     }
 
     public void movePlayer() {
-        boolean moving = false;
+        if (kh.isMoving()) {
 
-        if (kh.upPressed) {
-            setDirection("up");
-            worldY -= speed;
-            moving = true;
-        } else if (kh.downPressed) {
-            setDirection("down");
-            worldY += speed;
-            moving = true;
-        } else if (kh.leftPressed) {
-            setDirection("left");
-            worldX -= speed;
-            moving = true;
-        } else if (kh.rightPressed) {
-            setDirection("right");
-            worldX += speed;
-            moving = true;
+            //Figures out which way the player WANTS to go
+            String intendedDirection = "";
+            if (kh.upPressed) intendedDirection = "up";
+            else if (kh.downPressed) intendedDirection = "down";
+            else if (kh.leftPressed) intendedDirection = "left";
+            else if (kh.rightPressed) intendedDirection = "right";
+
+            // when turned
+            if (!direction.equals(intendedDirection)) {
+                // Just change direction, don't walk yet!
+                direction = intendedDirection;
+                moveDelay = 0; // Reset the hold timer
+                setIsMoving(false); // Keep the idle sprite
+            } else {
+                //counting the hold time.
+                moveDelay++;
+
+                // 4. Have they held the button long enough to actually walk?
+                if (moveDelay > MOVE_DELAY_THRESHOLD) {
+
+                    // Check for walls and camera bounds
+                    collisionOn = false;
+                    gp.collisionChecker.checkTile(this);
+
+                    // If no wall, start walking
+                    if (!collisionOn) {
+                        switch (direction) {
+                            case "up" -> worldY -= speed;
+                            case "down" -> worldY += speed;
+                            case "left" -> worldX -= speed;
+                            case "right" -> worldX += speed;
+                        }
+                        setIsMoving(true); // Trigger walking animation
+                    } else {
+                        setIsMoving(false); // Stop animation if hitting a wall
+                    }
+                } else {
+                    // Still waiting for the hold threshold
+                    setIsMoving(false);
+                }
+            }
+        } else {
+            // Player let go of the keys. Reset everything.
+            moveDelay = 0;
+            setIsMoving(false);
         }
-        setIsMoving(moving);
+    }
+
+    // Inside overworld.Player.update()
+    public void update() {
+        if (kh.isMoving()) {
+            // Change direction immediately on click
+            if (kh.upPressed) direction = "up";
+            else if (kh.downPressed) direction = "down";
+            else if (kh.leftPressed) direction = "left";
+            else if (kh.rightPressed) direction = "right";
+
+            // Reset collision flag and check
+            collisionOn = false;
+            gp.collisionChecker.checkTile(this);
+
+            // Only update position if collision is NOT detected
+            if (!collisionOn) {
+                switch (direction) {
+                    case "up" -> worldY -= speed;
+                    case "down" -> worldY += speed;
+                    case "left" -> worldX -= speed;
+                    case "right" -> worldX += speed;
+                }
+            }
+            setIsMoving(true);
+        } else {
+            setIsMoving(false);
+        }
     }
 }
