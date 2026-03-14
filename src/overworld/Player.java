@@ -6,7 +6,6 @@ import utils.AssetManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.nio.Buffer;
 import java.util.ArrayList;
 
 import static utils.Constants.*;
@@ -21,6 +20,8 @@ public class Player {
 
     private String direction;
     private boolean isMoving;
+    private int moveProgress = 0;   // how many pixels we've moved in current tile
+    private boolean isWalking = false; // true while moving to next tile
 
     //Handle Sprite Images
     ArrayList<BufferedImage> walk_up, walk_down, walk_right, walk_left;
@@ -40,7 +41,7 @@ public class Player {
         worldY = TILE_SIZE * 24; // starting position
         screenX = (SCREEN_WIDTH / 2) - (TILE_SIZE / 2); // center of the screen
         screenY = (SCREEN_HEIGHT / 2) - (TILE_SIZE / 2);
-        speed = 6;
+        speed = 8;
 
         direction = "down";
         walk_up = new ArrayList<>();
@@ -88,20 +89,13 @@ public class Player {
     public void draw(Graphics2D g) {
         BufferedImage img = null;
 
-        //if player is moving make sure to load sprites
         if (isMoving) {
-            //load all sprites depending on the images
             switch (direction) {
-                case "up" ->
-                    img = walk_up.get(spriteCounter % walk_up.size());
-                case "down" ->
-                    img = walk_down.get(spriteCounter % walk_down.size());
-                case "right" ->
-                    img = walk_right.get(spriteCounter % walk_right.size());
-                case "left" ->
-                    img = walk_left.get(spriteCounter % walk_left.size());
+                case "up" -> img = walk_up.get(spriteCounter % walk_up.size());
+                case "down" -> img = walk_down.get(spriteCounter % walk_down.size());
+                case "right" -> img = walk_right.get(spriteCounter % walk_right.size());
+                case "left" -> img = walk_left.get(spriteCounter % walk_left.size());
             }
-        //else if player is not moving just set it to be the idle state
         } else {
             switch (direction) {
                 case "up" -> img = walk_up.getFirst();
@@ -111,12 +105,11 @@ public class Player {
             }
             resetSpriteCounter();
         }
+
         spriteCounter++;
 
         if (img != null)
             g.drawImage(img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
-
-        movePlayer();
     }
 
     public void movePlayer() {
@@ -172,29 +165,56 @@ public class Player {
 
     // Inside overworld.Player.update()
     public void update() {
-        if (kh.isMoving()) {
-            // Change direction immediately on click
+        int currentSpeed = speed;
+
+        // Only determine speed at the START of a step to prevent mid-tile jitters
+        if (!isWalking) {
+            currentSpeed = kh.running ? speed + 8 : speed;
+        }
+
+        // STEP 1: Input handling
+        if (!isWalking && kh.isMoving()) {
             if (kh.upPressed) direction = "up";
             else if (kh.downPressed) direction = "down";
             else if (kh.leftPressed) direction = "left";
             else if (kh.rightPressed) direction = "right";
 
-            // Reset collision flag and check
             collisionOn = false;
             gp.collisionChecker.checkTile(this);
 
-            // Only update position if collision is NOT detected
             if (!collisionOn) {
-                switch (direction) {
-                    case "up" -> worldY -= speed;
-                    case "down" -> worldY += speed;
-                    case "left" -> worldX -= speed;
-                    case "right" -> worldX += speed;
-                }
+                isWalking = true;
+                moveProgress = 0;
+                setIsMoving(true);
             }
-            setIsMoving(true);
-        } else {
-            setIsMoving(false);
+        }
+
+        // STEP 2: Movement
+        if (isWalking) {
+            switch (direction) {
+                case "up"    -> worldY -= currentSpeed;
+                case "down"  -> worldY += currentSpeed;
+                case "left"  -> worldX -= currentSpeed;
+                case "right" -> worldX += currentSpeed;
+            }
+            moveProgress += currentSpeed;
+
+            // STEP 3: Grid Snapping
+            if (moveProgress >= TILE_SIZE) {
+                int overshoot = moveProgress - TILE_SIZE;
+
+                // Correct the position
+                switch (direction) {
+                    case "up"    -> worldY += overshoot;
+                    case "down"  -> worldY -= overshoot;
+                    case "left"  -> worldX += overshoot;
+                    case "right" -> worldX -= overshoot;
+                }
+
+                isWalking = false;
+                moveProgress = 0;
+                setIsMoving(false);
+            }
         }
     }
 }

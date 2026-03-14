@@ -5,20 +5,46 @@ import utils.AssetManager;
 
 import java.awt.*;
 import java.io.*;
+import java.util.ArrayList;
 
 import static utils.AssetManager.*;
 import static utils.Constants.*;
 
 public class TileManager {
 
+    public static ArrayList<Tile> tiles = new ArrayList<>();
     private GamePanel gp;
     private int map[][];
+
+    public int[][] getMap() {
+        return map;
+    }
 
     public TileManager(GamePanel gp) {
         this.gp = gp;
         map = new int[MAX_WORLD_COL][MAX_WORLD_ROW];
+        loadTiles();
     }
 
+    public void loadTiles() {
+        int count = 1;
+
+        //Grass
+        for (int i = 1; i <= 30; i++, count++)
+            tiles.add(new Tile(loadImage("/assets/Tiles/Collidable/1/" + count + ".png")));
+
+        //Pathway Mud
+        for (int i = 1; i <= 4; i++, count++)
+            tiles.add(new Tile(loadImage("/assets/Tiles/Collidable/2/" + i + ".png")));
+
+        //Walls
+        for (int i = 1; i <= 16; i++, count++)
+            tiles.add(new Tile(loadImage("/assets/Tiles/NonCollidable/1/" + i + ".png"), true));
+
+        //Water
+        for (int i = 1; i <= 8; i++, count++)
+            tiles.add(new Tile(loadImage("/assets/Tiles/NonCollidable/2/" + i + ".png"), true));
+    }
     public void draw(Graphics2D g2) {
         for (int worldRow = 0; worldRow < MAX_WORLD_ROW; worldRow++) {
             for (int worldCol = 0; worldCol < MAX_WORLD_COL; worldCol++) {
@@ -42,8 +68,8 @@ public class TileManager {
                         worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
                         worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT  - gp.player.screenY)) {
 
-                    if (tileNum >= 0 && tileNum < tileAssets.size()) {
-                        g2.drawImage(tileAssets.get(tileNum), screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                    if (tileNum >= 0 && tileNum < tiles.size()) {
+                        g2.drawImage(tiles.get(tileNum).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
                     }
                 }
             }

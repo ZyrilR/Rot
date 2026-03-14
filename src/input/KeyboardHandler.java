@@ -6,6 +6,7 @@ import java.awt.event.KeyListener;
 public class KeyboardHandler implements KeyListener {
 
     public boolean upPressed, downPressed, leftPressed, rightPressed;
+    public boolean running;
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -29,6 +30,9 @@ public class KeyboardHandler implements KeyListener {
             case KeyEvent.VK_D, KeyEvent.VK_RIGHT:
                 rightPressed = true;
                 break;
+            case KeyEvent.VK_SHIFT:
+                running = true;
+                break;
         }
     }
 
@@ -48,6 +52,9 @@ public class KeyboardHandler implements KeyListener {
                 break;
             case KeyEvent.VK_D, KeyEvent.VK_RIGHT:
                 rightPressed = false;
+                break;
+            case KeyEvent.VK_SHIFT:
+                running = false;
                 break;
         }
     }

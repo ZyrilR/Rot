@@ -1,6 +1,9 @@
 package engine;
 
 import overworld.Player;
+import tile.TileManager;
+import utils.AssetManager;
+
 import static utils.Constants.*;
 
 public class CollisionChecker {
@@ -32,8 +35,8 @@ public class CollisionChecker {
                 } else {
                     tileNum1 = gp.getTileManager().getMap()[playerTopRow][playerLeftCol];
                     tileNum2 = gp.getTileManager().getMap()[playerTopRow][playerRightCol];
-                    if (gp.getTileManager().getTiles().get(tileNum1).isCollision() ||
-                            gp.getTileManager().getTiles().get(tileNum2).isCollision()) {
+                    if (TileManager.tiles.get(tileNum1).isCollision() ||
+                        TileManager.tiles.get(tileNum2).isCollision()) {
                         player.collisionOn = true;
                     }
                 }
@@ -46,8 +49,8 @@ public class CollisionChecker {
                 } else {
                     tileNum1 = gp.getTileManager().getMap()[playerBottomRow][playerLeftCol];
                     tileNum2 = gp.getTileManager().getMap()[playerBottomRow][playerRightCol];
-                    if (gp.getTileManager().getTiles().get(tileNum1).isCollision() ||
-                            gp.getTileManager().getTiles().get(tileNum2).isCollision()) {
+                    if (TileManager.tiles.get(tileNum1).isCollision() ||
+                        TileManager.tiles.get(tileNum2).isCollision()) {
                         player.collisionOn = true;
                     }
                 }
@@ -60,8 +63,8 @@ public class CollisionChecker {
                 } else {
                     tileNum1 = gp.getTileManager().getMap()[playerTopRow][playerLeftCol];
                     tileNum2 = gp.getTileManager().getMap()[playerBottomRow][playerLeftCol];
-                    if (gp.getTileManager().getTiles().get(tileNum1).isCollision() ||
-                            gp.getTileManager().getTiles().get(tileNum2).isCollision()) {
+                    if (TileManager.tiles.get(tileNum1).isCollision() ||
+                        TileManager.tiles.get(tileNum2).isCollision()) {
                         player.collisionOn = true;
                     }
                 }
@@ -74,8 +77,8 @@ public class CollisionChecker {
                 } else {
                     tileNum1 = gp.getTileManager().getMap()[playerTopRow][playerRightCol];
                     tileNum2 = gp.getTileManager().getMap()[playerBottomRow][playerRightCol];
-                    if (gp.getTileManager().getTiles().get(tileNum1).isCollision() ||
-                            gp.getTileManager().getTiles().get(tileNum2).isCollision()) {
+                    if (TileManager.tiles.get(tileNum1).isCollision() ||
+                        TileManager.tiles.get(tileNum2).isCollision()) {
                         player.collisionOn = true;
                     }
                 }

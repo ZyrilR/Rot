@@ -13,6 +13,11 @@ public class Tile {
         this.collision = false;
         this.role = "Background";
     }
+    public Tile(BufferedImage img, boolean collision) {
+        this.img = img;
+        this.collision = collision;
+        this.role = "Background";
+    }
 
     public Tile(BufferedImage img, boolean collision, String role) {
         this.img = img;
