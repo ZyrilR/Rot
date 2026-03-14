@@ -5,57 +5,48 @@ import utils.AssetManager;
 
 import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
 
+import static utils.AssetManager.*;
 import static utils.Constants.*;
 
 public class TileManager {
 
     private GamePanel gp;
-    private ArrayList<Tile> tiles;
     private int map[][];
 
     public TileManager(GamePanel gp) {
         this.gp = gp;
-        tiles = new ArrayList<>();
         map = new int[MAX_WORLD_COL][MAX_WORLD_ROW];
-        getTileAssets();
-        setupCollision();
     }
 
-    public void draw(Graphics2D g2){
-        int worldCol = 0;
-        int worldRow = 0;
+    public void draw(Graphics2D g2) {
+        for (int worldRow = 0; worldRow < MAX_WORLD_ROW; worldRow++) {
+            for (int worldCol = 0; worldCol < MAX_WORLD_COL; worldCol++) {
 
-        while(worldCol < MAX_WORLD_COL && worldRow < MAX_WORLD_ROW){
-            int tileNum = map[worldCol][worldRow];
+                // Access the 2D array: [Row][Col]
+                int tileNum = map[worldRow][worldCol];
+                if (tileNum != 0)
+                    tileNum--;
 
-            int worldX = worldCol * TILE_SIZE;
-            int worldY = worldRow * TILE_SIZE;
-            int screenX = worldX - gp.player.worldX + gp.player.screenX;
-            int screenY = worldY - gp.player.worldY + gp.player.screenY;
+                // Map indices to coordinates
+                int worldX = worldCol * TILE_SIZE; // Columns move along X
+                int worldY = worldRow * TILE_SIZE; // Rows move along Y
 
-            int tileRight = worldX + TILE_SIZE;
-            int tileBottom = worldY + TILE_SIZE;
+                // Screen position calculation
+                int screenX = worldX - gp.player.worldX + gp.player.screenX;
+                int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-            if(tileRight > gp.player.worldX - gp.player.screenX &&
-                    worldX < gp.player.worldX + (SCREEN_WIDTH - gp.player.screenX) &&
-                    tileBottom > gp.player.worldY - gp.player.screenY &&
-                    worldY < gp.player.worldY + (SCREEN_HEIGHT - gp.player.screenY)) {
-                g2.drawImage(tiles.get(tileNum).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                // Culling and Drawing...
+                if (worldX + TILE_SIZE > gp.player.worldX - gp.player.screenX &&
+                        worldX - TILE_SIZE < gp.player.worldX + (SCREEN_WIDTH - gp.player.screenX) &&
+                        worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
+                        worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT  - gp.player.screenY)) {
+
+                    if (tileNum >= 0 && tileNum < tileAssets.size()) {
+                        g2.drawImage(tileAssets.get(tileNum), screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                    }
+                }
             }
-            worldCol++;
-            if(worldCol == MAX_WORLD_COL){
-                worldCol = 0;
-                worldRow++;
-            }
-        }
-    }
-
-    public void getTileAssets() {
-        for (int i = 1; i <= AssetManager.tiles; i++) {
-            tiles.add(new Tile(AssetManager.getImage("tile_" + i)));
-            System.out.println("Added (Size|" + tiles.size() + "): " + ("tiles_" + i));
         }
     }
     public void displayMapValues() {
@@ -160,29 +151,5 @@ public class TileManager {
 //            }
 //        }
 //    }
-
-    private void setupCollision() {
-        // Loop through ALL loaded tiles and make them solid (collision = true)
-        for (Tile t : tiles) {
-            t.setCollision(true);
-        }
-
-        // 2. Make the Grass tile walkable (collision = false)
-        // reads Folder '1' first, our Grass tile is loaded at index 0.
-        if (!tiles.isEmpty()) {
-            tiles.get(0).setCollision(false);
-        }
-
-        // add new walkable floors (like dirt or paths), just add them here
-        // tiles.get(1).setCollision(false);
-    }
-
-    public int[][] getMap() {
-        return map;
-    }
-
-    public ArrayList<Tile> getTiles() {
-        return tiles;
-    }
 
 }
