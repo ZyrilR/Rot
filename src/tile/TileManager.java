@@ -19,31 +19,33 @@ public class TileManager {
         map = new int[MAX_WORLD_COL][MAX_WORLD_ROW];
     }
 
-    public void draw(Graphics2D g2){
-        int worldCol = 0;
-        int worldRow = 0;
+    public void draw(Graphics2D g2) {
+        for (int worldRow = 0; worldRow < MAX_WORLD_ROW; worldRow++) {
+            for (int worldCol = 0; worldCol < MAX_WORLD_COL; worldCol++) {
 
-        while(worldCol < MAX_WORLD_COL && worldRow < MAX_WORLD_ROW){
-            int tileNum = map[worldCol][worldRow];
+                // Access the 2D array: [Row][Col]
+                int tileNum = map[worldRow][worldCol];
+                if (tileNum != 0)
+                    tileNum--;
 
-            int worldX = worldCol * TILE_SIZE;
-            int worldY = worldRow * TILE_SIZE;
-            int screenX = worldX - gp.player.worldX + gp.player.screenX;
-            int screenY = worldY - gp.player.worldY + gp.player.screenY;
+                // Map indices to coordinates
+                int worldX = worldCol * TILE_SIZE; // Columns move along X
+                int worldY = worldRow * TILE_SIZE; // Rows move along Y
 
-            int tileRight = worldX + TILE_SIZE;
-            int tileBottom = worldY + TILE_SIZE;
+                // Screen position calculation
+                int screenX = worldX - gp.player.worldX + gp.player.screenX;
+                int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-            if(tileRight > gp.player.worldX - gp.player.screenX &&
-                    worldX < gp.player.worldX + (SCREEN_WIDTH - gp.player.screenX) &&
-                    tileBottom > gp.player.worldY - gp.player.screenY &&
-                    worldY < gp.player.worldY + (SCREEN_HEIGHT - gp.player.screenY)) {
-                g2.drawImage(tileAssets.get(tileNum), screenX, screenY, TILE_SIZE, TILE_SIZE, null);
-            }
-            worldCol++;
-            if(worldCol == MAX_WORLD_COL){
-                worldCol = 0;
-                worldRow++;
+                // Culling and Drawing...
+                if (worldX + TILE_SIZE > gp.player.worldX - gp.player.screenX &&
+                        worldX - TILE_SIZE < gp.player.worldX + (SCREEN_WIDTH - gp.player.screenX) &&
+                        worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
+                        worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT  - gp.player.screenY)) {
+
+                    if (tileNum >= 0 && tileNum < tileAssets.size()) {
+                        g2.drawImage(tileAssets.get(tileNum), screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                    }
+                }
             }
         }
     }
