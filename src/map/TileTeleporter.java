@@ -4,10 +4,10 @@ import java.awt.image.BufferedImage;
 import tile.Tile;
 
 public class TileTeleporter extends Tile {
-    TileTeleporter link = null;
+    TileTeleporter link = this;
 
     public TileTeleporter(BufferedImage img) {
-        super(img);
+        super(img, false, "Teleporter");
     }
 
     public void setLink(TileTeleporter link) {

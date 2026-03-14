@@ -81,6 +81,38 @@ public class AssetManager {
         loadImage("player_left2", "/assets/Sprites/player/12.png");
         loadImage("player_left3", "/assets/Sprites/player/13.png");
         loadImage("player_left4", "/assets/Sprites/player/14.png");
+
+        // ---------------- Sprites/# ----------------
+        Path spritesDir = Paths.get("src/assets/Sprites");
+
+        try (Stream<Path> subFolders = Files.list(spritesDir)) {
+            subFolders.forEach(subFolder -> {
+                String folderName = subFolder.getFileName().toString();
+
+                try (Stream<Path> fileStream = Files.list(subFolder)) {
+                    // 1. Sort the files numerically so 2 comes before 10
+                    fileStream.sorted((p1, p2) -> {
+                        String name1 = p1.getFileName().toString().replace(".png", "");
+                        String name2 = p2.getFileName().toString().replace(".png", "");
+                        return Integer.compare(Integer.parseInt(name1), Integer.parseInt(name2));
+                    }).forEach(filePath -> {
+                        String fileName = filePath.getFileName().toString();
+                        String resourcePath = "/assets/Sprites/" + folderName + "/" + fileName;
+
+                        // 2. Generate key based on the actual filename
+                        String key = "sprite_" + folderName + "_" + fileName;
+
+                        loadImage(key, resourcePath);
+                        System.out.println("Loaded: " + key + " from " + resourcePath);
+                    });
+                } catch (IOException | NumberFormatException e) {
+                    System.err.println("Error sorting or reading files in: " + folderName);
+                }
+            });
+        } catch (IOException e) {
+            System.err.println("Could not find Tiles directory!");
+        }
+
     }
 
     public static BufferedImage getImage(String key) {
