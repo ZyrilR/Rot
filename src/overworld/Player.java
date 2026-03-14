@@ -2,12 +2,13 @@ package overworld;
 
 import engine.GamePanel;
 import input.KeyboardHandler;
+import utils.AssetManager;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.Buffer;
 import java.util.ArrayList;
 
-import static utils.AssetManager.getImage;
 import static utils.Constants.*;
 
 public class Player {
@@ -54,22 +55,22 @@ public class Player {
     }
 
     public void loadImage() {
-        walk_down.add(getImage("player_down1"));
-        walk_down.add(getImage("player_down2"));
-        walk_down.add(getImage("player_down3"));
-        walk_up.add(getImage("player_up1"));
-        walk_up.add(getImage("player_up2"));
-        walk_up.add(getImage("player_up3"));
-        walk_right.add(getImage("player_right1"));
-        walk_right.add(getImage("player_right2"));
-        walk_right.add(getImage("player_right2"));
-        walk_right.add(getImage("player_right3"));
-        walk_right.add(getImage("player_right4"));
-        walk_left.add(getImage("player_left1"));
-        walk_left.add(getImage("player_left2"));
-        walk_left.add(getImage("player_left2"));
-        walk_left.add(getImage("player_left3"));
-        walk_left.add(getImage("player_left4"));
+        walk_down.add(AssetManager.loadImage("/assets/Sprites/player/1.png"));
+        walk_down.add(AssetManager.loadImage("/assets/Sprites/player/2.png"));
+        walk_down.add(AssetManager.loadImage("/assets/Sprites/player/3.png"));
+        walk_up.add(AssetManager.loadImage("/assets/Sprites/player/4.png"));
+        walk_up.add(AssetManager.loadImage("/assets/Sprites/player/5.png"));
+        walk_up.add(AssetManager.loadImage("/assets/Sprites/player/6.png"));
+        walk_right.add(AssetManager.loadImage("/assets/Sprites/player/7.png"));
+        walk_right.add(AssetManager.loadImage("/assets/Sprites/player/8.png"));
+        walk_right.add(AssetManager.loadImage("/assets/Sprites/player/8.png"));
+        walk_right.add(AssetManager.loadImage("/assets/Sprites/player/9.png"));
+        walk_right.add(AssetManager.loadImage("/assets/Sprites/player/10.png"));
+        walk_left.add(AssetManager.loadImage("/assets/Sprites/player/11.png"));
+        walk_left.add(AssetManager.loadImage("/assets/Sprites/player/12.png"));
+        walk_left.add(AssetManager.loadImage("/assets/Sprites/player/12.png"));
+        walk_left.add(AssetManager.loadImage("/assets/Sprites/player/13.png"));
+        walk_left.add(AssetManager.loadImage("/assets/Sprites/player/14.png"));
     }
     public void resetSpriteCounter() {
         spriteCounter = 0;

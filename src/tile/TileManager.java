@@ -5,21 +5,18 @@ import utils.AssetManager;
 
 import java.awt.*;
 import java.io.*;
-import java.util.ArrayList;
 
+import static utils.AssetManager.*;
 import static utils.Constants.*;
 
 public class TileManager {
 
     private GamePanel gp;
-    private ArrayList<Tile> tiles;
     private int map[][];
 
     public TileManager(GamePanel gp) {
         this.gp = gp;
-        tiles = new ArrayList<>();
         map = new int[MAX_WORLD_COL][MAX_WORLD_ROW];
-        getTileAssets();
     }
 
     public void draw(Graphics2D g2){
@@ -41,20 +38,13 @@ public class TileManager {
                     worldX < gp.player.worldX + (SCREEN_WIDTH - gp.player.screenX) &&
                     tileBottom > gp.player.worldY - gp.player.screenY &&
                     worldY < gp.player.worldY + (SCREEN_HEIGHT - gp.player.screenY)) {
-                g2.drawImage(tiles.get(tileNum).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                g2.drawImage(tileAssets.get(tileNum), screenX, screenY, TILE_SIZE, TILE_SIZE, null);
             }
             worldCol++;
             if(worldCol == MAX_WORLD_COL){
                 worldCol = 0;
                 worldRow++;
             }
-        }
-    }
-
-    public void getTileAssets() {
-        for (int i = 1; i <= AssetManager.tiles; i++) {
-            tiles.add(new Tile(AssetManager.getImage("tile_" + i)));
-            System.out.println("Added (Size|" + tiles.size() + "): " + ("tiles_" + i));
         }
     }
     public void displayMapValues() {
