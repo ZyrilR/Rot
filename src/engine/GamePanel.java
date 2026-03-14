@@ -18,6 +18,7 @@ public class GamePanel extends JPanel {
 
     //Entities
     public Player player = new Player(this, keyboardHandler);
+    public CollisionChecker collisionChecker = new CollisionChecker(this);
     private TileManager background = new TileManager(this);
     private TileManager decorations = new TileManager(this);
     private TileManager rooms = new TileManager(this);
@@ -38,6 +39,11 @@ public class GamePanel extends JPanel {
     }
 
     public void update() {
+        player.update();
+    }
+
+    public tile.TileManager getTileManager() {
+        return background;
     }
 
     public void paintComponent(Graphics g) {
