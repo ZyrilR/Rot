@@ -1,11 +1,11 @@
 package items;
 
+import brainrots.BrainRot;
+
 public abstract class Item {
-    protected String name;
-    protected String description;
-    protected String assetPath; // For UI reference
-    //assetpath should not be a variable
-    //protected BufferredImage img = loadImage(assetPath);
+    protected final String name;
+    protected final String description;
+    protected final String assetPath; // for UI reference
 
     public Item(String name, String description, String assetPath) {
         this.name = name;
@@ -13,19 +13,10 @@ public abstract class Item {
         this.assetPath = assetPath;
     }
 
-    // Abstract method for using the item
-    public abstract void use();
+    /** Use the item on a target BrainRot, optionally receiving extra arguments */
+    public abstract void use(BrainRot target, Object... extraArgs);
 
-    // Getters
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getAssetPath() {
-        return assetPath;
-    }
+    public String getName() { return name; }
+    public String getDescription() { return description; }
+    public String getAssetPath() { return assetPath; }
 }
