@@ -27,32 +27,11 @@ public class TileManager {
     }
 
     public void initializeTiles() {
-        tiles.clear(); // Ensure no duplicate tiles
+        // Instead of recreating them, just use the modular list from AssetManager
+        tiles = AssetManager.tiles;
 
-        int index = 0; // Tracks tile index to match AssetManager.tiles order
-
-        // --- Grass tiles (collidable = false by default) ---
-        for (int i = 0; i < 30; i++, index++) {
-            BufferedImage img = AssetManager.tiles.get(index);
-            tiles.add(new Tile(img)); // default collidable = false
-        }
-
-        // --- Mud tiles (collidable = false) ---
-        for (int i = 0; i < 4; i++, index++) {
-            BufferedImage img = AssetManager.tiles.get(index);
-            tiles.add(new Tile(img));
-        }
-
-        // --- Walls (collidable = true) ---
-        for (int i = 0; i < 16; i++, index++) {
-            BufferedImage img = AssetManager.tiles.get(index);
-            tiles.add(new Tile(img, true)); // pass collidable = true
-        }
-
-        // --- Water (collidable = true) ---
-        for (int i = 0; i < 8; i++, index++) {
-            BufferedImage img = AssetManager.tiles.get(index);
-            tiles.add(new Tile(img, true));
+        if (tiles.isEmpty()) {
+            System.out.println("WARNING: Tiles list is empty. Make sure AssetManager.loadAll() is called first!");
         }
     }
 
@@ -80,7 +59,7 @@ public class TileManager {
                         worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT  - gp.player.screenY)) {
 
                     if (tileNum >= 0 && tileNum < tiles.size()) {
-                        g2.drawImage(tiles.get(tileNum).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                        g2.drawImage(tiles.get(tileNum).image, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
                     }
                 }
             }

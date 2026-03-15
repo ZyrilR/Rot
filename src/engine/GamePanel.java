@@ -11,14 +11,18 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import static utils.Constants.*;
+import java.util.ArrayList;
 
 public class GamePanel extends JPanel {
-
+    //dialogueOpen
+    public String gameState = "play";
+    public ui.DialogueBox dialogueBox = new ui.DialogueBox(this);
     //InputHandler
     public KeyboardHandler keyboardHandler = new KeyboardHandler();
 
     //Entities
     public Player player = new Player(this, keyboardHandler);
+    public ArrayList<npc.NPC> npcs = new ArrayList<>();
     public CollisionChecker collisionChecker = new CollisionChecker(this);
     private TileManager background = new TileManager(this);
     private TileManager decorations = new TileManager(this);
@@ -33,14 +37,23 @@ public class GamePanel extends JPanel {
         this.setFocusable(true);
         this.addKeyListener(keyboardHandler);
         System.out.println("Before loading map");  // <-- test print
-
         background.loadMap(1);  // <-- must match actual classpath
-
         System.out.println("After loading map");  // <-- test print
+        npcs.add(new npc.MarketNPC(this, TILE_SIZE * 24, TILE_SIZE * 26));
     }
 
     public void update() {
-        player.update();
+        if (gameState.equals("play")) {
+            player.update();
+
+            // Check for 'E' or 'Enter' click
+            if (keyboardHandler.enterPressed) {
+                keyboardHandler.enterPressed = false; // consume input
+                player.checkInteraction();
+            }
+        } else if (gameState.equals("dialogue")) {
+            dialogueBox.update();
+        }
     }
 
     public TileManager getTileManager() {
@@ -51,21 +64,21 @@ public class GamePanel extends JPanel {
         super.paintComponent(g);
         Graphics2D graphics2D = (Graphics2D) g;
 
-        graphics2D.setColor(Color.BLACK);
-        graphics2D.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-        //LAYER 1: Tiles
+        // 1. Draw Background Tiles
         background.draw(graphics2D);
 
-        //LAYER 2: Decorations
-//        decorations.draw(graphics2D);
+        // 2. Draw NPCs (Drawn before player for correct layering)
+        for (npc.NPC npc : npcs) {
+            npc.draw(graphics2D);
+        }
 
-        //OVERLAY: Rooms
-        //Problem: Rooms should be loaded only when the player touches the teleport tile
-//        rooms.draw(graphics2D);
-
-        //player layer
+        // 3. Draw Player
         player.draw(graphics2D);
+
+        // 4. Draw UI LAST (So it sits on top of everything)
+        if (gameState.equals("dialogue")) {
+            dialogueBox.draw(graphics2D);
+        }
 
         graphics2D.dispose();
     }

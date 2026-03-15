@@ -36,6 +36,7 @@ public class Player {
         this.gp = gp;
         this.kh = kh;
         this.inventory = new Inventory(20);
+        this.solidArea = new Rectangle(8, 16, 32, 32);
 
         worldX = TILE_SIZE * 24;
         worldY = TILE_SIZE * 24;
@@ -47,14 +48,13 @@ public class Player {
         spriteCounter = 0;
         isMoving = false;
 
-        solidArea = new Rectangle(8, 16, 32, 32);
-
         // Initialize MovementSystem
         move = new MovementSystem(gp, kh, this);
     }
 
     public void setIsMoving(boolean isMoving) { this.isMoving = isMoving; }
     public String getDirection() { return direction; }
+
     public void setDirection(String direction) { this.direction = direction; }
 
     public void update() {
@@ -87,5 +87,25 @@ public class Player {
 
     // Only expose the inventory directly
     public Inventory getInventory() { return inventory; }
+
+    public void checkInteraction() {
+        int targetX = worldX;
+        int targetY = worldY;
+
+        // Look one tile ahead based on current direction
+        switch (direction) {
+            case "up" -> targetY -= TILE_SIZE;
+            case "down" -> targetY += TILE_SIZE;
+            case "left" -> targetX -= TILE_SIZE;
+            case "right" -> targetX += TILE_SIZE;
+        }
+
+        for (npc.NPC npc : gp.npcs) {
+            if (npc.worldX == targetX && npc.worldY == targetY) {
+                npc.interact(); // NPC decides what happens!
+                return;
+            }
+        }
+    }
 
 }
