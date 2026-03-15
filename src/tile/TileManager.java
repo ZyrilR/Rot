@@ -4,7 +4,6 @@ import engine.GamePanel;
 import utils.AssetManager;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 
@@ -24,39 +23,28 @@ public class TileManager {
     public TileManager(GamePanel gp) {
         this.gp = gp;
         map = new int[MAX_WORLD_COL][MAX_WORLD_ROW];
-        initializeTiles();
+        loadTiles();
     }
 
-    public void initializeTiles() {
-        tiles.clear(); // Ensure no duplicate tiles
+    public void loadTiles() {
+        int count = 1;
 
-        int index = 0; // Tracks tile index to match AssetManager.tiles order
+        //Grass
+        for (int i = 1; i <= 30; i++, count++)
+            tiles.add(new Tile(loadImage("/assets/Tiles/Collidable/1/" + count + ".png")));
 
-        // --- Grass tiles (collidable = false by default) ---
-        for (int i = 0; i < 30; i++, index++) {
-            BufferedImage img = AssetManager.tiles.get(index);
-            tiles.add(new Tile(img)); // default collidable = false
-        }
+        //Pathway Mud
+        for (int i = 1; i <= 4; i++, count++)
+            tiles.add(new Tile(loadImage("/assets/Tiles/Collidable/2/" + i + ".png")));
 
-        // --- Mud tiles (collidable = false) ---
-        for (int i = 0; i < 4; i++, index++) {
-            BufferedImage img = AssetManager.tiles.get(index);
-            tiles.add(new Tile(img));
-        }
+        //Walls
+        for (int i = 1; i <= 16; i++, count++)
+            tiles.add(new Tile(loadImage("/assets/Tiles/NonCollidable/1/" + i + ".png"), true));
 
-        // --- Walls (collidable = true) ---
-        for (int i = 0; i < 16; i++, index++) {
-            BufferedImage img = AssetManager.tiles.get(index);
-            tiles.add(new Tile(img, true)); // pass collidable = true
-        }
-
-        // --- Water (collidable = true) ---
-        for (int i = 0; i < 8; i++, index++) {
-            BufferedImage img = AssetManager.tiles.get(index);
-            tiles.add(new Tile(img, true));
-        }
+        //Water
+        for (int i = 1; i <= 8; i++, count++)
+            tiles.add(new Tile(loadImage("/assets/Tiles/NonCollidable/2/" + i + ".png"), true));
     }
-
     public void draw(Graphics2D g2) {
         for (int worldRow = 0; worldRow < MAX_WORLD_ROW; worldRow++) {
             for (int worldCol = 0; worldCol < MAX_WORLD_COL; worldCol++) {
@@ -181,5 +169,13 @@ public class TileManager {
         displayMapValues();
         System.out.println();
     }
+
+//    public void draw(Graphics2D g) {
+//        for (int i = 0; i < map.length; i++) {
+//            for (int j = 0; j < map[0].length; j++) {
+//                g.drawImage(tiles.get(map[i][j]).getImg(), i * TILE_SIZE, j * TILE_SIZE, TILE_SIZE, TILE_SIZE, null);
+//            }
+//        }
+//    }
 
 }

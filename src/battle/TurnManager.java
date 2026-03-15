@@ -1,10 +1,10 @@
 package battle;
 
 import brainrots.BrainRot;
-import utils.RandomUtil;
-
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Determines the order in which BrainRots act each turn.
@@ -12,9 +12,11 @@ import java.util.List;
  */
 public class TurnManager {
 
+    private static final Random rand = new Random();
+
     /**
      * Returns the list of combatants sorted by descending Speed.
-     * Tied speeds are resolved randomly using RandomUtil.
+     * Tied speeds are resolved randomly.
      */
     public static List<BrainRot> getOrder(List<BrainRot> combatants) {
         List<BrainRot> order = new ArrayList<>(combatants);
@@ -22,7 +24,7 @@ public class TurnManager {
         order.sort((a, b) -> {
             int speedDiff = b.getSpeed() - a.getSpeed();
             if (speedDiff != 0) return speedDiff;
-            return RandomUtil.chance(50.0) ? 1 : -1; // 50/50 on tie
+            return rand.nextBoolean() ? 1 : -1; // 50/50 on tie
         });
 
         return order;
@@ -35,6 +37,6 @@ public class TurnManager {
         if (rot1.getSpeed() > rot2.getSpeed()) return new BrainRot[]{rot1, rot2};
         if (rot2.getSpeed() > rot1.getSpeed()) return new BrainRot[]{rot2, rot1};
 
-        return RandomUtil.chance(50.0) ? new BrainRot[]{rot1, rot2} : new BrainRot[]{rot2, rot1};
+        return rand.nextBoolean() ? new BrainRot[]{rot1, rot2} : new BrainRot[]{rot2, rot1};
     }
 }

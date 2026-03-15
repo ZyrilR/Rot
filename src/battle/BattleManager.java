@@ -68,21 +68,17 @@ public class BattleManager {
         checkFainted();
     }
 
-    /** Player attempts to capture a wild BrainRot using a capsule from inventory */
-    public void executeCapture(int capsuleIndex) {
+    /**
+     * Player attempts to capture the wild BrainRot.
+     */
+    public void executeCapture(Capsule capsule) {
         if (!wildBattle) {
             System.out.println("You can't capture a trainer's BrainRot!");
             return;
         }
-
-        // Pass enemyRot and playerTeam to the Capsule
-        playerInventory.useItem(capsuleIndex, enemyRot, playerTeam);
-
-        if (playerTeam.contains(enemyRot)) {
-            result = BattleResult.CAPTURED;
-        }
+        boolean caught = CaptureManager.attempt(capsule, enemyRot, playerTeam, playerInventory);
+        if (caught) result = BattleResult.CAPTURED;
     }
-
 
     // ── Enemy Action ──────────────────────────────────────────────────────────
 

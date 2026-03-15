@@ -1,12 +1,14 @@
 package skills;
 
 import brainrots.BrainRot;
-import utils.RandomUtil;
+import java.util.Random;
 
 /**
  * Applies secondary effects (buffs, debuffs, status) from a Skill onto a target BrainRot.
  */
 public class SkillEffect {
+
+    private static final Random rand = new Random();
 
     /**
      * Applies the skill's effect to the target.
@@ -77,8 +79,8 @@ public class SkillEffect {
                 break;
 
             case "FLINCH":
-                // 30% chance to flinch using RandomUtil
-                if (RandomUtil.chance(30.0)) {
+                // 30% chance to flinch
+                if (rand.nextInt(100) < 30) {
                     target.setStatus("FLINCH");
                     System.out.println(target.getName() + " flinched!");
                 }

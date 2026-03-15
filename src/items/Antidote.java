@@ -1,7 +1,5 @@
 package items;
 
-import brainrots.BrainRot;
-
 public class Antidote extends Item {
     private String statusToCure; // Example: "Confusion", "Paralysis",
 
@@ -11,19 +9,10 @@ public class Antidote extends Item {
     }
 
     @Override
-    public void use(BrainRot target, Object... extraArgs) {
-        if (statusToCure.equalsIgnoreCase("DEBUFF")) {
-            target.resetModifiers();
-            System.out.println(target.getName() + "'s stat debuffs were removed!");
-            return;
-        }
-
-        if (target.hasStatus(statusToCure)) {
-            target.clearStatus();
-            System.out.println(target.getName() + " was cured of " + statusToCure + "!");
-        } else {
-            System.out.println("It had no effect.");
-        }
+    public void use() {
+        //TODO: Implement logic to remove the specific status effect from a BrainRot
+        // Example: if(brainRot.hasStatus(statusToCure)) { brainRot.removeStatus(statusToCure); }
+        System.out.println("Using " + name + " to cure " + statusToCure + ".");
     }
 
     public String getStatusToCure() {

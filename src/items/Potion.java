@@ -1,7 +1,5 @@
 package items;
 
-import brainrots.BrainRot;
-
 public class Potion extends Item {
     private int healPercentage;
 
@@ -11,11 +9,9 @@ public class Potion extends Item {
     }
 
     @Override
-    public void use(BrainRot target, Object... extraArgs) {
-        int healAmount = (target.getMaxHp() * healPercentage) / 100;
-        target.heal(healAmount);
-
-        System.out.println(target.getName() + " healed for " + healAmount + " HP.");
+    public void use() {
+        //TODO: Implement logic to heal a BrainRot in battle or overworld
+        System.out.println("Using " + name + " to heal " + healPercentage + " HP.");
     }
 
     public int getHealPercentage() { return healPercentage; }

@@ -1,67 +1,42 @@
 package items;
 
-import brainrots.BrainRot;
 import java.util.ArrayList;
 
 public class Inventory {
-    private final ArrayList<Item> items; // stores player's items
-    private final int capacity;          // maximum number of items allowed
+    private ArrayList<Item> items;
+    private int capacity;
 
     public Inventory(int capacity) {
         this.capacity = capacity;
         this.items = new ArrayList<>();
     }
 
-    /** Adds an item to the inventory */
     public boolean addItem(Item item) {
         if (items.size() >= capacity) {
-            System.out.println("Inventory full!");
+            System.out.println("Inventory full!"); //TODO: Trigger inventory full UI feedback
             return false;
         }
         items.add(item);
         return true;
     }
 
-    /** Removes a specific item */
     public boolean removeItem(Item item) {
-        return items.remove(item);
+        return items.remove(item); //TODO: Update inventory UI after removal
     }
 
-    /**
-     * Uses an item at a given index on a BrainRot target.
-     * Passes extra arguments to handle special items (e.g., Capsules).
-     * Consumes the item after use.
-     */
-    public void useItem(int index, BrainRot target, Object... extraArgs) {
+    public void useItem(int index) {
         if (index < 0 || index >= items.size()) {
-            System.out.println("Invalid item index.");
+            System.out.println("Invalid item index."); //TODO: Handle invalid input in menu
             return;
         }
 
         Item item = items.get(index);
-        item.use(target, extraArgs); // pass extra arguments
-        items.remove(index);         // automatically consume
+        item.use(); //TODO: Apply effects to the targeted BrainRot / Player
     }
 
-    /** Check if inventory contains an item by name */
-    public boolean hasItem(String name) {
-        return items.stream().anyMatch(item -> item.getName().equalsIgnoreCase(name));
-    }
-
-    /** Return a list of item names */
-    public ArrayList<String> listItemNames() {
-        ArrayList<String> names = new ArrayList<>();
-        for (Item item : items) names.add(item.getName());
-        return names;
-    }
-
-    /** Get current inventory size */
-    public int getSize() {
-        return items.size();
-    }
-
-    /** Get inventory capacity */
-    public int getCapacity() {
-        return capacity;
+    public void listItems() {
+        for (int i = 0; i < items.size(); i++) {
+            System.out.println(i + ": " + items.get(i).getName()); //TODO: Replace with inventory UI list display
+        }
     }
 }
