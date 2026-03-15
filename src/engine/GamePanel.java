@@ -2,7 +2,8 @@ package engine;
 
 import input.KeyboardHandler;
 import overworld.Player;
-import tile.TileManager;
+import map.CollisionChecker;
+import map.TileManager;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -42,7 +43,7 @@ public class GamePanel extends JPanel {
         player.update();
     }
 
-    public tile.TileManager getTileManager() {
+    public TileManager getTileManager() {
         return background;
     }
 

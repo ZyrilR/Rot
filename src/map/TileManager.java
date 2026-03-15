@@ -1,4 +1,4 @@
-package tile;
+package map;
 
 import engine.GamePanel;
 import utils.AssetManager;
@@ -8,7 +8,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 
-import static utils.AssetManager.*;
 import static utils.Constants.*;
 
 public class TileManager {

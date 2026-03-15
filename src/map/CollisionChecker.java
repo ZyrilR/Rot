@@ -1,8 +1,7 @@
-package engine;
+package map;
 
+import engine.GamePanel;
 import overworld.Player;
-import tile.TileManager;
-import utils.AssetManager;
 
 import static utils.Constants.*;
 
