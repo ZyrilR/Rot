@@ -13,8 +13,8 @@ public class Constants {
     public static final int SCREEN_HEIGHT = TILE_SIZE * MAX_SCREEN_ROW; // 576 pixels
 
     // World Settings
-    public static final int MAX_WORLD_ROW = 50;
-    public static final int MAX_WORLD_COL = 50;
+    public static int MAX_WORLD_ROW;
+    public static int MAX_WORLD_COL;
     public static final int WORLD_WIDTH = TILE_SIZE * MAX_SCREEN_COL;
     public static final int WORLD_HEIGHT = TILE_SIZE * MAX_SCREEN_ROW;
 

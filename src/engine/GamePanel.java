@@ -1,6 +1,7 @@
 package engine;
 
 import input.KeyboardHandler;
+import map.WorldLoader;
 import overworld.Player;
 import tile.TileManager;
 
@@ -9,6 +10,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+
 import static utils.Constants.*;
 
 public class GamePanel extends JPanel {
@@ -19,11 +21,8 @@ public class GamePanel extends JPanel {
     //Entities
     public Player player = new Player(this, keyboardHandler);
     public CollisionChecker collisionChecker = new CollisionChecker(this);
-    private TileManager background = new TileManager(this);
-    private TileManager decorations = new TileManager(this);
-    private TileManager rooms = new TileManager(this);
-    //decorationmanager
-    //uimanager
+    private final WorldLoader world = new WorldLoader(this);
+    private WorldLoader room = new WorldLoader(this);
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -33,7 +32,8 @@ public class GamePanel extends JPanel {
         this.addKeyListener(keyboardHandler);
         System.out.println("Before loading map");  // <-- test print
 
-        background.loadMap(1);  // <-- must match actual classpath
+//        background.loadMap(1);  // <-- must match actual classpath
+        world.loadMap("/assets/Worlds/2/", true);
 
         System.out.println("After loading map");  // <-- test print
     }
@@ -42,8 +42,8 @@ public class GamePanel extends JPanel {
         player.update();
     }
 
-    public tile.TileManager getTileManager() {
-        return background;
+    public TileManager getWorldBackgroundLayer() {
+        return world.getBackgroundLayer();
     }
 
     public void paintComponent(Graphics g) {
@@ -54,7 +54,7 @@ public class GamePanel extends JPanel {
         graphics2D.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         //LAYER 1: Tiles
-        background.draw(graphics2D);
+        world.draw(graphics2D);
 
         //LAYER 2: Decorations
 //        decorations.draw(graphics2D);

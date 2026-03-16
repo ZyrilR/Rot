@@ -7,7 +7,7 @@ public class Tile {
     private boolean collision;
     private String role;
 
-    //Role: Background, Teleporter, Spawner
+    //Role: Background, Teleporter, Spawner, Interactive
     public Tile(BufferedImage img) {
         this.img = img;
         this.collision = false;
