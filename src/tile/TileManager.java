@@ -1,7 +1,6 @@
 package tile;
 
 import engine.GamePanel;
-import map.TileInteractive;
 
 import java.awt.*;
 import java.io.*;
@@ -218,7 +217,7 @@ public class TileManager {
         }
 
         //Decorations
-        for (int i = 1; i <= 15; i++) {
+        for (int i = 1; i <= 32; i++) {
             Tile tile;
             //if first img = transparent : background : false
             if (i == 1 || i == 3)

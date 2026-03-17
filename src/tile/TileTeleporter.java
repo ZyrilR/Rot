@@ -1,7 +1,6 @@
-package map;
+package tile;
 
 import java.awt.image.BufferedImage;
-import tile.Tile;
 
 public class TileTeleporter extends Tile {
     TileTeleporter link = this;

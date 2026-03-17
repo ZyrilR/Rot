@@ -25,11 +25,17 @@ public class WorldLoader {
     public void draw(Graphics2D graphics2D) {
         backgroundLayer.draw(graphics2D, gp);
 
+        //Load Decorations
         for (int i = 0; i < decorationLayer.size(); i++) {
             TileManager dec = decorationLayer.get(i);
-            TileManager build = buildingLayer.get(i);
 
             dec.draw(graphics2D, gp);
+        }
+
+        //Load Buildings
+        for (int i = 0; i < buildingLayer.size(); i++) {
+            TileManager build = buildingLayer.get(i);
+
             build.draw(graphics2D, gp);
         }
 
