@@ -32,7 +32,6 @@ public class GamePanel extends JPanel {
         this.addKeyListener(keyboardHandler);
         System.out.println("Before loading map");  // <-- test print
 
-//        background.loadMap(1);  // <-- must match actual classpath
         world.loadMap("/assets/Worlds/2/", true);
 
         System.out.println("After loading map");  // <-- test print
@@ -55,9 +54,6 @@ public class GamePanel extends JPanel {
 
         //LAYER 1: Tiles
         world.draw(graphics2D);
-
-        //LAYER 2: Decorations
-//        decorations.draw(graphics2D);
 
         //OVERLAY: Rooms
         //Problem: Rooms should be loaded only when the player touches the teleport tile

@@ -7,7 +7,6 @@ import java.util.Objects;
 import javax.imageio.ImageIO;
 
 public class AssetManager {
-    public static final ArrayList<BufferedImage> sprites = new ArrayList<>();
 
     public static BufferedImage loadImage(String path) {
         try {
@@ -20,14 +19,6 @@ public class AssetManager {
             e.printStackTrace(); // useful for debugging
         }
         return null;
-    }
-
-    public static void loadAll() {
-
-
-    }
-
-    public static void clear() {
     }
 
 }

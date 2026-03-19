@@ -1,6 +1,7 @@
-5,100,100
+6,100,100
 background:BACKGROUND
 decoration_1:DECORATION
 decoration_2:DECORATION
 decoration_3:DECORATION
 building_1:BUILDING
+interactive_1:INTERACTIVE

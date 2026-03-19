@@ -1,7 +1,6 @@
 package map;
 
 import engine.GamePanel;
-import tile.Tile;
 import tile.TileManager;
 
 import java.awt.*;
@@ -26,26 +25,22 @@ public class WorldLoader {
         backgroundLayer.draw(graphics2D, gp);
 
         //Load Decorations
-        for (int i = 0; i < decorationLayer.size(); i++) {
-            TileManager dec = decorationLayer.get(i);
-
-            dec.draw(graphics2D, gp);
+        for (TileManager tm : decorationLayer) {
+            tm.draw(graphics2D, gp);
         }
 
         //Load Buildings
-        for (int i = 0; i < buildingLayer.size(); i++) {
-            TileManager build = buildingLayer.get(i);
+        for (TileManager tm : buildingLayer) {
+            tm.draw(graphics2D, gp);
+        }
 
-            build.draw(graphics2D, gp);
+        //Load Interactive
+        for (TileManager tm : interactiveLayer) {
+            tm.draw(graphics2D, gp);
         }
 
     }
 
-    /*
-    LoadMap:
-    - Load all the layers
-
-     */
     public void loadMap(String folderPath, boolean initWorldSettings) {
 
         // Get Layers (Naming Convention: background_#)
@@ -87,13 +82,9 @@ public class WorldLoader {
                         decorationLayer.add(tm);
                         break;
                     case "BUILDING":
-                        System.out.println("PATH: " + folderPath + layer[0] + ".txt");
-                        System.out.println("ROW: " + tile_row);
-                        System.out.println("COL: " + tile_col);
                         buildingLayer.add(tm);
-                        System.out.println("ADDED BUILDING LAYER");
                         break;
-                    case "INTERACTABLE":
+                    case "INTERACTIVE":
                         interactiveLayer.add(tm);
                         break;
                     default:

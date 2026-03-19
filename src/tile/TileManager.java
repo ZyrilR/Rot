@@ -48,6 +48,10 @@ public class TileManager {
 
                 // Access the 2D array: [Row][Col]
                 int tileNum = map[worldRow][worldCol];
+
+                if (tileNum == 0 && layerType.equalsIgnoreCase("Interactive"))
+                    continue;
+
                 if (tileNum != 0)
                     tileNum--;
 
@@ -65,7 +69,7 @@ public class TileManager {
                         worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
                         worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT  - gp.player.screenY)) {
 
-//                    if (layerType.equalsIgnoreCase("Building")) {
+//                    if (layerType.equalsIgnoreCase("Interactive")) {
 //                        if (tileNum >= 0) {
 //                            System.out.println("TILE NUM: " + tileNum);
 //                            System.out.println("TILES SIZE: " + tiles.size());
@@ -74,13 +78,12 @@ public class TileManager {
 ////                                    g2.drawImage(tiles.get(0).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
 ////                                else
 ////                                    g2.drawImage(tiles.get(tileNum).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
-//                            g2.drawImage(tiles.get(0).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+//                            g2.drawImage(tiles.get(1).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
 //                            }
 //                        }
 //                    } else
 
                     if (tileNum >= 0) {
-
                         if (tileNum < tiles.size()) {
                             g2.drawImage(tiles.get(tileNum).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
 //                            g2.drawImage(tiles.get(3).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
@@ -237,8 +240,13 @@ public class TileManager {
             System.out.println("ADDED: Building 1 " + i + BACKGROUND_TILES.size());
         }
 
+//        INTERACTIVE_TILES.add(new Tile(loadImage("/assets/Decorations/1.png")));
+        for (int i = 1; i <= 5; i++) {
+            INTERACTIVE_TILES.add(new Tile(loadImage("/assets/Sprites/1/" + i + ".png"), true));
+            System.out.println("ADDED: Sprite 1 " + i + INTERACTIVE_TILES.size());
+        }
+
 
     }
-
 
 }
