@@ -3,8 +3,8 @@ package engine;
 import input.KeyboardHandler;
 import map.WorldLoader;
 import overworld.Player;
-import map.CollisionChecker;
-import map.TileManager;
+import tile.CollisionChecker;
+import tile.TileManager;
 
 import javax.swing.JPanel;
 import java.awt.Color;

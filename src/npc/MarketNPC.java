@@ -4,15 +4,16 @@ import engine.GamePanel;
 import utils.AssetManager;
 
 public class MarketNPC extends NPC {
+
     public MarketNPC(GamePanel gp, int x, int y) {
-        super(gp, "Merchant", x, y);
+        super(gp, "Merchant", "MarketNPC", x, y);
         loadSprites();
         setDialogue();
     }
 
     @Override
     public void loadSprites() {
-        walk_down.add(AssetManager.loadImage("/assets/Sprites/1/1.png"));
+//        walk_down.add(AssetManager.loadImage("/assets/Sprites/1/1.png"));
     }
 
     @Override

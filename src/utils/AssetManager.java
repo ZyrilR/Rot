@@ -1,12 +1,15 @@
 package utils;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Objects;
 import javax.imageio.ImageIO;
 
 public class AssetManager {
+    public static Font pocketMonk, pokemonGb, pokemonSolid;
 
     public static BufferedImage loadImage(String path) {
         try {
@@ -21,4 +24,29 @@ public class AssetManager {
         return null;
     }
 
+    public static void loadAll() {
+        try {
+            // Load PocketMonk
+            InputStream is1 = AssetManager.class.getResourceAsStream("/assets/Fonts/PocketMonk-15ze.ttf");
+            pocketMonk = Font.createFont(Font.TRUETYPE_FONT, is1).deriveFont(22f);
+
+            // Load PokemonGB (The classic dialogue font)
+            InputStream is2 = AssetManager.class.getResourceAsStream("/assets/Fonts/PokemonGb-RAeo.ttf");
+            pokemonGb = Font.createFont(Font.TRUETYPE_FONT, is2).deriveFont(18f);
+
+            // Load Pokemon Solid (The logo font)
+            InputStream is3 = AssetManager.class.getResourceAsStream("/assets/Fonts/Pokemon Solid.ttf");
+            pokemonSolid = Font.createFont(Font.TRUETYPE_FONT, is3).deriveFont(24f);
+            System.out.println("Loaded successfully");
+        } catch (Exception e){
+            System.err.println("Error loading custom fonts! Using fallbacks.");
+            e.printStackTrace();
+            // Fallbacks so the game doesn't crash
+            pocketMonk = new Font("Arial", Font.BOLD, 22);
+            pokemonGb = new Font("Monospaced", Font.PLAIN, 18);
+            pokemonSolid = new Font("Arial", Font.BOLD, 24);
+        }
+    }
+
 }
+

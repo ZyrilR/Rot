@@ -22,7 +22,7 @@ public class TileManager {
     public static ArrayList<Tile> INTERACTIVE_TILES = new ArrayList<>();
 
     //TileSet Used
-    public ArrayList<Tile> tiles = new ArrayList<>();
+    public ArrayList<Tile> tiles;
 
     public int[][] getMap() {
         return map;
@@ -85,7 +85,7 @@ public class TileManager {
 
                     if (tileNum >= 0) {
                         if (tileNum < tiles.size()) {
-                            g2.drawImage(tiles.get(tileNum).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                            g2.drawImage(tiles.get(tileNum).image, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
 //                            g2.drawImage(tiles.get(3).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
                         }
                     }
@@ -245,7 +245,6 @@ public class TileManager {
             INTERACTIVE_TILES.add(new Tile(loadImage("/assets/Sprites/1/" + i + ".png"), true));
             System.out.println("ADDED: Sprite 1 " + i + INTERACTIVE_TILES.size());
         }
-
 
     }
 

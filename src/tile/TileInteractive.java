@@ -3,8 +3,7 @@ package tile;
 import java.awt.image.BufferedImage;
 
 public class TileInteractive extends Tile {
-
-    //
+    //NPC, Chest, etc.
     private String role;
 
     public TileInteractive (BufferedImage img) {
@@ -18,4 +17,7 @@ public class TileInteractive extends Tile {
         this.role = role;
     }
 
+    public TileInteractive(Boolean collision, String role) {
+        super(null, collision, role);
+    }
 }
