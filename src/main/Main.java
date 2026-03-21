@@ -2,11 +2,13 @@ package main;
 
 import javax.swing.*;
 import engine.*;
+import tile.TileManager;
 import utils.AssetManager;
 
 public class Main {
     public static void main(String[] args) {
         AssetManager.loadAll();
+        TileManager.loadTiles();
 
         JFrame windows = new JFrame();
         windows.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

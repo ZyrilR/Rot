@@ -1,46 +1,57 @@
-package map;
+package tile;
 
 import engine.GamePanel;
-import utils.AssetManager;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 
+import static utils.AssetManager.loadImage;
 import static utils.Constants.*;
 
 public class TileManager {
 
-    public static ArrayList<Tile> tiles = new ArrayList<>();
-    private GamePanel gp;
+    //layerType : {BACKGROUND, DECORATION, BUILDING, INTERACTIVE}
+    private String layerType;
     private int map[][];
+
+    //TileSets
+    public static ArrayList<Tile> BACKGROUND_TILES = new ArrayList<>();
+    public static ArrayList<Tile> DECORATION_TILES = new ArrayList<>();
+    public static ArrayList<Tile> BUILDING_TILES = new ArrayList<>();
+    public static ArrayList<Tile> INTERACTIVE_TILES = new ArrayList<>();
+
+    //TileSet Used
+    public ArrayList<Tile> tiles = new ArrayList<>();
 
     public int[][] getMap() {
         return map;
     }
-
-    public TileManager(GamePanel gp) {
-        this.gp = gp;
-        map = new int[MAX_WORLD_COL][MAX_WORLD_ROW];
-        initializeTiles();
+    public ArrayList<Tile> getTiles() {
+        return tiles;
     }
 
-    public void initializeTiles() {
-        // Instead of recreating them, just use the modular list from AssetManager
-        tiles = AssetManager.tiles;
-
-        if (tiles.isEmpty()) {
-            System.out.println("WARNING: Tiles list is empty. Make sure AssetManager.loadAll() is called first!");
-        }
+    public TileManager(String layerType) {
+        this.layerType = layerType;
+        tiles = switch (layerType) {
+            case "BACKGROUND" -> BACKGROUND_TILES;
+            case "DECORATION" -> DECORATION_TILES;
+            case "BUILDING" -> BUILDING_TILES;
+            case "INTERACTIVE" -> INTERACTIVE_TILES;
+            default -> null;
+        };
     }
 
-    public void draw(Graphics2D g2) {
+    public void draw(Graphics2D g2, GamePanel gp) {
         for (int worldRow = 0; worldRow < MAX_WORLD_ROW; worldRow++) {
             for (int worldCol = 0; worldCol < MAX_WORLD_COL; worldCol++) {
 
                 // Access the 2D array: [Row][Col]
                 int tileNum = map[worldRow][worldCol];
+
+                if (tileNum == 0 && layerType.equalsIgnoreCase("Interactive"))
+                    continue;
+
                 if (tileNum != 0)
                     tileNum--;
 
@@ -58,8 +69,25 @@ public class TileManager {
                         worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
                         worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT  - gp.player.screenY)) {
 
-                    if (tileNum >= 0 && tileNum < tiles.size()) {
-                        g2.drawImage(tiles.get(tileNum).image, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+//                    if (layerType.equalsIgnoreCase("Interactive")) {
+//                        if (tileNum >= 0) {
+//                            System.out.println("TILE NUM: " + tileNum);
+//                            System.out.println("TILES SIZE: " + tiles.size());
+//                            if (tileNum < tiles.size()) {
+////                                if (tileNum == 0)
+////                                    g2.drawImage(tiles.get(0).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+////                                else
+////                                    g2.drawImage(tiles.get(tileNum).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+//                            g2.drawImage(tiles.get(1).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+//                            }
+//                        }
+//                    } else
+
+                    if (tileNum >= 0) {
+                        if (tileNum < tiles.size()) {
+                            g2.drawImage(tiles.get(tileNum).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+//                            g2.drawImage(tiles.get(3).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                        }
                     }
                 }
             }
@@ -72,12 +100,14 @@ public class TileManager {
             System.out.println();
         }
     }
-    public void loadMap(int mapNo) {
-        map = new int[MAX_WORLD_ROW][MAX_WORLD_COL];
+
+    //path : "assets/Worlds/1/decoration.txt"
+    public void loadTiles(String path, int tile_row, int tile_col) {
+        map = new int[tile_row][tile_col];
         try {
-            InputStream is = getClass().getResourceAsStream("/assets/Maps/world_" + mapNo + ".txt");
+            InputStream is = getClass().getResourceAsStream(path);
             if (is == null) {
-                System.out.println("Map file not found: " + "/assets/Maps/world_" + mapNo + ".txt");
+                System.out.println("Map file not found: " + path);
                 return;
             }
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -93,7 +123,7 @@ public class TileManager {
                     break;
 
                 // Split the line by spaces
-                String[] numbers = line.split(" ");
+                String[] numbers = line.split(",");
 
                 // Fill columns for this specific row
                 for (int col = 0; col < MAX_WORLD_COL; col++) {
@@ -104,15 +134,17 @@ public class TileManager {
                 }
                 row++;
             }
+            displayMapValues();
             br.close();
 
         } catch (Exception e) {
             // This will tell you exactly what went wrong (e.g., File Not Found or NullPointer)
             e.printStackTrace();
         }
-        displayMapValues();
+//        displayMapValues();
         System.out.println();
     }
+
     public void loadRoom(int roomNo) {
         try {
             InputStream is = getClass().getResourceAsStream("/assets/Rooms/room_" + roomNo + ".txt");
@@ -158,6 +190,63 @@ public class TileManager {
         }
         displayMapValues();
         System.out.println();
+    }
+
+    public static void loadTiles() {
+        int count = 1;
+
+        //Grass
+        for (int i = 1; i <= 30; i++, count++) {
+            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/NonCollidable/1/" + count + ".png")));
+            System.out.println("ADDED: Grass Tile " + BACKGROUND_TILES.size());
+        }
+
+        //Pathway Mud
+        for (int i = 1; i <= 4; i++, count++) {
+            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/NonCollidable/2/" + i + ".png")));
+            System.out.println("ADDED: Pathway Mud " + i + BACKGROUND_TILES.size());
+        }
+
+        //Walls
+        for (int i = 1; i <= 16; i++, count++) {
+            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/Collidable/1/" + i + ".png"), true));
+            System.out.println("ADDED: Walls " + i + BACKGROUND_TILES.size());
+        }
+
+        //Water
+        for (int i = 1; i <= 8; i++, count++) {
+            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/Collidable/2/" + i + ".png"), true));
+            System.out.println("ADDED: Water " + i + BACKGROUND_TILES.size());
+        }
+
+        //Decorations
+        for (int i = 1; i <= 32; i++) {
+            Tile tile;
+            //if first img = transparent : background : false
+            if (i == 1 || i == 3)
+                tile = new Tile(loadImage("/assets/Decorations/" + i + ".png"));
+            //if second img = bush : interactive : false
+            else if (i == 2)
+                tile = new TileInteractive(loadImage("/assets/Decorations/" + i + ".png"));
+            else
+                tile = new Tile(loadImage("/assets/Decorations/" + i + ".png"), true, "Background");
+
+            DECORATION_TILES.add(tile);
+            System.out.println("ADDED: Decorations " + i + DECORATION_TILES.size());
+        }
+
+        for (int i = 1; i <= 17; i++) {
+            BUILDING_TILES.add(new Tile(loadImage("/assets/Buildings/1/" + i + ".png"), true));
+            System.out.println("ADDED: Building 1 " + i + BACKGROUND_TILES.size());
+        }
+
+//        INTERACTIVE_TILES.add(new Tile(loadImage("/assets/Decorations/1.png")));
+        for (int i = 1; i <= 5; i++) {
+            INTERACTIVE_TILES.add(new Tile(loadImage("/assets/Sprites/1/" + i + ".png"), true));
+            System.out.println("ADDED: Sprite 1 " + i + INTERACTIVE_TILES.size());
+        }
+
+
     }
 
 }

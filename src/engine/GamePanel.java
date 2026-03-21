@@ -1,6 +1,7 @@
 package engine;
 
 import input.KeyboardHandler;
+import map.WorldLoader;
 import overworld.Player;
 import map.CollisionChecker;
 import map.TileManager;
@@ -10,6 +11,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+
 import static utils.Constants.*;
 import java.util.ArrayList;
 
@@ -24,11 +26,8 @@ public class GamePanel extends JPanel {
     public Player player = new Player(this, keyboardHandler);
     public ArrayList<npc.NPC> npcs = new ArrayList<>();
     public CollisionChecker collisionChecker = new CollisionChecker(this);
-    private TileManager background = new TileManager(this);
-    private TileManager decorations = new TileManager(this);
-    private TileManager rooms = new TileManager(this);
-    //decorationmanager
-    //uimanager
+    private final WorldLoader world = new WorldLoader(this);
+    private WorldLoader room = new WorldLoader(this);
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -37,9 +36,10 @@ public class GamePanel extends JPanel {
         this.setFocusable(true);
         this.addKeyListener(keyboardHandler);
         System.out.println("Before loading map");  // <-- test print
-        background.loadMap(1);  // <-- must match actual classpath
+
+        world.loadMap("/assets/Worlds/2/", true);
+
         System.out.println("After loading map");  // <-- test print
-        npcs.add(new npc.MarketNPC(this, TILE_SIZE * 24, TILE_SIZE * 26));
     }
 
     public void update() {
@@ -56,21 +56,19 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public TileManager getTileManager() {
-        return background;
+    public TileManager getWorldBackgroundLayer() {
+        return world.getBackgroundLayer();
     }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D graphics2D = (Graphics2D) g;
 
-        // 1. Draw Background Tiles
-        background.draw(graphics2D);
+        graphics2D.setColor(Color.BLACK);
+        graphics2D.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        // 2. Draw NPCs (Drawn before player for correct layering)
-        for (npc.NPC npc : npcs) {
-            npc.draw(graphics2D);
-        }
+        //LAYER 1: Tiles
+        world.draw(graphics2D);
 
         // 3. Draw Player
         player.draw(graphics2D);
