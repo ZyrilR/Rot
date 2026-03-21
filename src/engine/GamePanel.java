@@ -17,7 +17,7 @@ import java.util.ArrayList;
 
 public class GamePanel extends JPanel {
     //dialogueOpen
-    public String gameState = "play";
+    public String GAMESTATE = "play";
     public ui.DialogueBox dialogueBox = new ui.DialogueBox(this);
     //InputHandler
     public KeyboardHandler keyboardHandler = new KeyboardHandler();
@@ -43,7 +43,7 @@ public class GamePanel extends JPanel {
     }
 
     public void update() {
-        if (gameState.equals("play")) {
+        if (GAMESTATE.equals("play")) {
             player.update();
 
             // Check for 'E' or 'Enter' click
@@ -51,7 +51,7 @@ public class GamePanel extends JPanel {
                 keyboardHandler.enterPressed = false; // consume input
                 player.checkInteraction();
             }
-        } else if (gameState.equals("dialogue")) {
+        } else if (GAMESTATE.equals("dialogue")) {
             dialogueBox.update();
         }
     }
@@ -74,7 +74,7 @@ public class GamePanel extends JPanel {
         player.draw(graphics2D);
 
         // 4. Draw UI LAST (So it sits on top of everything)
-        if (gameState.equals("dialogue")) {
+        if (GAMESTATE.equals("dialogue")) {
             dialogueBox.draw(graphics2D);
         }
 

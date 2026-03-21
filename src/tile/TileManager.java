@@ -219,8 +219,14 @@ public class TileManager {
             System.out.println("ADDED: Water " + i + BACKGROUND_TILES.size());
         }
 
+        //Floors
+        for (int i = 1; i <= 9; i++, count++) {
+            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/NonCollidable/3/" + i + ".png")));
+            System.out.println("ADDED: Floor " + i + BACKGROUND_TILES.size());
+        }
+
         //Decorations
-        for (int i = 1; i <= 32; i++) {
+        for (int i = 1; i <= 50; i++) {
             Tile tile;
             //if first img = transparent : background : false
             if (i == 1 || i == 3)

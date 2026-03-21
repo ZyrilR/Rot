@@ -28,7 +28,7 @@ public class DialogueBox {
         this.currentDialogues = dialogues;
         this.dialogueIndex = 0;
         resetTypewriter();
-        gp.gameState = "dialogue";
+        gp.GAMESTATE = "dialogue";
     }
 
     private void resetTypewriter() {
@@ -39,7 +39,7 @@ public class DialogueBox {
 
     public void update() {
         if (currentDialogues == null || dialogueIndex >= currentDialogues.length || currentDialogues[dialogueIndex] == null) {
-            gp.gameState = "play";
+            gp.GAMESTATE = "play";
             return;
         }
 
@@ -52,7 +52,7 @@ public class DialogueBox {
             } else {
                 dialogueIndex++;
                 if (dialogueIndex >= currentDialogues.length || currentDialogues[dialogueIndex] == null) {
-                    gp.gameState = "play";
+                    gp.GAMESTATE = "play";
                 } else {
                     resetTypewriter();
                 }
