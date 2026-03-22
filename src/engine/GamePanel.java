@@ -5,6 +5,7 @@ import map.WorldLoader;
 import overworld.Player;
 import tile.CollisionChecker;
 import tile.TileManager;
+import ui.DialogueBox;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -13,19 +14,19 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 import static utils.Constants.*;
-import java.util.ArrayList;
 
 public class GamePanel extends JPanel {
-    //dialogueOpen
-    public String GAMESTATE = "play";
-    public ui.DialogueBox dialogueBox = new ui.DialogueBox(this);
-    //InputHandler
-    public KeyboardHandler keyboardHandler = new KeyboardHandler();
 
-    //Entities
-    public Player player = new Player(this, keyboardHandler);
-    public ArrayList<npc.NPC> npcs = new ArrayList<>();
-    public CollisionChecker collisionChecker = new CollisionChecker(this);
+    //GAMESTATE MANAGER
+    public String GAMESTATE = "play";
+    public DialogueBox DIALOGUEBOX = new DialogueBox(this);
+
+    //GAME HANDLER
+    public KeyboardHandler KEYBOARDHANDLER = new KeyboardHandler();
+    public CollisionChecker COLLISIONCHECKER = new CollisionChecker(this);
+
+    //GAME PANEL ENTITIES
+    public Player player = new Player(this, KEYBOARDHANDLER);
     private final WorldLoader world = new WorldLoader(this);
     private WorldLoader room = new WorldLoader(this);
 
@@ -34,7 +35,7 @@ public class GamePanel extends JPanel {
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
         this.setFocusable(true);
-        this.addKeyListener(keyboardHandler);
+        this.addKeyListener(KEYBOARDHANDLER);
         System.out.println("Before loading map");  // <-- test print
 
         world.loadMap("/assets/Worlds/2/", true);
@@ -43,17 +44,26 @@ public class GamePanel extends JPanel {
     }
 
     public void update() {
-        if (GAMESTATE.equals("play")) {
-            player.update();
 
-            // Check for 'E' or 'Enter' click
-            if (keyboardHandler.enterPressed) {
-                keyboardHandler.enterPressed = false; // consume input
-                player.checkInteraction();
-            }
-        } else if (GAMESTATE.equals("dialogue")) {
-            dialogueBox.update();
+        player.update();
+
+        switch (GAMESTATE.toUpperCase()) {
+            case "PLAY":
+                // Check for 'E' or 'Enter' click
+                if (KEYBOARDHANDLER.enterPressed) {
+                    KEYBOARDHANDLER.enterPressed = false; // consume input
+                    player.checkInteraction();
+                }
+                break;
+
+            case "DIALOGUE":
+                DIALOGUEBOX.update();
+                break;
+
+            default:
+                break;
         }
+
     }
 
     public TileManager getWorldBackgroundLayer() {
@@ -75,7 +85,7 @@ public class GamePanel extends JPanel {
 
         // 4. Draw UI LAST (So it sits on top of everything)
         if (GAMESTATE.equals("dialogue")) {
-            dialogueBox.draw(graphics2D);
+            DIALOGUEBOX.draw(graphics2D);
         }
 
         graphics2D.dispose();

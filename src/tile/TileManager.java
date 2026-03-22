@@ -1,6 +1,7 @@
 package tile;
 
 import engine.GamePanel;
+import npc.MarketNPC;
 
 import java.awt.*;
 import java.io.*;
@@ -246,7 +247,7 @@ public class TileManager {
             System.out.println("ADDED: Building 1 " + i + BACKGROUND_TILES.size());
         }
 
-//        INTERACTIVE_TILES.add(new Tile(loadImage("/assets/Decorations/1.png")));
+        //Market NPC
         for (int i = 1; i <= 5; i++) {
             INTERACTIVE_TILES.add(new Tile(loadImage("/assets/Sprites/1/" + i + ".png"), true));
             System.out.println("ADDED: Sprite 1 " + i + INTERACTIVE_TILES.size());
