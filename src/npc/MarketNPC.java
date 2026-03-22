@@ -1,6 +1,8 @@
 package npc;
 
 import engine.GamePanel;
+import items.Item;
+import items.ItemRegistry;
 import overworld.Player;
 
 import java.util.ArrayList;
@@ -13,10 +15,27 @@ public class MarketNPC extends NPC {
         setDialogue();
     }
 
-    public MarketNPC(String name, int x, int y) {
-        super(name, "MarketNPC", x, y);
-        loadSprites();
-        setDialogue();
+    // Attempt to buy an item from unlimited stock
+    public boolean attemptPurchase(Player player, String itemName) {
+        Item item = ItemRegistry.getItem(itemName);
+        if (item == null) {
+            System.out.println("Item not found.");
+            return false;
+        }
+
+        if (player.getRotCoins() < item.getPrice()) {
+            System.out.println("Not enough RotCoins!");
+            return false;
+        }
+
+        if (!player.getInventory().addItem(item)) {
+            System.out.println("Inventory full!");
+            return false;
+        }
+
+        player.spendRotCoins(item.getPrice());
+        System.out.println("Purchased " + item.getName() + " for " + item.getPrice() + " coins.");
+        return true;
     }
 
     //We don't need to load sprites its already in the InteractiveTiles array in TileManager
@@ -44,5 +63,4 @@ public class MarketNPC extends NPC {
         //shop();
     }
 
-    //IMPLEMENT SHOP
 }

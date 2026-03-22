@@ -5,8 +5,8 @@ import brainrots.BrainRot;
 public class Antidote extends Item {
     private String statusToCure; // Example: "Confusion", "Paralysis",
 
-    public Antidote(String name, String description, String assetPath, String statusToCure) {
-        super(name, description, assetPath);
+    public Antidote(String name, String description, String assetPath, String statusToCure, int price) {
+        super(name, description, assetPath, price);
         this.statusToCure = statusToCure;
     }
 

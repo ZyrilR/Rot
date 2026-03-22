@@ -7,8 +7,8 @@ import skills.SkillRegistry;
 public class Scroll extends Item {
     private String skillName;
 
-    public Scroll(String name, String description, String assetPath, String skillName) {
-        super(name, description, assetPath);
+    public Scroll(String name, String description, String assetPath, String skillName, int price) {
+        super(name, description, assetPath, price);
         this.skillName = skillName;
     }
 

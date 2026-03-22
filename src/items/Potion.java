@@ -5,8 +5,8 @@ import brainrots.BrainRot;
 public class Potion extends Item {
     private int healPercentage;
 
-    public Potion(String name, String description, String assetPath, int healPercentage) {
-        super(name, description, assetPath);
+    public Potion(String name, String description, String assetPath, int healPercentage, int price) {
+        super(name, description, assetPath, price);
         this.healPercentage = healPercentage;
     }
 
