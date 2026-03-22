@@ -7,8 +7,8 @@ import java.util.List;
 
 public class Capsule extends Item {
 
-    public Capsule(String name, String description, String assetPath) {
-        super(name, description, assetPath);
+    public Capsule(String name, String description, String assetPath, int price) {
+        super(name, description, assetPath, price);
     }
 
     /** Basic use method for compatibility */

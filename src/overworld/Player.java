@@ -2,6 +2,7 @@ package overworld;
 
 import engine.GamePanel;
 import input.KeyboardHandler;
+import items.Inventory;
 import utils.AssetManager;
 
 import java.awt.*;
@@ -34,9 +35,15 @@ public class Player {
     private int moveDelay = 0;
     private final int MOVE_DELAY_THRESHOLD = 5; // How many frames to hold before walking
 
+    private final Inventory inventory;
+    private int rotCoins; // in-game currency
+
     public Player(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
         this.kh = kh;
+
+        inventory = new Inventory(99);
+        rotCoins = 0;
 
         worldX = TILE_SIZE * 24; // starting position
         worldY = TILE_SIZE * 24; // starting position
@@ -63,6 +70,29 @@ public class Player {
     public String getDirection() { return direction; }
     public void setDirection(String direction) {
         this.direction = direction;
+    }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
+
+    // --- Currency methods ---
+    public int getRotCoins() {
+        return rotCoins;
+    }
+
+    public boolean spendRotCoins(int amount) {
+        if (rotCoins >= amount) {
+            rotCoins -= amount;
+            return true;
+        } else {
+            System.out.println("Not enough RotCoins!");
+            return false;
+        }
+    }
+
+    public void earnRotCoins(int amount) {
+        rotCoins += amount;
     }
 
     public void loadImage() {
