@@ -35,8 +35,10 @@ public class MovementSystem {
 
             // 2. CHECK COLLISION BEFORE STARTING
             player.collisionOn = false;
-            gp.collisionChecker.checkTile(player);
-            gp.collisionChecker.checkEntity(player, gp.npcs);
+            gp.COLLISIONCHECKER.checkTile(player);
+
+            //You only need to check the tile if its collidable or not! Every Interactive Tile should be collideable
+//            gp.collisionChecker.checkEntity(player, gp.npcs);
 
             // 3. ONLY start walking if the path is 100% clear
             if (!player.collisionOn) {

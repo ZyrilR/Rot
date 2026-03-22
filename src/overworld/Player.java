@@ -27,6 +27,7 @@ public class Player {
     ArrayList<BufferedImage> walk_up, walk_down, walk_right, walk_left;
     private int spriteCounter;
 
+    //Collision Handling
     public Rectangle solidArea;
     public boolean collisionOn = false;
 
@@ -108,6 +109,9 @@ public class Player {
 
         spriteCounter++;
 
+        System.out.println("PLAYER WORLD COORDINATES (x, y): " + worldX + " " + worldY);
+        System.out.println("PLAYER SCREEN COORDINATES (x, y): " + screenX + " " + screenY);
+
         if (img != null)
             g.drawImage(img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
     }
@@ -137,7 +141,7 @@ public class Player {
 
                     // Check for walls and camera bounds
                     collisionOn = false;
-                    gp.collisionChecker.checkTile(this);
+                    gp.COLLISIONCHECKER.checkTile(this);
 
                     // If no wall, start walking
                     if (!collisionOn) {
@@ -180,7 +184,7 @@ public class Player {
             else if (kh.rightPressed) direction = "right";
 
             collisionOn = false;
-            gp.collisionChecker.checkTile(this);
+            gp.COLLISIONCHECKER.checkTile(this);
 
             if (!collisionOn) {
                 isWalking = true;
@@ -218,6 +222,7 @@ public class Player {
         }
     }
     public void checkInteraction() {
+
         int targetX = worldX;
         int targetY = worldY;
 
@@ -229,11 +234,23 @@ public class Player {
             case "right" -> targetX += TILE_SIZE;
         }
 
-        for (npc.NPC npc : gp.npcs) {
-            if (npc.worldX == targetX && npc.worldY == targetY) {
-                npc.interact(); // NPC decides what happens!
-                return;
-            }
-        }
+        //targetX /= TILE_SIZE;
+        //targetY /= TILE_SIZE;
+
+        //Do not loop for every npc!
+        //Just check the target X and Y of the tile and check whether its an NPC or not
+//        for (NPC npc : gp.npcs) {
+//            if (npc.worldX == targetX && npc.worldY == targetY) {
+//                npc.interact(gp); // NPC decides what happens!
+//                return;
+//            }
+//        }
+//        if (gp.getInteractiveLayer().getMap()[targetX][targetY] != 0) {
+//            //check what kind of interactiveTile is being interacted, use switch statements
+              //if marketNPC class, dialogues then shop
+              //if trainerNPC enter battle state or something
+              //if just ordinary NPC then just start dialogues
+              //otherwise dont do anything
+//        }
     }
 }

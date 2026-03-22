@@ -11,10 +11,18 @@ import static utils.Constants.MAX_WORLD_COL;
 import static utils.Constants.MAX_WORLD_ROW;
 
 public class WorldLoader {
+
+    /*
+    WORLD IS MULTILAYERED:
+    Only 1 Background Layer Exists
+    Flexible Amount Of Decorative Tiles
+    Flexible Amount Of Building Tiles
+    Only 1 Interactive Layer (Interactive Tiles should not Collide in a single Tile)
+     */
     private TileManager backgroundLayer;
     private ArrayList<TileManager> decorationLayer = new ArrayList<>();
     private ArrayList<TileManager> buildingLayer = new ArrayList<>();
-    private ArrayList<TileManager> interactiveLayer = new ArrayList<>();
+    private TileManager interactiveLayer;
 
     private GamePanel gp;
 
@@ -35,9 +43,7 @@ public class WorldLoader {
         }
 
         //Load Interactive
-        for (TileManager tm : interactiveLayer) {
-            tm.draw(graphics2D, gp);
-        }
+        interactiveLayer.draw(graphics2D, gp);
 
     }
 
@@ -85,62 +91,20 @@ public class WorldLoader {
                         buildingLayer.add(tm);
                         break;
                     case "INTERACTIVE":
-                        interactiveLayer.add(tm);
+                        interactiveLayer = tm;
                         break;
                     default:
                         System.out.println("NOT A LAYER!");
                         break;
                 }
-
             }
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-//        map = new int[MAX_WORLD_ROW][MAX_WORLD_COL];
-//        try {
-//            InputStream is = getClass().getResourceAsStream("/assets/Worlds/world_" + mapNo + ".txt");
-//            if (is == null) {
-//                System.out.println("Map file not found: " + "/assets/Worlds/world_" + mapNo + ".txt");
-//                return;
-//            }
-//            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-//
-//            int row = 0;
-//
-//            // Continue until we've filled all rows
-//            while (row < MAX_WORLD_ROW) {
-//                String line = br.readLine();
-//
-//                // Safety check: if the file ends early, stop
-//                if (line == null)
-//                    break;
-//
-//                // Split the line by spaces
-//                String[] numbers = line.split(" ");
-//
-//                // Fill columns for this specific row
-//                for (int col = 0; col < MAX_WORLD_COL; col++) {
-//                    // Ensure we don't exceed the number of elements in the text line
-//                    if (col < numbers.length) {
-//                        map[row][col] = Integer.parseInt(numbers[col]);
-//                    }
-//                }
-//                row++;
-//            }
-//            br.close();
-//
-//        } catch (Exception e) {
-//            // This will tell you exactly what went wrong (e.g., File Not Found or NullPointer)
-//            e.printStackTrace();
-//        }
-//        System.out.println();
-
     }
 
-    public ArrayList<TileManager> getInteractiveLayer() {
+    public TileManager getInteractiveLayer() {
         return interactiveLayer;
     }
 

@@ -19,4 +19,7 @@ public class Constants {
     public static final int WORLD_HEIGHT = TILE_SIZE * MAX_SCREEN_ROW;
 
     public static final int FPS = 30;
+
+    //Dialogue Settings
+    public static final int TEXT_SPEED = 1;
 }

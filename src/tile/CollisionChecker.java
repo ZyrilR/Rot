@@ -1,6 +1,7 @@
 package tile;
 
 import engine.GamePanel;
+import npc.NPC;
 import overworld.Player;
 
 import static utils.Constants.*;
@@ -90,25 +91,26 @@ public class CollisionChecker {
         }
     }
 
-    public void checkEntity(Player entity, java.util.ArrayList<npc.NPC> target) {
-        for (npc.NPC npc : target) {
-            if (npc != null) {
-                // Get current hitboxes in world coordinates
-                Rectangle entityRect = new Rectangle(entity.worldX + entity.solidArea.x, entity.worldY + entity.solidArea.y, entity.solidArea.width, entity.solidArea.height);
-                Rectangle npcRect = new Rectangle(npc.worldX + npc.solidArea.x, npc.worldY + npc.solidArea.y, npc.solidArea.width, npc.solidArea.height);
-
-                // Predict the movement for the ENTIRE next tile
-                switch (entity.getDirection()) {
-                    case "up"    -> entityRect.y -= TILE_SIZE; // Check the whole tile ahead
-                    case "down"  -> entityRect.y += TILE_SIZE;
-                    case "left"  -> entityRect.x -= TILE_SIZE;
-                    case "right" -> entityRect.x += TILE_SIZE;
-                }
-
-                if (entityRect.intersects(npcRect)) {
-                    entity.collisionOn = true;
-                }
-            }
-        }
-    }
+    //You only need to check the tile if its collidable or not! Every Interactive Tile should be collideable
+//    public void checkEntity(Player entity, java.util.ArrayList<npc.NPC> target) {
+//        for (NPC npc : target) {
+//            if (npc != null) {
+//                // Get current hitboxes in world coordinates
+//                Rectangle entityRect = new Rectangle(entity.worldX + entity.solidArea.x, entity.worldY + entity.solidArea.y, entity.solidArea.width, entity.solidArea.height);
+//                Rectangle npcRect = new Rectangle(npc.worldX + npc.solidArea.x, npc.worldY + npc.solidArea.y, npc.solidArea.width, npc.solidArea.height);
+//
+//                // Predict the movement for the ENTIRE next tile
+//                switch (entity.getDirection()) {
+//                    case "up"    -> entityRect.y -= TILE_SIZE; // Check the whole tile ahead
+//                    case "down"  -> entityRect.y += TILE_SIZE;
+//                    case "left"  -> entityRect.x -= TILE_SIZE;
+//                    case "right" -> entityRect.x += TILE_SIZE;
+//                }
+//
+//                if (entityRect.intersects(npcRect)) {
+//                    entity.collisionOn = true;
+//                }
+//            }
+//        }
+//    }
 }
