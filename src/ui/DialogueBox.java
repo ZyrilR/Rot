@@ -20,8 +20,15 @@ public class DialogueBox {
 
     private String npcName = "";
 
+    // Set to true when a MarketNPC interaction is pending
+    private boolean pendingShopOpen = false;
+
     public DialogueBox(GamePanel gp) {
         this.gp = gp;
+    }
+
+    public void setPendingShopOpen(boolean open) {
+        this.pendingShopOpen = open;
     }
 
     public void startDialogue(String name, ArrayList<String> dialogues) {
@@ -39,25 +46,34 @@ public class DialogueBox {
     }
 
     public void update() {
-        if (currentDialogues == null || dialogueIndex >= currentDialogues.size() || currentDialogues.get(dialogueIndex) == null) {
+//        if (currentDialogues == null || dialogueIndex >= currentDialogues.size() || currentDialogues.get(dialogueIndex) == null) {
+//            gp.GAMESTATE = "play";
+//            return;
+//        }
+//
+//        if (gp.KEYBOARDHANDLER.enterPressed) {
+//            gp.KEYBOARDHANDLER.enterPressed = false;
+//
+//            if (charIndex < currentDialogues.get(dialogueIndex).length()) {
+//                charIndex = currentDialogues.get(dialogueIndex).length();
+//                displayedText = currentDialogues.get(dialogueIndex);
+//            } else {
+//                dialogueIndex++;
+//                if (dialogueIndex >= currentDialogues.size() || currentDialogues.get(dialogueIndex) == null) {
+//                    gp.GAMESTATE = "play";
+//                } else {
+//                    resetTypewriter();
+//                }
+//            }
+//        }
+
+        if (pendingShopOpen) {
+            pendingShopOpen = false;
+            gp.SHOPUI.open();
+            gp.GAMESTATE = "shop";   // switch directly to shop instead of play
+            System.out.println("[DialogueBox] Dialogue finished — opening shop.");
+        } else {
             gp.GAMESTATE = "play";
-            return;
-        }
-
-        if (gp.KEYBOARDHANDLER.enterPressed) {
-            gp.KEYBOARDHANDLER.enterPressed = false;
-
-            if (charIndex < currentDialogues.get(dialogueIndex).length()) {
-                charIndex = currentDialogues.get(dialogueIndex).length();
-                displayedText = currentDialogues.get(dialogueIndex);
-            } else {
-                dialogueIndex++;
-                if (dialogueIndex >= currentDialogues.size() || currentDialogues.get(dialogueIndex) == null) {
-                    gp.GAMESTATE = "play";
-                } else {
-                    resetTypewriter();
-                }
-            }
         }
 
         if (dialogueIndex >= currentDialogues.size() || currentDialogues.get(dialogueIndex) == null) {
@@ -71,6 +87,8 @@ public class DialogueBox {
                 }
             }
         }
+
+
     }
 
     public void draw(Graphics2D g2) {

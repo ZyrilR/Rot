@@ -6,6 +6,7 @@ import overworld.Player;
 import tile.CollisionChecker;
 import tile.TileManager;
 import ui.DialogueBox;
+import ui.ShopUI;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -20,6 +21,7 @@ public class GamePanel extends JPanel {
     //GAMESTATE MANAGER
     public String GAMESTATE = "play";
     public DialogueBox DIALOGUEBOX = new DialogueBox(this);
+    public ShopUI SHOPUI = new ShopUI(this);
 
     //GAME HANDLER
     public KeyboardHandler KEYBOARDHANDLER = new KeyboardHandler();
@@ -44,20 +46,33 @@ public class GamePanel extends JPanel {
     }
 
     public void update() {
-
-        player.update();
+        // Only update player movement when actually playing
+        if (GAMESTATE.equalsIgnoreCase("play")) {
+            player.update();
+        }
 
         switch (GAMESTATE.toUpperCase()) {
             case "PLAY":
                 // Check for 'E' or 'Enter' click
-                if (KEYBOARDHANDLER.enterPressed) {
-                    KEYBOARDHANDLER.enterPressed = false; // consume input
-                    player.checkInteraction();
+//                if (KEYBOARDHANDLER.enterPressed) {
+//                    KEYBOARDHANDLER.enterPressed = false; // consume input
+//                    player.checkInteraction();
+//                }
+                // TEMP TEST: open shop directly with ENTER (remove once NPC interaction works)
+                if (KEYBOARDHANDLER.ePressed) {
+                    KEYBOARDHANDLER.ePressed = false;
+                    SHOPUI.open();
+                    GAMESTATE = "shop";
+                    System.out.println("[GamePanel] TEST: Shop opened via ENTER key.");
                 }
                 break;
 
             case "DIALOGUE":
                 DIALOGUEBOX.update();
+                break;
+
+            case "SHOP":
+                SHOPUI.update();
                 break;
 
             default:
@@ -86,6 +101,10 @@ public class GamePanel extends JPanel {
         // 4. Draw UI LAST (So it sits on top of everything)
         if (GAMESTATE.equals("dialogue")) {
             DIALOGUEBOX.draw(graphics2D);
+        }
+
+        if (GAMESTATE.equals("shop")) {
+            SHOPUI.draw(graphics2D);
         }
 
         graphics2D.dispose();

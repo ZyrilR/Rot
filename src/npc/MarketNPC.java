@@ -54,13 +54,14 @@ public class MarketNPC extends NPC {
 
     @Override
     public void interact(GamePanel gp) {
-        // Face the player
         facePlayer(gp);
-        // Open the dialogue box with the design you provided
         gp.DIALOGUEBOX.startDialogue(name, dialogues);
 
-        //make sure after the dialogue box display the shop GUI
-        //shop();
+        // Register this NPC as the pending shop opener.
+        // DialogueBox will call gp.SHOPUI.open() + switch state when dialogue finishes.
+        gp.DIALOGUEBOX.setPendingShopOpen(true);
+
+        System.out.println("[MarketNPC] Interaction triggered by player. Dialogue started.");
     }
 
 }

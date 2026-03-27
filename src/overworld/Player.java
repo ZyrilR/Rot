@@ -43,7 +43,7 @@ public class Player {
         this.kh = kh;
 
         inventory = new Inventory(99);
-        rotCoins = 0;
+        rotCoins = 1000; //for testing
 
         worldX = TILE_SIZE * 24; // starting position
         worldY = TILE_SIZE * 24; // starting position

@@ -5,8 +5,10 @@ import java.awt.event.KeyListener;
 
 public class KeyboardHandler implements KeyListener {
 
-    public boolean upPressed, downPressed, leftPressed, rightPressed, enterPressed;
+    public boolean upPressed, downPressed, leftPressed, rightPressed;
     public boolean running;
+    public boolean ePressed;
+    public boolean enterPressed, escPressed;
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -22,12 +24,11 @@ public class KeyboardHandler implements KeyListener {
             case KeyEvent.VK_A, KeyEvent.VK_LEFT -> leftPressed = true;
             case KeyEvent.VK_S, KeyEvent.VK_DOWN -> downPressed = true;
             case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> rightPressed = true;
-            case KeyEvent.VK_ENTER, KeyEvent.VK_E -> enterPressed = true;
+            case KeyEvent.VK_E -> ePressed = true;
+            case KeyEvent.VK_ENTER -> enterPressed = true;
+            case KeyEvent.VK_ESCAPE -> escPressed = true;
         }
 
-        if (code == KeyEvent.VK_ENTER || code == KeyEvent.VK_E) {
-            enterPressed = true;
-        }
     }
 
     @Override
@@ -39,12 +40,11 @@ public class KeyboardHandler implements KeyListener {
             case KeyEvent.VK_A, KeyEvent.VK_LEFT -> leftPressed = false;
             case KeyEvent.VK_S, KeyEvent.VK_DOWN -> downPressed = false;
             case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> rightPressed = false;
-            case KeyEvent.VK_ENTER, KeyEvent.VK_E -> enterPressed = false;
+            case KeyEvent.VK_E -> ePressed = false;
+            case KeyEvent.VK_ENTER -> enterPressed = false;
+            case KeyEvent.VK_ESCAPE -> escPressed = false;
         }
 
-        if (code == KeyEvent.VK_ENTER || code == KeyEvent.VK_E) {
-            enterPressed = false;
-        }
     }
 
     public boolean isMoving() {
