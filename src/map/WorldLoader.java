@@ -1,6 +1,7 @@
 package map;
 
 import engine.GamePanel;
+import tile.Tile;
 import tile.TileManager;
 
 import java.awt.*;
@@ -19,7 +20,7 @@ public class WorldLoader {
     Flexible Amount Of Building Tiles
     Only 1 Interactive Layer (Interactive Tiles should not Collide in a single Tile)
      */
-    private TileManager backgroundLayer;
+    private ArrayList<TileManager> backgroundLayer = new ArrayList<>();
     private ArrayList<TileManager> decorationLayer = new ArrayList<>();
     private ArrayList<TileManager> buildingLayer = new ArrayList<>();
     private TileManager interactiveLayer;
@@ -30,7 +31,11 @@ public class WorldLoader {
         this.gp = gp;
     }
     public void draw(Graphics2D graphics2D) {
-        backgroundLayer.draw(graphics2D, gp);
+
+        //Load Background
+        for (TileManager tm : backgroundLayer) {
+            tm.draw(graphics2D, gp);
+        }
 
         //Load Decorations
         for (TileManager tm : decorationLayer) {
@@ -82,7 +87,7 @@ public class WorldLoader {
                 //check what kind of layer
                 switch (layer[1].toUpperCase()) {
                     case "BACKGROUND":
-                        backgroundLayer = tm;
+                        backgroundLayer.add(tm);
                         break;
                     case "DECORATION":
                         decorationLayer.add(tm);
@@ -116,7 +121,7 @@ public class WorldLoader {
         return decorationLayer;
     }
 
-    public TileManager getBackgroundLayer() {
+    public ArrayList<TileManager> getBackgroundLayer() {
         return backgroundLayer;
     }
 

@@ -82,7 +82,8 @@ public class GamePanel extends JPanel {
     }
 
     public TileManager getWorldBackgroundLayer() {
-        return world.getBackgroundLayer();
+        //temporary
+        return world.getBackgroundLayer().getFirst();
     }
 
     public void paintComponent(Graphics g) {
