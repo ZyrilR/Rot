@@ -16,10 +16,6 @@ public class SkillPool {
     // Signature pools by BrainRot name
     private static final HashMap<String, List<String>> signaturePools = new HashMap<>();
 
-    /**
-     * I use the Skill Type ENUM for the HashMap key
-     * I use the List.of method for the skills based on the Skill Type
-     */
     static {
         typePools.put(SkillType.NORMAL,   List.of("Guard Up", "Focus Stance", "Quick Step", "Rest", "Speed Boost", "Fortify", "Evasion Up"));
         typePools.put(SkillType.FIGHTING, List.of("Wooden Thump", "Power Combo", "Counter Guard", "Battle Cry"));
@@ -43,8 +39,37 @@ public class SkillPool {
         signaturePools.put("CAPUCCINO ASSASSINO",   List.of("Steam Vent", "Metal Frother", "Double Shot"));
     }
 
+    // ── Scroll validation helpers ─────────────────────────────────────────────
+
     /**
-     * Returns the starting moveset for a BrainRot (2 type moves + 1 normal + 1 signature if available)
+     * Returns true if {@code skillName} belongs to ANY signature pool.
+     * Use this first to distinguish signature from type-pool skills.
+     */
+    public static boolean isSignatureMove(String skillName) {
+        for (List<String> sigs : signaturePools.values()) {
+            if (sigs.stream().anyMatch(s -> s.equalsIgnoreCase(skillName))) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if {@code skillName} is a signature move AND
+     * {@code rotName} is its designated owner.
+     *
+     * Returns false if:
+     *  - The skill is not a signature at all (caller should check isSignatureMove first).
+     *  - The skill belongs to a different BrainRot.
+     */
+    public static boolean isSignatureOf(String skillName, String rotName) {
+        List<String> ownerSigs = signaturePools.get(rotName.toUpperCase());
+        if (ownerSigs == null) return false;
+        return ownerSigs.stream().anyMatch(s -> s.equalsIgnoreCase(skillName));
+    }
+
+    // ── Starting moves ────────────────────────────────────────────────────────
+
+    /**
+     * Returns the starting moveset for a BrainRot (2 type moves + 1 normal + 1 signature if available).
      */
     public static List<Skill> getStartingMoves(String rotName, SkillType primaryType) {
         List<Skill> moves = new ArrayList<>();
@@ -67,6 +92,8 @@ public class SkillPool {
 
         return moves;
     }
+
+    // ── Pool accessors ────────────────────────────────────────────────────────
 
     /**
      * Returns all type pool skills for a given SkillType.
