@@ -4,18 +4,17 @@ import engine.GamePanel;
 
 public class TrainerNPC extends NPC {
 
-    public TrainerNPC(String name) {
-        super(name, "TrainerNPC", 0, 0);
-    }
-    public TrainerNPC(String name, int x, int y) {
-        super(name, "TrainerNPC", x, y);
+    // Updated constructor to match the new NPC blueprint!
+    public TrainerNPC(String name, int folderId) {
+        super(name, "TrainerNPC", folderId);
     }
 
     @Override
     public void interact(GamePanel gp) {
-        //set gp's gamestate to battle
-        //battle();
-    }
+        // Here you will eventually trigger the battle state!
+        System.out.println(name + " locked eyes with you! Time to battle!");
 
-    //BATTLE
+        // gp.GAMESTATE = "battle";
+        // startBattle();
+    }
 }

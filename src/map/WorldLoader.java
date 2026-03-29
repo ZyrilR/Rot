@@ -29,22 +29,44 @@ public class WorldLoader {
     public WorldLoader(GamePanel gp) {
         this.gp = gp;
     }
-    public void draw(Graphics2D graphics2D) {
-        backgroundLayer.draw(graphics2D, gp);
+//    public void draw(Graphics2D graphics2D) {
+//        backgroundLayer.draw(graphics2D, gp);
+//
+//        //Load Decorations
+//        for (TileManager tm : decorationLayer) {
+//            tm.draw(graphics2D, gp);
+//        }
+//
+//        //Load Buildings
+//        for (TileManager tm : buildingLayer) {
+//            tm.draw(graphics2D, gp);
+//        }
+//
+//        //Load Interactive
+//        interactiveLayer.draw(graphics2D, gp);
+//
+//    }
 
-        //Load Decorations
-        for (TileManager tm : decorationLayer) {
-            tm.draw(graphics2D, gp);
+    // Draws everything the player should stand ON TOP of
+    public void drawBottom(Graphics2D graphics2D) {
+        if (backgroundLayer != null) {
+            backgroundLayer.draw(graphics2D, gp);
         }
 
-        //Load Buildings
         for (TileManager tm : buildingLayer) {
             tm.draw(graphics2D, gp);
         }
 
-        //Load Interactive
-        interactiveLayer.draw(graphics2D, gp);
+        if (interactiveLayer != null) {
+            interactiveLayer.draw(graphics2D, gp);
+        }
+    }
 
+    // Draws everything that should COVER the player
+    public void drawTop(Graphics2D graphics2D) {
+        for (TileManager tm : decorationLayer) {
+            tm.draw(graphics2D, gp);
+        }
     }
 
     public void loadMap(String folderPath, boolean initWorldSettings) {

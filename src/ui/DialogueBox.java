@@ -39,36 +39,42 @@ public class DialogueBox {
     }
 
     public void update() {
-        if (currentDialogues == null || dialogueIndex >= currentDialogues.size() || currentDialogues.get(dialogueIndex) == null) {
-            gp.GAMESTATE = "play";
-            return;
-        }
+        // 1. TYPEWRITER ANIMATION LOGIC
+        if (currentDialogues != null && dialogueIndex < currentDialogues.size()) {
+            String targetText = currentDialogues.get(dialogueIndex);
 
-        if (gp.KEYBOARDHANDLER.enterPressed) {
-            gp.KEYBOARDHANDLER.enterPressed = false;
-
-            if (charIndex < currentDialogues.get(dialogueIndex).length()) {
-                charIndex = currentDialogues.get(dialogueIndex).length();
-                displayedText = currentDialogues.get(dialogueIndex);
-            } else {
-                dialogueIndex++;
-                if (dialogueIndex >= currentDialogues.size() || currentDialogues.get(dialogueIndex) == null) {
-                    gp.GAMESTATE = "play";
-                } else {
-                    resetTypewriter();
+            // If the current line isn't fully spelled out yet, add the next letter
+            if (charIndex < targetText.length()) {
+                textSpeedCounter++;
+                // Lower number = faster text. Higher number = slower text.
+                if (textSpeedCounter > 1) {
+                    displayedText += targetText.charAt(charIndex);
+                    charIndex++;
+                    textSpeedCounter = 0;
                 }
             }
         }
 
-        if (dialogueIndex >= currentDialogues.size() || currentDialogues.get(dialogueIndex) == null) {
-            String fullText = currentDialogues.get(dialogueIndex);
-            if (charIndex < fullText.length()) {
-                textSpeedCounter++;
-                if (textSpeedCounter > TEXT_SPEED) {
-                    displayedText += fullText.charAt(charIndex);
-                    charIndex++;
-                    textSpeedCounter = 0;
-                }
+        // 2. PLAYER INPUT LOGIC
+        // When the player presses 'Enter' to go to the next line...
+        if (gp.KEYBOARDHANDLER.enterPressed) {
+            gp.KEYBOARDHANDLER.enterPressed = false; // Consume the button press
+
+            // Move to the next line of dialogue
+            dialogueIndex++;
+
+            // Check if we have run out of dialogue lines!
+            if (currentDialogues != null && dialogueIndex >= currentDialogues.size()) {
+
+                // 1. Reset the index for the next time you talk to someone
+                dialogueIndex = 0;
+
+                // 2. Unfreeze the game! Put us back in play mode
+                gp.GAMESTATE = "play";
+
+            } else {
+                // If there are still lines left, wipe the text clean and start typing the next line
+                resetTypewriter();
             }
         }
     }
