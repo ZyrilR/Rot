@@ -19,6 +19,8 @@ public class NPC extends TileInteractive {
     public Rectangle solidArea = new Rectangle(0, 0, TILE_SIZE, TILE_SIZE);
     public boolean collisionOn = false;
 
+    public ArrayList<ArrayList<NPC>> npcs = new ArrayList<ArrayList<NPC>>();
+
     public int actionLockCounter = 0;
     public int spriteCounter = 0;
     public int spriteNum = 0;

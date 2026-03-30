@@ -4,6 +4,7 @@ import input.KeyboardHandler;
 import map.WorldLoader;
 import npc.NPC;
 import npc.MarketNPC;
+import overworld.EncounterSystem;
 import overworld.Player;
 import tile.CollisionChecker;
 import tile.TileManager;
@@ -25,6 +26,7 @@ public class GamePanel extends JPanel {
     public String GAMESTATE = "play";
     public DialogueBox DIALOGUEBOX = new DialogueBox(this);
     public ShopUI SHOPUI = new ShopUI(this);
+    public EncounterSystem encounterSystem = new EncounterSystem();
 
     // GAME HANDLER
     public KeyboardHandler KEYBOARDHANDLER = new KeyboardHandler();
@@ -110,7 +112,7 @@ public class GamePanel extends JPanel {
     public void update() {
         switch (GAMESTATE.toUpperCase()) {
             case "PLAY":
-                // Update player movement only in play state
+                // Update player movement
                 player.update();
 
                 // Update NPCs
@@ -118,12 +120,13 @@ public class GamePanel extends JPanel {
                     if (npc != null) npc.update(this);
                 }
 
-                // Open shop with E key (temp test)
+                // Check trainer line-of-sight every tick
+                encounterSystem.checkTrainerLook(player, npcs, this);
+
+                // E key: interact with the NPC or object the player is facing
                 if (KEYBOARDHANDLER.ePressed) {
                     KEYBOARDHANDLER.ePressed = false;
-                    SHOPUI.open();
-                    GAMESTATE = "shop";
-                    System.out.println("[GamePanel] TEST: Shop opened via E key.");
+                    player.checkInteraction();
                 }
                 break;
 

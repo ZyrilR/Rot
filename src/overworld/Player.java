@@ -3,7 +3,6 @@ package overworld;
 import engine.GamePanel;
 import input.KeyboardHandler;
 import items.Backpack;
-import tile.TileManager;
 import utils.AssetManager;
 
 import java.awt.*;
@@ -227,27 +226,7 @@ public class Player {
     }
 
     private void checkGrass() {
-        int gridX = worldX / TILE_SIZE;
-        int gridY = worldY / TILE_SIZE;
-
-        // Loop through decoration layers to see if we are standing in tall grass
-        for (TileManager decoLayer : gp.world.getDecorationLayer()) {
-            if (gridY >= 0 && gridY < MAX_WORLD_ROW && gridX >= 0 && gridX < MAX_WORLD_COL) {
-                int tileNum = decoLayer.getMap()[gridY][gridX];
-
-                // Assuming '2' is your tall grass bush tile ID in the text file
-                if (tileNum == 2) {
-                    // Roll a 10% chance to encounter a wild RotMon!
-                    int encounterChance = (int)(Math.random() * 100); // 0 to 99
-                    if (encounterChance < 10) {
-                        System.out.println("A wild BrainRot appeared!");
-                        // gp.GAMESTATE = "battle";
-                        // -> Trigger battle system here later!
-                    }
-                    break;
-                }
-            }
-        }
+        gp.encounterSystem.checkWildEncounter(this, gp);
     }
 
     private void checkWarps() {
