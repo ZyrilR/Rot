@@ -42,7 +42,9 @@ public class GamePanel extends JPanel {
         this.addKeyListener(KEYBOARDHANDLER);
 
         world.loadMap("/assets/Worlds/4/", true);
-
+//        world.loadMap("/assets/Rooms/Market/", true);
+//        player.worldX = 100;
+//        player.worldY = 100;
 //        spawnEntitiesFromMap();
 //        spawnCornerNPCs();
     }
