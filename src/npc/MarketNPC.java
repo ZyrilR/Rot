@@ -19,7 +19,7 @@ public class MarketNPC extends NPC {
 
     @Override
     public void interact(GamePanel gp) {
-        facePlayer(gp);
+        facePlayer(gp.player);
         gp.DIALOGUEBOX.startDialogue(name, dialogues);
 
         // Register this NPC as the pending shop opener.

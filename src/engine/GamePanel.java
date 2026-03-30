@@ -26,7 +26,7 @@ public class GamePanel extends JPanel {
     public DialogueBox DIALOGUEBOX = new DialogueBox(this);
     public ShopUI SHOPUI = new ShopUI(this);
 
-    //GAME HANDLER
+    // GAME HANDLER
     public KeyboardHandler KEYBOARDHANDLER = new KeyboardHandler();
     public CollisionChecker COLLISIONCHECKER = new CollisionChecker(this);
     public Player player = new Player(this, KEYBOARDHANDLER);
@@ -47,9 +47,22 @@ public class GamePanel extends JPanel {
         spawnCornerNPCs();
     }
 
-    public TileManager getWorldBackgroundLayer() { return world.getBackgroundLayer(); }
-    public ArrayList<TileManager> getWorldBuildingLayer() { return world.getBuildingLayer(); }
-    public TileManager getWorldInteractiveLayer() { return world.getInteractiveLayer(); }
+    // ── Layer accessors ───────────────────────────────────────────────────────
+
+    /** Returns the first background layer — used by CollisionChecker */
+    public TileManager getWorldBackgroundLayer() {
+        return world.getBackgroundLayer().get(0);
+    }
+
+    public ArrayList<TileManager> getWorldBuildingLayer() {
+        return world.getBuildingLayer();
+    }
+
+    public TileManager getWorldInteractiveLayer() {
+        return world.getInteractiveLayer();
+    }
+
+    // ── Entity spawning ───────────────────────────────────────────────────────
 
     public void spawnEntitiesFromMap() {
         int[][] interactiveMap = world.getInteractiveLayer().getMap();
@@ -68,71 +81,6 @@ public class GamePanel extends JPanel {
                 }
             }
         }
-    }
-
-    public void update() {
-        switch (GAMESTATE.toUpperCase()) {
-            case "PLAY":
-                // Check for 'E' or 'Enter' click
-//                if (KEYBOARDHANDLER.enterPressed) {
-//                    KEYBOARDHANDLER.enterPressed = false; // consume input
-//                    player.checkInteraction();
-//                }
-                // TEMP TEST: open shop directly with ENTER (remove once NPC interaction works)
-                if (KEYBOARDHANDLER.ePressed) {
-                    KEYBOARDHANDLER.ePressed = false;
-                    SHOPUI.open();
-                    GAMESTATE = "shop";
-                    System.out.println("[GamePanel] TEST: Shop opened via ENTER key.");
-                }
-                break;
-
-            case "DIALOGUE":
-                DIALOGUEBOX.update();
-                break;
-
-            case "SHOP":
-                SHOPUI.update();
-                break;
-
-            default:
-                break;
-        }
-
-    }
-
-    public TileManager getWorldBackgroundLayer() {
-        //temporary
-        return world.getBackgroundLayer().getFirst();
-    }
-
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        Graphics2D graphics2D = (Graphics2D) g;
-
-        graphics2D.setColor(Color.BLACK);
-        graphics2D.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-        world.drawBottom(graphics2D);
-
-        for (NPC npc : npcs) {
-            if (npc != null) {
-                npc.draw(graphics2D, this);
-            }
-        }
-
-        player.draw(graphics2D);
-        world.drawTop(graphics2D);
-
-        if (GAMESTATE.equals("dialogue")) {
-            DIALOGUEBOX.draw(graphics2D);
-        }
-
-        if (GAMESTATE.equals("shop")) {
-            SHOPUI.draw(graphics2D);
-        }
-
-        graphics2D.dispose();
     }
 
     public void spawnCornerNPCs() {
@@ -155,5 +103,76 @@ public class GamePanel extends JPanel {
         bottomRightNpc.worldX = 40 * TILE_SIZE;
         bottomRightNpc.worldY = 40 * TILE_SIZE;
         npcs.add(bottomRightNpc);
+    }
+
+    // ── Game loop ─────────────────────────────────────────────────────────────
+
+    public void update() {
+        switch (GAMESTATE.toUpperCase()) {
+            case "PLAY":
+                // Update player movement only in play state
+                player.update();
+
+                // Update NPCs
+                for (NPC npc : npcs) {
+                    if (npc != null) npc.update(this);
+                }
+
+                // Open shop with E key (temp test)
+                if (KEYBOARDHANDLER.ePressed) {
+                    KEYBOARDHANDLER.ePressed = false;
+                    SHOPUI.open();
+                    GAMESTATE = "shop";
+                    System.out.println("[GamePanel] TEST: Shop opened via E key.");
+                }
+                break;
+
+            case "DIALOGUE":
+                DIALOGUEBOX.update();
+                break;
+
+            case "SHOP":
+                SHOPUI.update();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    // ── Rendering ─────────────────────────────────────────────────────────────
+
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+
+        g2.setColor(Color.BLACK);
+        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // Draw world bottom layers (background, buildings)
+        world.draw(g2);
+
+        // Draw NPCs
+        for (NPC npc : npcs) {
+            if (npc != null) npc.draw(g2, this);
+        }
+
+        // Draw player
+        player.draw(g2);
+
+        // Draw world top layers (decorations that overlap player)
+        world.drawTop(g2);
+
+        // Draw UI overlays
+        if (GAMESTATE.equalsIgnoreCase("dialogue")) {
+            DIALOGUEBOX.draw(g2);
+        }
+
+        if (GAMESTATE.equalsIgnoreCase("shop")) {
+            SHOPUI.draw(g2);
+        }
+
+        g2.dispose();
     }
 }
