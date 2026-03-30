@@ -1,56 +1,111 @@
 package npc;
 
 import engine.GamePanel;
-import map.WorldLoader;
 import overworld.Player;
 import tile.TileInteractive;
-import tile.TileManager;
 import utils.AssetManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Random;
 import static utils.Constants.*;
 
 public class NPC extends TileInteractive {
     public String name;
     public int worldX, worldY;
+    public int speed = 2;
     public String direction = "down";
-    public Rectangle solidArea;
+    public Rectangle solidArea = new Rectangle(0, 0, TILE_SIZE, TILE_SIZE);
+    public boolean collisionOn = false;
 
-    // Every NPC manages their own dialogue
-    public ArrayList<String> dialogues;
+    public int actionLockCounter = 0;
+    public int spriteCounter = 0;
+    public int spriteNum = 0;
+    public ArrayList<BufferedImage> sprites = new ArrayList<>();
+    public ArrayList<String> dialogues = new ArrayList<>();
 
-    public NPC(String name, String role, int x, int y) {
+    public NPC(String name, String role, int folderId) {
         super(true, role);
         this.name = name;
-        this.worldX = x;
-        this.worldY = y;
-
-        //???
-        this.solidArea = new Rectangle(8, 16, 32, 32);
+        loadSprites(folderId);
     }
 
-    // MANDATORY METHODS for every child NPC
-    public void setDialogue(ArrayList<String> dialogues) {
-        this.dialogues = dialogues;
-    }
-    public void loadSprites() {
-
+    public void loadSprites(int folderId) {
+        for (int i = 1; i <= 5; i++) {
+            sprites.add(AssetManager.loadImage("/assets/Sprites/" + folderId + "/" + i + ".png"));
+        }
     }
 
-    //Every NPC reacts differently
-    @Override
-    public void interact(GamePanel gp) {
+    public void update(GamePanel gp) {
+        actionLockCounter++;
+        if (actionLockCounter == 120) {
+            Random random = new Random();
+            int i = random.nextInt(100) + 1;
 
+            if (i <= 25) direction = "up";
+            else if (i <= 50) direction = "down";
+            else if (i <= 75) direction = "left";
+            else direction = "right";
+
+            actionLockCounter = 0;
+        }
+
+        collisionOn = false;
+        gp.COLLISIONCHECKER.checkTileForNPC(this);
+
+        if (!collisionOn) {
+            switch (direction) {
+                case "up" -> worldY -= speed;
+                case "down" -> worldY += speed;
+                case "left" -> worldX -= speed;
+                case "right" -> worldX += speed;
+            }
+        }
+
+        spriteCounter++;
+        if (spriteCounter > 12) {
+            spriteNum++;
+            if (spriteNum >= sprites.size()) {
+                spriteNum = 0;
+            }
+            spriteCounter = 0;
+        }
     }
 
-    protected void facePlayer(GamePanel gp) {
-        switch(gp.player.getDirection()) {
+    public void draw(Graphics2D g2, GamePanel gp) {
+        int screenX = worldX - gp.player.worldX + gp.player.screenX;
+        int screenY = worldY - gp.player.worldY + gp.player.screenY;
+
+        if (worldX + TILE_SIZE > gp.player.worldX - gp.player.screenX &&
+                worldX - TILE_SIZE < gp.player.worldX + (SCREEN_WIDTH - gp.player.screenX) &&
+                worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
+                worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT - gp.player.screenY)) {
+
+            BufferedImage img = null;
+            if (!sprites.isEmpty()) {
+                img = sprites.get(spriteNum);
+            }
+
+            if (img != null) {
+                g2.drawImage(img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+            }
+        }
+    }
+
+    // UNIVERSAL METHOD: Every NPC can now face the player!
+    public void facePlayer(Player player) {
+        switch(player.getDirection()) {
             case "up" -> direction = "down";
             case "down" -> direction = "up";
             case "left" -> direction = "right";
             case "right" -> direction = "left";
         }
+        spriteNum = 0; // Reset animation frame
     }
+
+    public void setDialogue(ArrayList<String> dialogues) { this.dialogues = dialogues; }
+
+    // Abstract-like method for children to override
+    public void interact(GamePanel gp) {}
 }
