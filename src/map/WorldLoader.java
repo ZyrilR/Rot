@@ -42,14 +42,20 @@ public class WorldLoader {
             tm.draw(graphics2D, gp);
         }
 
-        //Load Buildings
         for (TileManager tm : buildingLayer) {
             tm.draw(graphics2D, gp);
         }
 
-        //Load Interactive
-        interactiveLayer.draw(graphics2D, gp);
+        if (interactiveLayer != null) {
+            interactiveLayer.draw(graphics2D, gp);
+        }
+    }
 
+    // Draws everything that should COVER the player
+    public void drawTop(Graphics2D graphics2D) {
+        for (TileManager tm : decorationLayer) {
+            tm.draw(graphics2D, gp);
+        }
     }
 
     public void loadMap(String folderPath, boolean initWorldSettings) {

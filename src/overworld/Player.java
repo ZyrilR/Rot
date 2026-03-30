@@ -3,6 +3,7 @@ package overworld;
 import engine.GamePanel;
 import input.KeyboardHandler;
 import items.Inventory;
+import tile.TileManager;
 import utils.AssetManager;
 
 import java.awt.*;
@@ -13,16 +14,16 @@ import static utils.Constants.*;
 
 public class Player {
     GamePanel gp;
-    KeyboardHandler kh;
+    public KeyboardHandler kh;
 
     public int worldX, worldY; // map position
-    public final int screenX, screenY; // where we draw player on screen (always on center)
+    public final int screenX, screenY; // where we draw player on screen
     public int speed;
 
     private String direction;
     private boolean isMoving;
-    private int moveProgress = 0;   // how many pixels we've moved in current tile
-    private boolean isWalking = false; // true while moving to next tile
+    private int moveProgress = 0;
+    private boolean isWalking = false;
 
     //Handle Sprite Images
     ArrayList<BufferedImage> walk_up, walk_down, walk_right, walk_left;
@@ -31,9 +32,6 @@ public class Player {
     //Collision Handling
     public Rectangle solidArea;
     public boolean collisionOn = false;
-
-    private int moveDelay = 0;
-    private final int MOVE_DELAY_THRESHOLD = 5; // How many frames to hold before walking
 
     private final Inventory inventory;
     private int rotCoins; // in-game currency
@@ -45,9 +43,9 @@ public class Player {
         inventory = new Inventory(99);
         rotCoins = 1000; //for testing
 
-        worldX = TILE_SIZE * 24; // starting position
-        worldY = TILE_SIZE * 24; // starting position
-        screenX = (SCREEN_WIDTH / 2) - (TILE_SIZE / 2); // center of the screen
+        worldX = TILE_SIZE * 24;
+        worldY = TILE_SIZE * 24;
+        screenX = (SCREEN_WIDTH / 2) - (TILE_SIZE / 2);
         screenY = (SCREEN_HEIGHT / 2) - (TILE_SIZE / 2);
         speed = 8;
 
@@ -59,7 +57,7 @@ public class Player {
         resetSpriteCounter();
         isMoving = false;
 
-        solidArea = new Rectangle(8, 16, 32, 32);
+        solidArea = new Rectangle(0, 0, TILE_SIZE, TILE_SIZE);
 
         loadImage();
     }
@@ -75,6 +73,7 @@ public class Player {
     public Inventory getInventory() {
         return inventory;
     }
+    public int getCurrentSpeed() {return kh.running ? speed + 8 : speed;}
 
     // --- Currency methods ---
     public int getRotCoins() {
@@ -113,6 +112,7 @@ public class Player {
         walk_left.add(AssetManager.loadImage("/assets/Sprites/player/13.png"));
         walk_left.add(AssetManager.loadImage("/assets/Sprites/player/14.png"));
     }
+
     public void resetSpriteCounter() {
         spriteCounter = 0;
     }
@@ -139,92 +139,15 @@ public class Player {
 
         spriteCounter++;
 
-        System.out.println("PLAYER WORLD COORDINATES (x, y): " + worldX + " " + worldY);
-        System.out.println("PLAYER SCREEN COORDINATES (x, y): " + screenX + " " + screenY);
-
         if (img != null)
             g.drawImage(img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
     }
 
-    public void movePlayer() {
-        if (kh.isMoving()) {
-
-            //Figures out which way the player WANTS to go
-            String intendedDirection = "";
-            if (kh.upPressed) intendedDirection = "up";
-            else if (kh.downPressed) intendedDirection = "down";
-            else if (kh.leftPressed) intendedDirection = "left";
-            else if (kh.rightPressed) intendedDirection = "right";
-
-            // when turned
-            if (!direction.equals(intendedDirection)) {
-                // Just change direction, don't walk yet!
-                direction = intendedDirection;
-                moveDelay = 0; // Reset the hold timer
-                setIsMoving(false); // Keep the idle sprite
-            } else {
-                //counting the hold time.
-                moveDelay++;
-
-                // 4. Have they held the button long enough to actually walk?
-                if (moveDelay > MOVE_DELAY_THRESHOLD) {
-
-                    // Check for walls and camera bounds
-                    collisionOn = false;
-                    gp.COLLISIONCHECKER.checkTile(this);
-
-                    // If no wall, start walking
-                    if (!collisionOn) {
-                        switch (direction) {
-                            case "up" -> worldY -= speed;
-                            case "down" -> worldY += speed;
-                            case "left" -> worldX -= speed;
-                            case "right" -> worldX += speed;
-                        }
-                        setIsMoving(true); // Trigger walking animation
-                    } else {
-                        setIsMoving(false); // Stop animation if hitting a wall
-                    }
-                } else {
-                    // Still waiting for the hold threshold
-                    setIsMoving(false);
-                }
-            }
-        } else {
-            // Player let go of the keys. Reset everything.
-            moveDelay = 0;
-            setIsMoving(false);
-        }
-    }
-
-    // Inside overworld.Player.update()
     public void update() {
-        int currentSpeed = speed;
-
-        // Only determine speed at the START of a step to prevent mid-tile jitters
-        if (!isWalking) {
-            currentSpeed = kh.running ? speed + 8 : speed;
-        }
-
-        // STEP 1: Input handling
-        if (!isWalking && kh.isMoving()) {
-            if (kh.upPressed) direction = "up";
-            else if (kh.downPressed) direction = "down";
-            else if (kh.leftPressed) direction = "left";
-            else if (kh.rightPressed) direction = "right";
-
-            collisionOn = false;
-            gp.COLLISIONCHECKER.checkTile(this);
-
-            if (!collisionOn) {
-                isWalking = true;
-                moveProgress = 0;
-                setIsMoving(true);
-            }
-        }
-
-        // STEP 2: Movement
         if (isWalking) {
+            // Continue moving if already in a tile transition
+            int currentSpeed = kh.running ? speed + 8 : speed;
+
             switch (direction) {
                 case "up"    -> worldY -= currentSpeed;
                 case "down"  -> worldY += currentSpeed;
@@ -233,54 +156,115 @@ public class Player {
             }
             moveProgress += currentSpeed;
 
-            // STEP 3: Grid Snapping
             if (moveProgress >= TILE_SIZE) {
-                int overshoot = moveProgress - TILE_SIZE;
-
-                // Correct the position
-                switch (direction) {
-                    case "up"    -> worldY += overshoot;
-                    case "down"  -> worldY -= overshoot;
-                    case "left"  -> worldX += overshoot;
-                    case "right" -> worldX -= overshoot;
-                }
-
+                // Grid Snapping
+                worldX = Math.round((float)worldX / TILE_SIZE) * TILE_SIZE;
+                worldY = Math.round((float)worldY / TILE_SIZE) * TILE_SIZE;
                 isWalking = false;
                 moveProgress = 0;
                 setIsMoving(false);
+
+                // 2. CHECK FOR TALL GRASS ENCOUNTERS
+                checkGrass();
+
+                // 3. CHECK FOR DOORS/WARPS
+                checkWarps();
+            }
+        } else if (kh.isMoving()) {
+            // Start a new move
+            if (kh.upPressed) direction = "up";
+            else if (kh.downPressed) direction = "down";
+            else if (kh.leftPressed) direction = "left";
+            else if (kh.rightPressed) direction = "right";
+
+            collisionOn = false;
+
+            // 1. CHECK WALLS/BUILDINGS
+            gp.COLLISIONCHECKER.checkTile(this);
+
+            // 2. CHECK NPCS (This is what stops you from ghosting!)
+            gp.COLLISIONCHECKER.checkNPC(this, gp.npcs);
+
+            if (!collisionOn) {
+                isWalking = true;
+                moveProgress = 0;
+                setIsMoving(true);
             }
         }
     }
+
     public void checkInteraction() {
+        // Find exactly which grid tile the player is currently standing on
+        int currentGridX = worldX / TILE_SIZE;
+        int currentGridY = worldY / TILE_SIZE;
 
-        int targetX = worldX;
-        int targetY = worldY;
+        int targetGridX = currentGridX;
+        int targetGridY = currentGridY;
 
-        // Look one tile ahead based on current direction
+        // Look exactly one tile ahead on the grid
         switch (direction) {
-            case "up" -> targetY -= TILE_SIZE;
-            case "down" -> targetY += TILE_SIZE;
-            case "left" -> targetX -= TILE_SIZE;
-            case "right" -> targetX += TILE_SIZE;
+            case "up"    -> targetGridY--;
+            case "down"  -> targetGridY++;
+            case "left"  -> targetGridX--;
+            case "right" -> targetGridX++;
         }
 
-        //targetX /= TILE_SIZE;
-        //targetY /= TILE_SIZE;
+        // Loop through all NPCs
+        for (npc.NPC npc : gp.npcs) {
+            if (npc != null) {
+                // Find which grid tile the NPC is standing on
+                int npcGridX = npc.worldX / TILE_SIZE;
+                int npcGridY = npc.worldY / TILE_SIZE;
 
-        //Do not loop for every npc!
-        //Just check the target X and Y of the tile and check whether its an NPC or not
-//        for (NPC npc : gp.npcs) {
-//            if (npc.worldX == targetX && npc.worldY == targetY) {
-//                npc.interact(gp); // NPC decides what happens!
-//                return;
-//            }
-//        }
-//        if (gp.getInteractiveLayer().getMap()[targetX][targetY] != 0) {
-//            //check what kind of interactiveTile is being interacted, use switch statements
-              //if marketNPC class, dialogues then shop
-              //if trainerNPC enter battle state or something
-              //if just ordinary NPC then just start dialogues
-              //otherwise dont do anything
-//        }
+                // If they are on our target tile, talk to them!
+                if (npcGridX == targetGridX && npcGridY == targetGridY) {
+                    System.out.println("FOUND NPC: " + npc.name); // Debug print
+                    npc.interact(gp); // Triggers the Dialogue!
+                    return;
+                }
+            }
+        }
+    }
+
+    private void checkGrass() {
+        int gridX = worldX / TILE_SIZE;
+        int gridY = worldY / TILE_SIZE;
+
+        // Loop through decoration layers to see if we are standing in tall grass
+        for (TileManager decoLayer : gp.world.getDecorationLayer()) {
+            if (gridY >= 0 && gridY < MAX_WORLD_ROW && gridX >= 0 && gridX < MAX_WORLD_COL) {
+                int tileNum = decoLayer.getMap()[gridY][gridX];
+
+                // Assuming '2' is your tall grass bush tile ID in the text file
+                if (tileNum == 2) {
+                    // Roll a 10% chance to encounter a wild RotMon!
+                    int encounterChance = (int)(Math.random() * 100); // 0 to 99
+                    if (encounterChance < 10) {
+                        System.out.println("A wild BrainRot appeared!");
+                        // gp.GAMESTATE = "battle";
+                        // -> Trigger battle system here later!
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    private void checkWarps() {
+        int gridX = worldX / TILE_SIZE;
+        int gridY = worldY / TILE_SIZE;
+
+        // Assuming doors/warps are on the interactive layer
+        if (gridY >= 0 && gridY < MAX_WORLD_ROW && gridX >= 0 && gridX < MAX_WORLD_COL) {
+            int tileNum = gp.getWorldInteractiveLayer().getMap()[gridY][gridX];
+
+            // Assuming '5' is a Door tile ID
+            if (tileNum == 5) {
+                System.out.println("Entering the Market Room!");
+                // gp.world.loadRoom(1);
+                // worldX = newStartX;
+                // worldY = newStartY;
+            }
+        }
     }
 }
