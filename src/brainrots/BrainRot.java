@@ -9,6 +9,8 @@ import java.util.List;
  */
 public class BrainRot {
 
+    //Sound Effects: (Taking Damage, Attack, Buff, Encounter)
+
     // Identity
     private String name;
     private Type primaryType;

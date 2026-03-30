@@ -1,6 +1,9 @@
 package main;
 
 import javax.swing.*;
+
+import brainrots.BrainRotFactory;
+import brainrots.BrainRotRegistry;
 import engine.*;
 import tile.TileManager;
 import utils.AssetManager;

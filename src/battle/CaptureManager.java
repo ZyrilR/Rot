@@ -2,11 +2,9 @@ package battle;
 
 import brainrots.BrainRot;
 import items.Capsule;
-import items.Inventory;
 import utils.RandomUtil;
 
 import java.util.List;
-import java.util.Random;
 
 /**
  * Handles capture attempt logic when a player throws a Capsule.
