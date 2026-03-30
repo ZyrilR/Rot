@@ -8,6 +8,7 @@ import overworld.Player;
 import tile.CollisionChecker;
 import tile.TileManager;
 import ui.DialogueBox;
+import ui.ShopUI;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -23,6 +24,9 @@ public class GamePanel extends JPanel {
 
     public String GAMESTATE = "play";
     public DialogueBox DIALOGUEBOX = new DialogueBox(this);
+    public ShopUI SHOPUI = new ShopUI(this);
+
+    //GAME HANDLER
     public KeyboardHandler KEYBOARDHANDLER = new KeyboardHandler();
     public CollisionChecker COLLISIONCHECKER = new CollisionChecker(this);
     public Player player = new Player(this, KEYBOARDHANDLER);
@@ -69,25 +73,38 @@ public class GamePanel extends JPanel {
     public void update() {
         switch (GAMESTATE.toUpperCase()) {
             case "PLAY":
-                player.update();
-
-                for (NPC npc : npcs) {
-                    if (npc != null) {
-                        npc.update(this);
-                    }
-                }
-
-                if (KEYBOARDHANDLER.enterPressed) {
-                    KEYBOARDHANDLER.enterPressed = false;
-                    player.checkInteraction();
+                // Check for 'E' or 'Enter' click
+//                if (KEYBOARDHANDLER.enterPressed) {
+//                    KEYBOARDHANDLER.enterPressed = false; // consume input
+//                    player.checkInteraction();
+//                }
+                // TEMP TEST: open shop directly with ENTER (remove once NPC interaction works)
+                if (KEYBOARDHANDLER.ePressed) {
+                    KEYBOARDHANDLER.ePressed = false;
+                    SHOPUI.open();
+                    GAMESTATE = "shop";
+                    System.out.println("[GamePanel] TEST: Shop opened via ENTER key.");
                 }
                 break;
 
             case "DIALOGUE":
                 DIALOGUEBOX.update();
                 break;
+
+            case "SHOP":
+                SHOPUI.update();
+                break;
+
+            default:
+                break;
         }
-    } // <-- FIXED THE STRAY 's' HERE!
+
+    }
+
+    public TileManager getWorldBackgroundLayer() {
+        //temporary
+        return world.getBackgroundLayer().getFirst();
+    }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -109,6 +126,10 @@ public class GamePanel extends JPanel {
 
         if (GAMESTATE.equals("dialogue")) {
             DIALOGUEBOX.draw(graphics2D);
+        }
+
+        if (GAMESTATE.equals("shop")) {
+            SHOPUI.draw(graphics2D);
         }
 
         graphics2D.dispose();

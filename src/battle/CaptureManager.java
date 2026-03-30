@@ -42,6 +42,7 @@ public class CaptureManager {
 
         // Capsule bonus
         double bonus = 0;
+        if (capsuleName.equals("BLUE CAPSULE")) bonus = 10;
         if (capsuleName.equals("SPEED CAPSULE") && target.getBaseSpeed() > 30) bonus = 20;
         if (capsuleName.equals("HEAVY CAPSULE") && target.getDefense() > 40) bonus = 20;
 

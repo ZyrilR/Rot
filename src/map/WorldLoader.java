@@ -1,6 +1,7 @@
 package map;
 
 import engine.GamePanel;
+import tile.Tile;
 import tile.TileManager;
 
 import java.awt.*;
@@ -19,7 +20,7 @@ public class WorldLoader {
     Flexible Amount Of Building Tiles
     Only 1 Interactive Layer (Interactive Tiles should not Collide in a single Tile)
      */
-    private TileManager backgroundLayer;
+    private ArrayList<TileManager> backgroundLayer = new ArrayList<>();
     private ArrayList<TileManager> decorationLayer = new ArrayList<>();
     private ArrayList<TileManager> buildingLayer = new ArrayList<>();
     private TileManager interactiveLayer;
@@ -29,28 +30,16 @@ public class WorldLoader {
     public WorldLoader(GamePanel gp) {
         this.gp = gp;
     }
-//    public void draw(Graphics2D graphics2D) {
-//        backgroundLayer.draw(graphics2D, gp);
-//
-//        //Load Decorations
-//        for (TileManager tm : decorationLayer) {
-//            tm.draw(graphics2D, gp);
-//        }
-//
-//        //Load Buildings
-//        for (TileManager tm : buildingLayer) {
-//            tm.draw(graphics2D, gp);
-//        }
-//
-//        //Load Interactive
-//        interactiveLayer.draw(graphics2D, gp);
-//
-//    }
+    public void draw(Graphics2D graphics2D) {
 
-    // Draws everything the player should stand ON TOP of
-    public void drawBottom(Graphics2D graphics2D) {
-        if (backgroundLayer != null) {
-            backgroundLayer.draw(graphics2D, gp);
+        //Load Background
+        for (TileManager tm : backgroundLayer) {
+            tm.draw(graphics2D, gp);
+        }
+
+        //Load Decorations
+        for (TileManager tm : decorationLayer) {
+            tm.draw(graphics2D, gp);
         }
 
         for (TileManager tm : buildingLayer) {
@@ -104,7 +93,7 @@ public class WorldLoader {
                 //check what kind of layer
                 switch (layer[1].toUpperCase()) {
                     case "BACKGROUND":
-                        backgroundLayer = tm;
+                        backgroundLayer.add(tm);
                         break;
                     case "DECORATION":
                         decorationLayer.add(tm);
@@ -138,7 +127,7 @@ public class WorldLoader {
         return decorationLayer;
     }
 
-    public TileManager getBackgroundLayer() {
+    public ArrayList<TileManager> getBackgroundLayer() {
         return backgroundLayer;
     }
 

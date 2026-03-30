@@ -18,11 +18,11 @@ public class ItemRegistry {
         registerItem(new Antidote("DEBUFF", "Removes all debuff stats", "assets/antidote.png", "DEBUFF", 600));
 
         // Capsules
-        registerItem(new Capsule("RED CAPSULE", "Normal capture", "assets/capsule.png", 500));
-        registerItem(new Capsule("BLUE CAPSULE", "Normal capture", "assets/capsule.png", 700));
-        registerItem(new Capsule("SPEED CAPSULE", "Better capture if target is fast", "assets/capsule.png", 900));
-        registerItem(new Capsule("HEAVY CAPSULE", "Better capture if target has high defense", "assets/capsule.png", 1200));
-        registerItem(new Capsule("MASTER CAPSULE", "100% capture", "assets/capsule.png", 1500));
+        registerItem(new Capsule("RED CAPSULE", "Basic capture", "assets/capsule.png", 500));
+        registerItem(new Capsule("BLUE CAPSULE", "Improved capture", "assets/capsule.png", 700));
+        registerItem(new Capsule("SPEED CAPSULE", "Best vs fast targets", "assets/capsule.png", 900));
+        registerItem(new Capsule("HEAVY CAPSULE", "Best vs high defense", "assets/capsule.png", 1200));
+        registerItem(new Capsule("MASTER CAPSULE", "Guaranteed capture", "assets/capsule.png", 1500));
 
         // Scrolls
         registerItem(new Scroll("Scroll", "ambot", "assets/scroll.png", "Fireball", 0));

@@ -20,8 +20,15 @@ public class DialogueBox {
 
     private String npcName = "";
 
+    // Set to true when a MarketNPC interaction is pending
+    private boolean pendingShopOpen = false;
+
     public DialogueBox(GamePanel gp) {
         this.gp = gp;
+    }
+
+    public void setPendingShopOpen(boolean open) {
+        this.pendingShopOpen = open;
     }
 
     public void startDialogue(String name, ArrayList<String> dialogues) {
@@ -39,12 +46,39 @@ public class DialogueBox {
     }
 
     public void update() {
-        // 1. TYPEWRITER ANIMATION LOGIC
-        if (currentDialogues != null && dialogueIndex < currentDialogues.size()) {
-            String targetText = currentDialogues.get(dialogueIndex);
+//        if (currentDialogues == null || dialogueIndex >= currentDialogues.size() || currentDialogues.get(dialogueIndex) == null) {
+//            gp.GAMESTATE = "play";
+//            return;
+//        }
+//
+//        if (gp.KEYBOARDHANDLER.enterPressed) {
+//            gp.KEYBOARDHANDLER.enterPressed = false;
+//
+//            if (charIndex < currentDialogues.get(dialogueIndex).length()) {
+//                charIndex = currentDialogues.get(dialogueIndex).length();
+//                displayedText = currentDialogues.get(dialogueIndex);
+//            } else {
+//                dialogueIndex++;
+//                if (dialogueIndex >= currentDialogues.size() || currentDialogues.get(dialogueIndex) == null) {
+//                    gp.GAMESTATE = "play";
+//                } else {
+//                    resetTypewriter();
+//                }
+//            }
+//        }
 
-            // If the current line isn't fully spelled out yet, add the next letter
-            if (charIndex < targetText.length()) {
+        if (pendingShopOpen) {
+            pendingShopOpen = false;
+            gp.SHOPUI.open();
+            gp.GAMESTATE = "shop";   // switch directly to shop instead of play
+            System.out.println("[DialogueBox] Dialogue finished — opening shop.");
+        } else {
+            gp.GAMESTATE = "play";
+        }
+
+        if (dialogueIndex >= currentDialogues.size() || currentDialogues.get(dialogueIndex) == null) {
+            String fullText = currentDialogues.get(dialogueIndex);
+            if (charIndex < fullText.length()) {
                 textSpeedCounter++;
                 // Lower number = faster text. Higher number = slower text.
                 if (textSpeedCounter > 1) {
