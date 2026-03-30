@@ -25,4 +25,16 @@ public class Constants {
 
     //Dialogue Settings
     public static final int TEXT_SPEED = 1;
+
+    //Tile Settings
+    public static int[] BUSH_INDEXES = new int[]{2, 16};
+
+    //Methods
+    public static boolean contains(int[] arr, int value) {
+        for (int v : arr) {
+            if (v == value)
+                return true;
+        }
+        return false;
+    }
 }

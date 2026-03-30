@@ -59,15 +59,25 @@ public class CollisionChecker {
 
     private void checkCollisionAt(Player player, int r1, int c1, int r2, int c2) {
         // 1. Check Background Layer
-        if (isTileSolid(gp.getWorldBackgroundLayer(), r1, c1) || isTileSolid(gp.getWorldBackgroundLayer(), r2, c2)) {
-            player.collisionOn = true;
-            return;
+        for (TileManager tm : gp.getWorldBackgroundLayer()) {
+            if (isTileSolid(tm, r1, c1) || isTileSolid(tm, r2, c2)) {
+                player.collisionOn = true;
+                return;
+            }
         }
 
         // 2. Check BUILDING Layers (Crucial for your screenshot!)
         // Assuming your world has an ArrayList of Building Layers
         for (TileManager buildingLayer : gp.getWorldBuildingLayer()) {
             if (isTileSolid(buildingLayer, r1, c1) || isTileSolid(buildingLayer, r2, c2)) {
+                player.collisionOn = true;
+                return;
+            }
+        }
+
+        //3. Check DECORATION Layers
+        for (TileManager tm : gp.world.getDecorationLayer()) {
+            if (isTileSolid(tm, r1, c1) || isTileSolid(tm, r2, c2)) {
                 player.collisionOn = true;
                 return;
             }
@@ -219,9 +229,11 @@ public class CollisionChecker {
 
     private void checkNPCCollisionAt(NPC npc, int r1, int c1, int r2, int c2) {
         // Check Background
-        if (isTileSolid(gp.getWorldBackgroundLayer(), r1, c1) || isTileSolid(gp.getWorldBackgroundLayer(), r2, c2)) {
-            npc.collisionOn = true;
-            return;
+        for (TileManager tm : gp.getWorldBackgroundLayer()) {
+            if (isTileSolid(tm, r1, c1) || isTileSolid(tm, r2, c2)) {
+                npc.collisionOn = true;
+                return;
+            }
         }
         // Check Buildings
         for (TileManager buildingLayer : gp.getWorldBuildingLayer()) {
