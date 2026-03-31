@@ -75,8 +75,8 @@ public class ShopUI {
      */
     private void buildShopInventory() {
         // --- Potions tab ---
-        String[] potionNames = { "TUBE POTION", "POTION", "HEAVY POTION" };
-        categories.put("Potions", resolveItems(potionNames));
+        String[] potionNames = { "MILD STEW", "MODERATE STEW", "SUPER STEW" };
+        categories.put("Stew", resolveItems(potionNames));
 
         // --- Capsules tab ---
         String[] capsuleNames = {
@@ -160,16 +160,8 @@ public class ShopUI {
 
         if (inputCooldown > 0) return; // block input during cooldown
 
-        // --- LEFT: previous category tab ---
-        if (gp.KEYBOARDHANDLER.leftPressed) {
-            selectedCategory = (selectedCategory - 1 + categoryKeys.size()) % categoryKeys.size();
-            selectedIndex    = 0; // reset row cursor when switching tabs
-            inputCooldown    = INPUT_DELAY;
-            System.out.println("[ShopUI] Tab: " + categoryKeys.get(selectedCategory));
-        }
-
-        // --- RIGHT: next category tab ---
-        else if (gp.KEYBOARDHANDLER.rightPressed) {
+        // --- TAB: next category tab ---
+        else if (gp.KEYBOARDHANDLER.tabPressed) {
             selectedCategory = (selectedCategory + 1) % categoryKeys.size();
             selectedIndex    = 0;
             inputCooldown    = INPUT_DELAY;
@@ -447,7 +439,7 @@ public class ShopUI {
     // Right navigation guide
         g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(120, 116, 108));
-        String navGuide = "U/P Move  L/R Tab  ENTER Buy  ESC Exit";
+        String navGuide = "U/D Move  TAB Category  ENTER Buy  ESC Exit";
         fm = g2.getFontMetrics();
         int guideX = winX + winW - 8 - padX - fm.stringWidth(navGuide);
         g2.drawString(navGuide, guideX, barY + 22);
