@@ -99,7 +99,7 @@ public class PCUI {
 
     /** Called by GamePanel when B is pressed. Resets all UI state. */
     public void open() {
-        layout         = Layout.BOX;
+        layout         = Layout.PARTY;
         boxCursorRow   = 0;
         boxCursorCol   = 0;
         currentBox     = 0;
@@ -614,8 +614,8 @@ public class PCUI {
         g2.setColor(new Color(185, 180, 168));
         g2.drawRoundRect(cX, infoY, cW, infoH, 8, 8);
 
-        int tx = cX + 10;
-        int ty = infoY + 22;
+        int tx = cX + 16;
+        int ty = infoY + 24;
         int lh = 22;
 
         if (rot != null) {
