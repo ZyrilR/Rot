@@ -31,29 +31,16 @@ import static utils.Constants.*;
  *   TAB         — cycle box (BOX) | toggle INFO↔MOVES (DETAIL)
  *   E           — open DETAIL for hovered BrainRot
  *   ENTER       — select / confirm swap (BOX/PARTY)
- *   ESC         — deselect held → back to PC → close
+ *   ESC         — deselect held → back to PC
+ *   B           —  close
  */
 public class PCUI {
 
     // ── Enums ─────────────────────────────────────────────────────────────────
-
     private enum Layout    { BOX, PARTY, DETAIL }
     private enum DetailTab { INFO, MOVES }
 
-    // ── Constants ─────────────────────────────────────────────────────────────
-
-    private static final int    GRID_COLS    = 5;
-    private static final int    GRID_ROWS    = 5;
-    private static final double PANEL_SPLIT  = 0.60;
-    private static final int    INPUT_DELAY  = 10;
-    private static final int    STATUS_TICKS = 90; // 3 s @ 30 FPS
-
-    // Layout measurements — keep in sync with drawBoxBody / drawPartyBody
-    private static final int OUTER_PAD   = 18;
-    private static final int STATUS_BAR_H = 44;
-
     // ── State ─────────────────────────────────────────────────────────────────
-
     private final GamePanel gp;
     private final PCSystem  pc;
 
@@ -78,14 +65,12 @@ public class PCUI {
     private final Map<String, BufferedImage> spriteCache = new HashMap<>();
 
     // ── Constructor ───────────────────────────────────────────────────────────
-
     public PCUI(GamePanel gp, PCSystem pc) {
         this.gp = gp;
         this.pc = pc;
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
-
     public void open() {
         layout         = Layout.PARTY;
         previousLayout = Layout.PARTY;
@@ -104,7 +89,6 @@ public class PCUI {
     }
 
     // ── Update ────────────────────────────────────────────────────────────────
-
     public void update() {
         if (inputCooldown > 0) { inputCooldown--; return; }
 
@@ -122,7 +106,6 @@ public class PCUI {
     }
 
     // ── BOX layout input ──────────────────────────────────────────────────────
-
     private void updateBoxLayout() {
         if (gp.KEYBOARDHANDLER.pPressed) {
             gp.KEYBOARDHANDLER.pPressed = false;
@@ -172,7 +155,6 @@ public class PCUI {
     }
 
     // ── PARTY layout input ────────────────────────────────────────────────────
-
     private void updatePartyLayout() {
         if (gp.KEYBOARDHANDLER.pPressed) {
             gp.KEYBOARDHANDLER.pPressed = false;
@@ -212,7 +194,6 @@ public class PCUI {
     }
 
     // ── DETAIL layout input ───────────────────────────────────────────────────
-
     private void updateDetailLayout() {
         if (gp.KEYBOARDHANDLER.tabPressed) {
             gp.KEYBOARDHANDLER.tabPressed = false;
@@ -242,7 +223,6 @@ public class PCUI {
     }
 
     // ── Detail open ───────────────────────────────────────────────────────────
-
     private void openDetail(BrainRot rot, Layout from) {
         previousLayout = from;
         detailRot      = rot;
@@ -253,7 +233,6 @@ public class PCUI {
     }
 
     // ── Selection: box ────────────────────────────────────────────────────────
-
     private void handleBoxSelect() {
         int slotIndex   = boxCursorRow * GRID_COLS + boxCursorCol;
         BrainRot target = pc.getBoxMember(currentBox, slotIndex);
@@ -273,7 +252,6 @@ public class PCUI {
     }
 
     // ── Selection: party ──────────────────────────────────────────────────────
-
     private void handlePartySelect() {
         BrainRot target = (partyCursorRow < pc.getPartySize()) ? pc.getPartyMember(partyCursorRow) : null;
         Slot targetSlot = new Slot(partyCursorRow);
@@ -291,10 +269,7 @@ public class PCUI {
         }
     }
 
-    // ═════════════════════════════════════════════════════════════════════════
-    // RENDERING
-    // ═════════════════════════════════════════════════════════════════════════
-
+    // ── RENDERING ──────────────────────────────────────────────────────
     public void draw(Graphics2D g2) {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
@@ -322,7 +297,6 @@ public class PCUI {
     }
 
     // ── Window chrome ─────────────────────────────────────────────────────────
-
     private void drawWindow(Graphics2D g2, int x, int y, int w, int h) {
         int arc = 16;
         g2.setColor(new Color(245, 242, 235));
@@ -340,7 +314,6 @@ public class PCUI {
     }
 
     // ── Header bar ────────────────────────────────────────────────────────────
-
     private void drawHeader(Graphics2D g2, Font base, int winX, int winY, int winW) {
         // Dark title bar
         g2.setColor(new Color(44, 44, 42));
@@ -378,7 +351,6 @@ public class PCUI {
     }
 
     // ── BOX body ──────────────────────────────────────────────────────────────
-
     private void drawBoxBody(Graphics2D g2, Font base,
                              int winX, int winY, int winW, int winH, int bodyY) {
         int divX     = winX + (int)(winW * PANEL_SPLIT);
@@ -405,7 +377,6 @@ public class PCUI {
     }
 
     // ── PARTY body ────────────────────────────────────────────────────────────
-
     private void drawPartyBody(Graphics2D g2, Font base,
                                int winX, int winY, int winW, int winH, int bodyY) {
         int divX  = winX + (int)(winW * PANEL_SPLIT);
@@ -425,7 +396,6 @@ public class PCUI {
     }
 
     // ── Slot cell ─────────────────────────────────────────────────────────────
-
     private void drawSlotCell(Graphics2D g2, Font base, int x, int y, int size,
                               BrainRot rot, boolean hovered, boolean selected) {
         int pad = 3;
@@ -446,7 +416,6 @@ public class PCUI {
     }
 
     // ── Party row ─────────────────────────────────────────────────────────────
-
     private void drawPartyRow(Graphics2D g2, Font base, int x, int y, int w, int h,
                               BrainRot rot, boolean hovered, boolean selected) {
         Color bg = selected ? new Color(255, 230, 100) : hovered ? new Color(178, 212, 244, 220) : new Color(230, 226, 218);
@@ -534,7 +503,6 @@ public class PCUI {
     }
 
     // ── Data card (right panel for BOX / PARTY) ───────────────────────────────
-
     private void drawDataCard(Graphics2D g2, Font base,
                               int divX, int winY, int winW, int winH, int bodyY,
                               BrainRot rot) {
@@ -590,7 +558,6 @@ public class PCUI {
     }
 
     // ── Status bar (BOX / PARTY) ──────────────────────────────────────────────
-
     private void drawStatusBar(Graphics2D g2, Font base, int winX, int winY, int winW, int winH) {
         int barH = STATUS_BAR_H, barY = winY + winH - barH - 8;
         int barX = winX + 8,    barW = winW - 16;
@@ -665,7 +632,6 @@ public class PCUI {
     }
 
     // ── Sub-tab pill buttons ──────────────────────────────────────────────────
-
     private void drawDetailTabButtons(Graphics2D g2, Font base, int winX, int winY, int winW) {
         String[]    labels = { "INFO", "MOVES" };
         DetailTab[] tabs   = { DetailTab.INFO, DetailTab.MOVES };
@@ -752,7 +718,6 @@ public class PCUI {
     }
 
     // ── INFO left panel ───────────────────────────────────────────────────────
-
     private void drawInfoLeft(Graphics2D g2, Font base,
                               int winX, int winY, int winW, int winH,
                               int bodyY, int divX) {
@@ -846,7 +811,6 @@ public class PCUI {
     }
 
     // ── MOVES left panel ──────────────────────────────────────────────────────
-
     private void drawMovesLeft(Graphics2D g2, Font base,
                                int winX, int winY, int winW, int winH,
                                int bodyY, int divX) {
@@ -967,7 +931,6 @@ public class PCUI {
     }
 
     // ── Detail status bar ─────────────────────────────────────────────────────
-
     private void drawDetailStatusBar(Graphics2D g2, Font base, int winX, int winY, int winW, int winH) {
         int barH = STATUS_BAR_H, barY = winY + winH - barH - 8;
         g2.setColor(new Color(215, 210, 200));
