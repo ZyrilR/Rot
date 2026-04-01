@@ -131,8 +131,8 @@ public class ShopUI {
             inputCooldown = INPUT_DELAY;
         }
 
-        else if (gp.KEYBOARDHANDLER.ePressed) {
-            gp.KEYBOARDHANDLER.ePressed = false;
+        else if (gp.KEYBOARDHANDLER.escPressed) {
+            gp.KEYBOARDHANDLER.escPressed = false;
             gp.GAMESTATE = "play";
             System.out.println("[ShopUI] Shop closed.");
         }
@@ -377,7 +377,7 @@ public class ShopUI {
         }
 
         // Right — navigation hint
-        String navGuide = "WS Move  TAB Category  ENTER Buy  E Close";
+        String navGuide = "WS Move  TAB Category  ENTER Buy  ESC Close";
         g2.setFont(base.deriveFont(7f));
         FontMetrics navGuideFm = g2.getFontMetrics();
         int navGuideX = statusBarX + statusBarW - statusBarPadX - navGuideFm.stringWidth(navGuide);

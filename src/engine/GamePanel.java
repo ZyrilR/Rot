@@ -9,6 +9,7 @@ import storage.PCSystem;
 import tile.CollisionChecker;
 import tile.TileManager;
 import ui.DialogueBox;
+import ui.MenuUI;
 import ui.PCUI;
 import ui.ShopUI;
 
@@ -39,6 +40,7 @@ public class GamePanel extends JPanel {
     public final PCSystem PCSYSTEM = new PCSystem();
     public final PCUI     PCUI     = new PCUI(this, PCSYSTEM);
 
+    public final MenuUI MENUUI = new MenuUI(this);
     // ── Core handlers ─────────────────────────────────────────────────────────
 
     public KeyboardHandler KEYBOARDHANDLER  = new KeyboardHandler();
@@ -194,12 +196,12 @@ public class GamePanel extends JPanel {
                     System.out.println("[GamePanel] TEST: Shop opened via E key.");
                 }
 
-                // Open PC with B key
-                if (KEYBOARDHANDLER.bPressed) {
-                    KEYBOARDHANDLER.bPressed = false;
-                    PCUI.open();
-                    GAMESTATE = "pc";
-                    System.out.println("[GamePanel] PC opened via B key.");
+                // Open menu with ESC key
+                if (KEYBOARDHANDLER.escPressed) {
+                    KEYBOARDHANDLER.escPressed = false;
+                    MENUUI.open();
+                    GAMESTATE = "menu";
+                    System.out.println("[GamePanel] Menu opened via ESC key.");
                 }
                 break;
 
@@ -213,6 +215,10 @@ public class GamePanel extends JPanel {
 
             case "PC":
                 PCUI.update();
+                break;
+
+            case "MENU":
+                MENUUI.update();
                 break;
 
             default:
@@ -251,6 +257,10 @@ public class GamePanel extends JPanel {
 
         if (GAMESTATE.equalsIgnoreCase("shop")) {
             SHOPUI.draw(g2);
+        }
+
+        if (GAMESTATE.equalsIgnoreCase("menu")) {
+            MENUUI.draw(g2);
         }
 
         if (GAMESTATE.equalsIgnoreCase("pc")) {

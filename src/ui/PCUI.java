@@ -143,13 +143,7 @@ public class PCUI {
         if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
             if (selectedSlot != null) { selectedSlot = null; heldRot = null; setStatus("Deselected.", false); }
-            inputCooldown = INPUT_DELAY;
-        }
-
-        if (gp.KEYBOARDHANDLER.bPressed) {
-            gp.KEYBOARDHANDLER.bPressed = false;
-            gp.GAMESTATE = "play";
-            System.out.println("[PCUI] PC closed (party view).");
+            else{ gp.GAMESTATE = "play";System.out.println("[PCUI] PC closed (party view)."); }
             inputCooldown = INPUT_DELAY;
         }
     }
@@ -182,13 +176,7 @@ public class PCUI {
         if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
             if (selectedSlot != null) { selectedSlot = null; heldRot = null; setStatus("Deselected.", false); }
-            inputCooldown = INPUT_DELAY;
-        }
-
-        if (gp.KEYBOARDHANDLER.bPressed) {
-            gp.KEYBOARDHANDLER.bPressed = false;
-            gp.GAMESTATE = "play";
-            System.out.println("[PCUI] PC closed (party view).");
+            else{ gp.GAMESTATE = "play";System.out.println("[PCUI] PC closed (party view)."); }
             inputCooldown = INPUT_DELAY;
         }
     }
@@ -212,13 +200,6 @@ public class PCUI {
             gp.KEYBOARDHANDLER.escPressed = false;
             layout = previousLayout; detailRot = null; inputCooldown = INPUT_DELAY;
             System.out.println("[PCUI] ← Back to " + layout + " view.");
-        }
-
-        if (gp.KEYBOARDHANDLER.bPressed) {
-            gp.KEYBOARDHANDLER.bPressed = false;
-            gp.GAMESTATE = "play";
-            System.out.println("[PCUI] PC closed (party view).");
-            inputCooldown = INPUT_DELAY;
         }
     }
 
@@ -576,11 +557,11 @@ public class PCUI {
         }
 
         String line1 = (layout == Layout.BOX)
-                ? "WASD Move  TAB Box  P Party  E Info"
+                ? "WASD Move  TAB Box  P Party"
                 : "WS Move  P Box  E Info";
         String line2 = (layout == Layout.BOX)
-                ? "ENT Select  ESC Cancel  B Close"
-                : "ENT Select  ESC Cancel  B Close";
+                ? "E Info  ENT Select  ESC Cancel/Close"
+                : "ENT Select  ESC Cancel/Close";
 
         g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(120, 116, 108));
@@ -937,7 +918,7 @@ public class PCUI {
         g2.fillRoundRect(winX + 8, barY, winW - 16, barH, 5, 5);
 
         String line1 = (detailTab == DetailTab.INFO) ? "TAB Moves" : "WS Move  TAB Info";
-        String line2 = "ESC Back  B Close";
+        String line2 = "ESC Back";
         g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(120, 116, 108));
         FontMetrics fm = g2.getFontMetrics();
