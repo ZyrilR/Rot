@@ -7,9 +7,9 @@ public class ItemRegistry {
 
     static { // TODO: assign appropriate assetPath
         // Potions
-        registerItem(new Potion("TUBE POTION", "Restores 25% health", "assets/potion.png", 25, 500));
-        registerItem(new Potion("POTION", "Restores 50% health", "assets/potion.png", 50, 800));
-        registerItem(new Potion("HEAVY POTION", "Restores 100% health", "assets/potion.png", 100, 1200));
+        registerItem(new Stew("MILD STEW", "Restores 25% health", "assets/potion.png", 25, 500));
+        registerItem(new Stew("MODERATE STEW", "Restores 50% health", "assets/potion.png", 50, 800));
+        registerItem(new Stew("SUPER STEW", "Restores 100% health", "assets/potion.png", 100, 1200));
 
         // Antidotes
         registerItem(new Antidote("CONFUSION", "Removes confusion", "assets/antidote.png", "CONFUSE", 600));

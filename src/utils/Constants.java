@@ -25,4 +25,13 @@ public class Constants {
 
     //Dialogue Settings
     public static final int TEXT_SPEED = 1;
+
+    // PC UI Constants
+    public static final int    GRID_COLS    = 5;
+    public static final int    GRID_ROWS    = 5;
+    public static final double PANEL_SPLIT  = 0.60;
+    public static final int    INPUT_DELAY  = 10;
+    public static final int    STATUS_TICKS = 60; // 2 s @ 30 FPS
+    public static final int OUTER_PAD   = 18;
+    public static final int STATUS_BAR_H = 44;
 }
