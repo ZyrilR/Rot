@@ -149,36 +149,36 @@ public class CollisionChecker {
         }
     }
 
-    public void checkObject(Player player, Building building) {
-        // Get player's predicted position
-        Rectangle pRect = new Rectangle(
-                player.worldX + player.solidArea.x,
-                player.worldY + player.solidArea.y,
-                player.solidArea.width,
-                player.solidArea.height
-        );
-
-        // Predict next step
-        int speed = player.getCurrentSpeed();
-        switch(player.getDirection()) {
-            case "up" -> pRect.y -= speed;
-            case "down" -> pRect.y += speed;
-            case "left" -> pRect.x -= speed;
-            case "right" -> pRect.x += speed;
-        }
-
-        // Building's world hitbox
-        Rectangle bRect = new Rectangle(
-                building.worldX + building.solidArea.x,
-                building.worldY + building.solidArea.y,
-                building.solidArea.width,
-                building.solidArea.height
-        );
-
-        if (pRect.intersects(bRect)) {
-            player.collisionOn = true;
-        }
-    }
+//    public void checkObject(Player player, Building building) {
+//        // Get player's predicted position
+//        Rectangle pRect = new Rectangle(
+//                player.worldX + player.solidArea.x,
+//                player.worldY + player.solidArea.y,
+//                player.solidArea.width,
+//                player.solidArea.height
+//        );
+//
+//        // Predict next step
+//        int speed = player.getCurrentSpeed();
+//        switch(player.getDirection()) {
+//            case "up" -> pRect.y -= speed;
+//            case "down" -> pRect.y += speed;
+//            case "left" -> pRect.x -= speed;
+//            case "right" -> pRect.x += speed;
+//        }
+//
+//        // Building's world hitbox
+//        Rectangle bRect = new Rectangle(
+//                building.worldX + building.solidArea.x,
+//                building.worldY + building.solidArea.y,
+//                building.solidArea.width,
+//                building.solidArea.height
+//        );
+//
+//        if (pRect.intersects(bRect)) {
+//            player.collisionOn = true;
+//        }
+//    }
 
     // ADD THIS TO CollisionChecker.java
     public void checkTileForNPC(NPC npc) {

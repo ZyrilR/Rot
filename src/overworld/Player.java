@@ -2,7 +2,7 @@ package overworld;
 
 import engine.GamePanel;
 import input.KeyboardHandler;
-import items.Inventory;
+import items.Backpack;
 import tile.TileManager;
 import utils.AssetManager;
 
@@ -33,15 +33,15 @@ public class Player {
     public Rectangle solidArea;
     public boolean collisionOn = false;
 
-    private final Inventory inventory;
+    private final Backpack backpack;
     private int rotCoins; // in-game currency
 
     public Player(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
         this.kh = kh;
 
-        inventory = new Inventory(99);
-        rotCoins = 1000; //for testing
+        backpack = new Backpack(99);
+        rotCoins = 500; //for testing
 
         worldX = TILE_SIZE * 24;
         worldY = TILE_SIZE * 24;
@@ -70,8 +70,8 @@ public class Player {
         this.direction = direction;
     }
 
-    public Inventory getInventory() {
-        return inventory;
+    public Backpack getInventory() {
+        return backpack;
     }
     public int getCurrentSpeed() {return kh.running ? speed + 8 : speed;}
 
@@ -146,7 +146,7 @@ public class Player {
     public void update() {
         if (isWalking) {
             // Continue moving if already in a tile transition
-            int currentSpeed = kh.running ? speed + 8 : speed;
+            int currentSpeed = kh.running ? speed + SPRINT_SPEED : speed;
 
             switch (direction) {
                 case "up"    -> worldY -= currentSpeed;

@@ -3,11 +3,11 @@ package items;
 import brainrots.BrainRot;
 import java.util.ArrayList;
 
-public class Inventory {
+public class Backpack {
     private final ArrayList<Item> items; // stores player's items
     private final int capacity;          // maximum number of items allowed
 
-    public Inventory(int capacity) {
+    public Backpack(int capacity) {
         this.capacity = capacity;
         this.items = new ArrayList<>();
     }

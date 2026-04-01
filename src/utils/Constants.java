@@ -20,6 +20,9 @@ public class Constants {
 
     public static final int FPS = 30;
 
+    //Player Settings
+    public static final int SPRINT_SPEED = 32;
+
     //Dialogue Settings
     public static final int TEXT_SPEED = 1;
 

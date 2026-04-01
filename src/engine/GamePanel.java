@@ -241,8 +241,8 @@ public class GamePanel extends JPanel {
         // Player
         player.draw(g2);
 
-        // World top layers (decorations that overlap player)
-        world.drawTop(g2);
+        // Draw world top layers (decorations that overlap player)
+//        world.drawTop(g2);
 
         // ── UI overlays ───────────────────────────────────────────────────────
         if (GAMESTATE.equalsIgnoreCase("dialogue")) {
