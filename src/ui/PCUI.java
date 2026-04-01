@@ -460,7 +460,7 @@ public class PCUI {
         g2.drawString("LVL?? [TODO]", tx, y + 30);
 
         // HP bar + number
-        int barY  = y + 36, barH2 = 7, hpBarW = 100, hpOff = 18;
+        int barY  = y + 36, barH2 = 7, hpBarW = 160, hpOff = 18;
         g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(100, 96, 90));
         g2.drawString("HP", tx, barY + barH2);
