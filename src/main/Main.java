@@ -5,6 +5,7 @@ import javax.swing.*;
 import brainrots.BrainRotFactory;
 import brainrots.BrainRotRegistry;
 import engine.*;
+import items.ItemRegistry;
 import tile.TileManager;
 import utils.AssetManager;
 

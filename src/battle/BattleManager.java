@@ -1,7 +1,7 @@
 package battle;
 
 import brainrots.BrainRot;
-import items.Backpack;
+import items.Inventory;
 import skills.Skill;
 import skills.SkillEffect;
 
@@ -24,16 +24,16 @@ public class BattleManager {
     private final BrainRot playerRot;
     private final BrainRot enemyRot;
     private final List<BrainRot> playerTeam;
-    private final Backpack playerBackpack;
+    private final Inventory playerInventory;
 
     private BattleResult result = BattleResult.ONGOING;
     private boolean wildBattle; // true = wild BrainRot, can attempt capture
 
-    public BattleManager(BrainRot playerRot, BrainRot enemyRot, List<BrainRot> playerTeam, Backpack playerBackpack, boolean wildBattle) {
+    public BattleManager(BrainRot playerRot, BrainRot enemyRot, List<BrainRot> playerTeam, Inventory playerInventory, boolean wildBattle) {
         this.playerRot       = playerRot;
         this.enemyRot        = enemyRot;
         this.playerTeam      = playerTeam;
-        this.playerBackpack = playerBackpack;
+        this.playerInventory = playerInventory;
         this.wildBattle      = wildBattle;
 
         playerRot.restoreForBattle();
@@ -75,7 +75,7 @@ public class BattleManager {
         }
 
         // Pass enemyRot and playerTeam to the Capsule
-        playerBackpack.useItem(capsuleIndex, enemyRot, playerTeam);
+        playerInventory.useItem(capsuleIndex, enemyRot, playerTeam);
 
         if (playerTeam.contains(enemyRot)) {
             result = BattleResult.CAPTURED;

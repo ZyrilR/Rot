@@ -8,10 +8,7 @@ import overworld.Player;
 import storage.PCSystem;
 import tile.CollisionChecker;
 import tile.TileManager;
-import ui.DialogueBox;
-import ui.MenuUI;
-import ui.PCUI;
-import ui.ShopUI;
+import ui.*;
 
 import javax.swing.JPanel;
 import java.awt.Color;
@@ -20,6 +17,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import items.ItemRegistry;
 
 import static utils.Constants.*;
 
@@ -39,8 +37,8 @@ public class GamePanel extends JPanel {
      */
     public final PCSystem PCSYSTEM = new PCSystem();
     public final PCUI     PCUI     = new PCUI(this, PCSYSTEM);
-
     public final MenuUI MENUUI = new MenuUI(this);
+    public final InventoryUI INVENTORYUI = new InventoryUI(this);
     // ── Core handlers ─────────────────────────────────────────────────────────
 
     public KeyboardHandler KEYBOARDHANDLER  = new KeyboardHandler();
@@ -114,7 +112,25 @@ public class GamePanel extends JPanel {
         PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.DIAMOND));
         PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.GOLD));
         PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.NORMAL));
-        System.out.println("[GamePanel] Test party seeded. Party size: " + PCSYSTEM.getPartySize());
+        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+        player.getInventory().addItem(ItemRegistry.getItem("SUPER STEW"));
+        player.getInventory().addItem(ItemRegistry.getItem("CONFUSION CURE"));
+        player.getInventory().addItem(ItemRegistry.getItem("PARALYZE CURE"));
+        player.getInventory().addItem(ItemRegistry.getItem("BURN CURE"));
+        player.getInventory().addItem(ItemRegistry.getItem("DEBUFF TONIC"));
+        player.getInventory().addItem(ItemRegistry.getItem("RED CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("BLUE CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("Wooden Thump Scroll"));
+        player.getInventory().addItem(ItemRegistry.getItem("Sahur Chant Scroll"));
+        player.getInventory().addItem(ItemRegistry.getItem("Sneaker Dash Scroll"));
+        player.getInventory().addItem(ItemRegistry.getItem("Heat Burst Scroll"));
+        player.getInventory().addItem(ItemRegistry.getItem("Evasion Up Scroll"));
+        player.getInventory().addItem(ItemRegistry.getItem("Power Combo Scroll"));
+        player.getInventory().addItem(ItemRegistry.getItem("Aqua Engine Scroll"));
+        player.getInventory().addItem(ItemRegistry.getItem("Wind Guard Scroll"));
+        System.out.println("[GamePanel] Test party & items seeded.");
     }
 
     // ── Layer accessors ───────────────────────────────────────────────────────
@@ -221,6 +237,10 @@ public class GamePanel extends JPanel {
                 MENUUI.update();
                 break;
 
+            case "INVENTORY":
+               INVENTORYUI.update();
+               break;
+
             default:
                 break;
         }
@@ -265,6 +285,10 @@ public class GamePanel extends JPanel {
 
         if (GAMESTATE.equalsIgnoreCase("pc")) {
             PCUI.draw(g2);
+        }
+
+        if (GAMESTATE.equalsIgnoreCase("inventory")) {
+            INVENTORYUI.draw(g2);
         }
 
         g2.dispose();

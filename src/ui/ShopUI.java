@@ -36,8 +36,6 @@ public class ShopUI {
     // ── Input cooldown ─────────────────────────────────────────────────────────
 
     private int inputCooldown = 0;
-    private static final int INPUT_DELAY     = 10;
-    private static final int STATUS_DURATION = 90; // ~3 seconds at 30 FPS
 
     // ── Status bar ─────────────────────────────────────────────────────────────
 
@@ -148,19 +146,19 @@ public class ShopUI {
 
         if (gp.player.getRotCoins() < price) {
             statusMessage = "Not enough coins! Need " + price;
-            statusTimer   = STATUS_DURATION;
+            statusTimer   = STATUS_TICKS;
             return;
         }
 
         if (!gp.player.getInventory().addItem(item)) {
             statusMessage = "Inventory is full!";
-            statusTimer   = STATUS_DURATION;
+            statusTimer   = STATUS_TICKS;
             return;
         }
 
         gp.player.spendRotCoins(price);
         statusMessage = "Bought " + item.getName() + " for " + price + "!";
-        statusTimer   = STATUS_DURATION;
+        statusTimer   = STATUS_TICKS;
         System.out.println("[ShopUI] Purchased: " + item.getName()
                 + " | Remaining coins: " + gp.player.getRotCoins());
     }

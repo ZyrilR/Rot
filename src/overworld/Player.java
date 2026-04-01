@@ -2,7 +2,7 @@ package overworld;
 
 import engine.GamePanel;
 import input.KeyboardHandler;
-import items.Backpack;
+import items.Inventory;
 import tile.TileManager;
 import utils.AssetManager;
 
@@ -33,14 +33,14 @@ public class Player {
     public Rectangle solidArea;
     public boolean collisionOn = false;
 
-    private final Backpack backpack;
+    private final Inventory inventory;
     private int rotCoins; // in-game currency
 
     public Player(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
         this.kh = kh;
 
-        backpack = new Backpack(99);
+        inventory = new Inventory(99);
         rotCoins = 500; //for testing
 
         worldX = TILE_SIZE * 24;
@@ -70,8 +70,8 @@ public class Player {
         this.direction = direction;
     }
 
-    public Backpack getInventory() {
-        return backpack;
+    public Inventory getInventory() {
+        return inventory;
     }
     public int getCurrentSpeed() {return kh.running ? speed + 8 : speed;}
 
