@@ -26,7 +26,7 @@ public class Constants {
     //Dialogue Settings
     public static final int TEXT_SPEED = 1;
 
-    // PC & Shop UI Constants
+    // PC UI Constants
     public static final int    GRID_COLS    = 5;
     public static final int    GRID_ROWS    = 5;
     public static final double PANEL_SPLIT  = 0.60;
@@ -39,4 +39,10 @@ public class Constants {
     public static final int PANEL_W = 135;
     public static final int ROW_H   = 30;
     public static final int PAD_V   = 12;
+
+    // Shop & Inventory UI constants
+    public static final int LEFT_SPLIT   = 38;  // % of window width for left panel
+    public static final int NAME_LINE_H  = 15;  // line height for wrapped name in desc card
+    public static final int DESC_LINE_H  = 13;  // line height for description body text
+
 }

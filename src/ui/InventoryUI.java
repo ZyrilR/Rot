@@ -38,15 +38,6 @@ public class InventoryUI {
     private enum Tab    { ITEMS, CAPSULES }
     private enum Layout { ITEM_LIST, PARTY_SELECT, MOVE_SWAP }
 
-    // ── Layout constants ──────────────────────────────────────────────────────
-
-    private static final int INPUT_DELAY  = 10;
-    private static final int STATUS_TICKS = 90;  // ~3 s @ 30 FPS
-    private static final int LEFT_SPLIT   = 38;  // % of window width for left panel
-    private static final int ROW_H        = 30;  // pixel height of each item row
-    private static final int NAME_LINE_H  = 15;  // line height for wrapped name in desc card
-    private static final int DESC_LINE_H  = 13;  // line height for description body text
-
     // ── Injected refs ─────────────────────────────────────────────────────────
 
     private final GamePanel gp;
@@ -598,7 +589,7 @@ public class InventoryUI {
             g2.setFont(base.deriveFont(10f));
             FontMetrics fm = g2.getFontMetrics();
             g2.setColor(new Color(80, 78, 72));
-            g2.drawString(qty, listX + listW - fm.stringWidth(qty), textY);
+            g2.drawString(qty, listX + listW - fm.stringWidth(qty) - 6, textY);
 
             // Row divider (skip after the very last visible row)
             if (i < endIdx - 1) {

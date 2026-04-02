@@ -42,15 +42,6 @@ public class ShopUI {
     private int selectedIndex    = 0;
     private int scrollOffset     = 0;
 
-    // ── Layout constants ──────────────────────────────────────────────────────
-
-    private static final int INPUT_DELAY  = 10;
-    private static final int STATUS_TICKS = 90;   // ~3 s @ 30 FPS
-    private static final int LEFT_SPLIT   = 38;   // % of window width for left panel
-    private static final int ROW_H        = 30;   // pixel height of each item row
-    private static final int NAME_LINE_H  = 15;
-    private static final int DESC_LINE_H  = 13;
-
     // ── Input / status ────────────────────────────────────────────────────────
 
     private int    inputCooldown = 0;
@@ -439,7 +430,7 @@ public class ShopUI {
         for (int i = scrollOffset; i < endIdx; i++) {
             Item    item    = items.get(i);
             int     rowTop  = firstRowY + (i - scrollOffset) * ROW_H;
-            int     textY   = rowTop + ROW_H - 14;
+            int     textY   = rowTop + ROW_H - 10;
             boolean hovered = (i == selectedIndex);
 
             // Row highlight
@@ -476,8 +467,8 @@ public class ShopUI {
             FontMetrics pFm    = g2.getFontMetrics();
             int         numW   = pFm.stringWidth(priceStr);
             int         blockW = iconSize + iconGap + numW;
-            int         blockX = listX + listW - blockW;
-            int         iconY  = textY - iconSize + 6;
+            int         blockX = listX + listW - blockW - 6;
+            int         iconY  = textY - iconSize + 4;
 
             BufferedImage icon = coinIcon();
             if (icon != null) {
@@ -487,7 +478,7 @@ public class ShopUI {
                 g2.fillOval(blockX, iconY, iconSize, iconSize);
             }
             g2.setColor(new Color(80, 78, 72));
-            g2.drawString(priceStr, blockX + iconSize + iconGap, textY);
+            g2.drawString(priceStr, blockX + iconSize + iconGap, textY - 2);
 
             // Row divider (skip after last visible row)
             if (i < endIdx - 1) {
