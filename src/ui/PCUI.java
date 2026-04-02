@@ -107,8 +107,8 @@ public class PCUI {
 
     // ── BOX layout input ──────────────────────────────────────────────────────
     private void updateBoxLayout() {
-        if (gp.KEYBOARDHANDLER.pPressed) {
-            gp.KEYBOARDHANDLER.pPressed = false;
+        if (gp.KEYBOARDHANDLER.shiftPressed) {
+            gp.KEYBOARDHANDLER.shiftPressed = false;
             layout = Layout.PARTY; previousLayout = Layout.PARTY;
             partyCursorRow = 0; inputCooldown = INPUT_DELAY;
             return;
@@ -122,7 +122,6 @@ public class PCUI {
         if (gp.KEYBOARDHANDLER.tabPressed) {
             gp.KEYBOARDHANDLER.tabPressed = false;
             currentBox = (currentBox + 1) % PCSystem.BOX_COUNT;
-            if (heldRot == null) setStatus("Box " + (currentBox + 1), false);
             inputCooldown = INPUT_DELAY;
         }
 
@@ -150,8 +149,8 @@ public class PCUI {
 
     // ── PARTY layout input ────────────────────────────────────────────────────
     private void updatePartyLayout() {
-        if (gp.KEYBOARDHANDLER.pPressed) {
-            gp.KEYBOARDHANDLER.pPressed = false;
+        if (gp.KEYBOARDHANDLER.shiftPressed) {
+            gp.KEYBOARDHANDLER.shiftPressed = false;
             layout = Layout.BOX; previousLayout = Layout.BOX;
             inputCooldown = INPUT_DELAY;
             return;
@@ -557,8 +556,8 @@ public class PCUI {
         }
 
         String line1 = (layout == Layout.BOX)
-                ? "WASD Move  TAB Box  P Party"
-                : "WS Move  P Box  E Info";
+                ? "WASD Move  TAB Box  Shift Party"
+                : "WS Move  Shift Box  E Info";
         String line2 = (layout == Layout.BOX)
                 ? "E Info  ENT Select  ESC Cancel/Close"
                 : "ENT Select  ESC Cancel/Close";
