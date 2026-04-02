@@ -41,7 +41,7 @@ public class Player {
         this.kh = kh;
 
         inventory = new Inventory(99);
-        rotCoins = 500; //for testing
+        rotCoins = 2500; //for testing
 
         worldX = TILE_SIZE * 24;
         worldY = TILE_SIZE * 24;

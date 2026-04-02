@@ -76,7 +76,7 @@ public class ItemRegistry {
 
         registerItem(new Capsule(
                 "MASTER CAPSULE",
-                "A legendary capsule forged from pure Rot energy. Guarantees capture — no questions asked.",
+                "A legendary capsule forged from pure Rot energy. Guarantees capture, no questions asked.",
                 "/assets/Templates/Items/9.png", 1500));
 
         // ── Scrolls — NORMAL pool ─────────────────────────────────────────────

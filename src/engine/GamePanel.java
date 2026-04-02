@@ -113,23 +113,25 @@ public class GamePanel extends JPanel {
         PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.GOLD));
         PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.NORMAL));
         player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
         player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
         player.getInventory().addItem(ItemRegistry.getItem("SUPER STEW"));
+        player.getInventory().addItem(ItemRegistry.getItem("SUPER STEW"));
         player.getInventory().addItem(ItemRegistry.getItem("CONFUSION CURE"));
+        player.getInventory().addItem(ItemRegistry.getItem("PARALYZE CURE"));
         player.getInventory().addItem(ItemRegistry.getItem("PARALYZE CURE"));
         player.getInventory().addItem(ItemRegistry.getItem("BURN CURE"));
         player.getInventory().addItem(ItemRegistry.getItem("DEBUFF TONIC"));
         player.getInventory().addItem(ItemRegistry.getItem("RED CAPSULE"));
         player.getInventory().addItem(ItemRegistry.getItem("BLUE CAPSULE"));
         player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
-        player.getInventory().addItem(ItemRegistry.getItem("Wooden Thump Scroll"));
+        player.getInventory().addItem(ItemRegistry.getItem("Focus Stance Scroll"));
         player.getInventory().addItem(ItemRegistry.getItem("Sahur Chant Scroll"));
         player.getInventory().addItem(ItemRegistry.getItem("Sneaker Dash Scroll"));
         player.getInventory().addItem(ItemRegistry.getItem("Heat Burst Scroll"));
         player.getInventory().addItem(ItemRegistry.getItem("Evasion Up Scroll"));
         player.getInventory().addItem(ItemRegistry.getItem("Power Combo Scroll"));
         player.getInventory().addItem(ItemRegistry.getItem("Aqua Engine Scroll"));
-        player.getInventory().addItem(ItemRegistry.getItem("Wind Guard Scroll"));
         System.out.println("[GamePanel] Test party & items seeded.");
     }
 

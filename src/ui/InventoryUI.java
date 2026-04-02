@@ -469,7 +469,7 @@ public class InventoryUI {
 
         // ── Image card ────────────────────────────────────────────────────────
         int imgCardY = bodyY + 8;
-        int imgCardH = 148;
+        int imgCardH = 170;
         if (imgCardY + imgCardH > panelBottom) imgCardH = panelBottom - imgCardY - 4;
         drawCard(g2, panelX, imgCardY, panelW, imgCardH, 8);
 
@@ -531,7 +531,7 @@ public class InventoryUI {
 
         int listX       = divX + OUTER_PAD;
         int listW       = winX + winW - listX - OUTER_PAD;
-        int labelY      = bodyY + 14;     // baseline of tab label
+        int labelY      = bodyY + 16;     // baseline of tab label
         int firstRowY   = labelY + 8;    // top of first row rect
         int listAreaBot = statusBarY - 8;
         int listAreaH   = listAreaBot - firstRowY;
@@ -725,7 +725,7 @@ public class InventoryUI {
         g2.setColor(new Color(0, 0, 0, 130));
         g2.fillRoundRect(winX, winY, winW, winH, 16, 16);
 
-        int panelW = 440, panelH = 270;
+        int panelW = 440, panelH = 260;
         int panelX = winX + (winW - panelW) / 2;
         int panelY = winY + (winH - panelH) / 2;
         drawCard(g2, panelX, panelY, panelW, panelH, 12);
@@ -741,15 +741,15 @@ public class InventoryUI {
         // Sub-label
         g2.setFont(base.deriveFont(9f));
         g2.setColor(new Color(100, 96, 90));
-        g2.drawString("Choose a move to replace:", panelX + 14, panelY + 37);
+        g2.drawString("Choose a move to replace:", panelX + 14, panelY + 39);
 
         g2.setColor(new Color(200, 195, 180));
-        g2.drawLine(panelX + 10, panelY + 44, panelX + panelW - 10, panelY + 44);
+        g2.drawLine(panelX + 10, panelY + 46, panelX + panelW - 10, panelY + 46);
 
         if (pendingScrollTarget == null) return;
 
         List<Skill> moves  = pendingScrollTarget.getMoves();
-        int rowH = 42, listY = panelY + 50;
+        int rowH = 44, listY = panelY + 52;
         int badgeH = 16, padX = 5;
 
         for (int i = 0; i < moves.size(); i++) {
