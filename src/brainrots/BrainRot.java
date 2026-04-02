@@ -112,6 +112,16 @@ public class BrainRot {
         }
     }
 
+    /**
+     * Returns true if any stat modifier is currently below neutral (1.0),
+     * meaning the BrainRot has at least one active negative debuff.
+     *
+     * Used by InventoryUI to prevent wasting a Debuff Tonic on a healthy BrainRot.
+     */
+    public boolean hasActiveDebuffs() {
+        return attackMod < 1.0 || defenseMod < 1.0 || speedMod < 1.0;
+    }
+
     // ── Stat Modifiers (capped at ±40%) ──────────────────────────────────────
 
     public void modifyAttack(double delta) {

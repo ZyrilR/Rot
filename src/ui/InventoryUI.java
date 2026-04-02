@@ -5,7 +5,6 @@ import engine.GamePanel;
 import items.*;
 import skills.Skill;
 import skills.SkillPool;
-import storage.PCSystem;
 import utils.AssetManager;
 
 import java.awt.*;
@@ -19,7 +18,7 @@ import static utils.Constants.*;
  * InventoryUI — full-featured backpack overlay.
  *
  * Tabs:   ITEMS (Stews, Antidotes, Scrolls)  |  CAPSULES
- * Layout: left = item image + description card  |  right = item list
+ * Layout: left = item image + description card  |  right = scrollable item list
  *
  * State machine:
  *   ITEM_LIST    — browsing items in the selected tab
@@ -30,7 +29,7 @@ import static utils.Constants.*;
  *   TAB          — switch tabs (ITEM_LIST only)
  *   W/S          — move cursor
  *   ENTER        — confirm
- *   ESC          — cancel / go back one level (always returns to bag, never past it)
+ *   ESC          — cancel / go back one level
  */
 public class InventoryUI {
 
@@ -39,39 +38,37 @@ public class InventoryUI {
     private enum Tab    { ITEMS, CAPSULES }
     private enum Layout { ITEM_LIST, PARTY_SELECT, MOVE_SWAP }
 
-    // ── Constants ─────────────────────────────────────────────────────────────
+    // ── Layout constants ──────────────────────────────────────────────────────
 
-    private static final int INPUT_DELAY     = 10;
-    private static final int STATUS_TICKS    = 90; // ~3 s @ 30 FPS
-    private static final int LEFT_SPLIT      = 38; // % of window width for left panel
+    private static final int INPUT_DELAY  = 10;
+    private static final int STATUS_TICKS = 90;  // ~3 s @ 30 FPS
+    private static final int LEFT_SPLIT   = 38;  // % of window width for left panel
+    private static final int ROW_H        = 30;  // pixel height of each item row
+    private static final int NAME_LINE_H  = 15;  // line height for wrapped name in desc card
+    private static final int DESC_LINE_H  = 13;  // line height for description body text
 
     // ── Injected refs ─────────────────────────────────────────────────────────
 
     private final GamePanel gp;
 
-    // ── UI State ──────────────────────────────────────────────────────────────
+    // ── UI state ──────────────────────────────────────────────────────────────
 
-    private Tab    activeTab    = Tab.ITEMS;
-    private Layout layout       = Layout.ITEM_LIST;
+    private Tab    activeTab  = Tab.ITEMS;
+    private Layout layout     = Layout.ITEM_LIST;
 
-    /** Cursor in the item list */
-    private int itemCursor  = 0;
-    /** Cursor in the party list */
-    private int partyCursor = 0;
-    /** Cursor among the 4 move slots during MOVE_SWAP */
-    private int moveCursor  = 0;
+    private int itemCursor   = 0;   // absolute index into currentList()
+    private int scrollOffset = 0;   // first visible row index
+    private int partyCursor  = 0;
+    private int moveCursor   = 0;
 
     private int inputCooldown = 0;
 
     private String statusMessage = "";
     private int    statusTimer   = 0;
 
-    /** The item currently being applied (set when entering PARTY_SELECT) */
-    private Item   pendingItem = null;
-    /** The party member chosen for a scroll (set when entering MOVE_SWAP) */
+    private Item     pendingItem         = null;
     private BrainRot pendingScrollTarget = null;
 
-    /** Image cache: assetPath → image */
     private final Map<String, BufferedImage> imgCache = new HashMap<>();
 
     // ── Constructor ───────────────────────────────────────────────────────────
@@ -82,18 +79,18 @@ public class InventoryUI {
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
-    /** Open from overworld / menu — always starts on ITEMS tab. */
     public void open() {
-        activeTab     = Tab.ITEMS;
-        layout        = Layout.ITEM_LIST;
-        itemCursor    = 0;
-        partyCursor   = 0;
-        moveCursor    = 0;
-        pendingItem   = null;
+        activeTab           = Tab.ITEMS;
+        layout              = Layout.ITEM_LIST;
+        itemCursor          = 0;
+        scrollOffset        = 0;
+        partyCursor         = 0;
+        moveCursor          = 0;
+        pendingItem         = null;
         pendingScrollTarget = null;
-        statusMessage = "";
-        statusTimer   = 0;
-        inputCooldown = INPUT_DELAY * 2; // absorb the ENTER/ESC that opened us
+        statusMessage       = "";
+        statusTimer         = 0;
+        inputCooldown       = INPUT_DELAY * 2;
         System.out.println("[InventoryUI] Opened.");
     }
 
@@ -113,17 +110,16 @@ public class InventoryUI {
     // ── ITEM_LIST input ───────────────────────────────────────────────────────
 
     private void updateItemList() {
-        // TAB — switch tabs
         if (gp.KEYBOARDHANDLER.tabPressed) {
             gp.KEYBOARDHANDLER.tabPressed = false;
-            activeTab  = (activeTab == Tab.ITEMS) ? Tab.CAPSULES : Tab.ITEMS;
-            itemCursor = 0;
+            activeTab    = (activeTab == Tab.ITEMS) ? Tab.CAPSULES : Tab.ITEMS;
+            itemCursor   = 0;
+            scrollOffset = 0;
             clearStatus();
             inputCooldown = INPUT_DELAY;
             return;
         }
 
-        // ESC — close
         if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
             close();
@@ -131,38 +127,44 @@ public class InventoryUI {
         }
 
         List<Item> list = currentList();
+        int size = list.size();
 
-        // W / S — move cursor
         if (gp.KEYBOARDHANDLER.upPressed && itemCursor > 0) {
-            itemCursor--; inputCooldown = INPUT_DELAY; return;
+            itemCursor--;
+            clampScroll(computeVisibleCount());
+            inputCooldown = INPUT_DELAY;
+            return;
         }
-        if (gp.KEYBOARDHANDLER.downPressed && itemCursor < list.size() - 1) {
-            itemCursor++; inputCooldown = INPUT_DELAY; return;
+        if (gp.KEYBOARDHANDLER.downPressed && itemCursor < size - 1) {
+            itemCursor++;
+            clampScroll(computeVisibleCount());
+            inputCooldown = INPUT_DELAY;
+            return;
         }
 
-        // ENTER — use item
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
-            if (list.isEmpty()) { setStatus("Your bag is empty!"); inputCooldown = INPUT_DELAY; return; }
-            Item item = list.get(itemCursor);
-            handleItemUse(item);
+            if (size == 0) { setStatus("Your bag is empty!"); inputCooldown = INPUT_DELAY; return; }
+            handleItemUse(list.get(itemCursor));
             inputCooldown = INPUT_DELAY;
         }
     }
 
+    private void clampScroll(int visibleCount) {
+        if (itemCursor < scrollOffset) scrollOffset = itemCursor;
+        if (itemCursor >= scrollOffset + visibleCount) scrollOffset = itemCursor - visibleCount + 1;
+        if (scrollOffset < 0) scrollOffset = 0;
+    }
+
     private void handleItemUse(Item item) {
         if (item instanceof Capsule) {
-            // Capsules only usable in battle
             setStatus("Can't use capsules outside of battle!");
             return;
         }
-
-        // All other items need a party target
         if (gp.PCSYSTEM.getPartySize() == 0) {
             setStatus("No BrainRots in your party!");
             return;
         }
-
         pendingItem = item;
         partyCursor = 0;
         layout      = Layout.PARTY_SELECT;
@@ -174,58 +176,42 @@ public class InventoryUI {
     private void updatePartySelect() {
         int partySize = gp.PCSYSTEM.getPartySize();
 
-        // ESC — cancel back to item list immediately
         if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
             cancelToItemList("Cancelled.");
             return;
         }
-
-        // W / S — move cursor
         if (gp.KEYBOARDHANDLER.upPressed && partyCursor > 0) {
             partyCursor--; inputCooldown = INPUT_DELAY; return;
         }
         if (gp.KEYBOARDHANDLER.downPressed && partyCursor < partySize - 1) {
             partyCursor++; inputCooldown = INPUT_DELAY; return;
         }
-
-        // ENTER — confirm
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
             BrainRot target = gp.PCSYSTEM.getPartyMember(partyCursor);
-            if (target == null) { inputCooldown = INPUT_DELAY; return; }
-            applyItemToTarget(target);
+            if (target != null) applyItemToTarget(target);
             inputCooldown = INPUT_DELAY;
         }
     }
 
-    /**
-     * Dispatches item use based on type, enforcing pre-conditions.
-     * On success, removes the item from backpack.
-     */
     private void applyItemToTarget(BrainRot target) {
-        if (pendingItem instanceof Stew stew) {
-            applyStew(stew, target);
-        } else if (pendingItem instanceof Antidote antidote) {
-            applyAntidote(antidote, target);
-        } else if (pendingItem instanceof Scroll scroll) {
-            applyScroll(scroll, target);
-        }
+        if      (pendingItem instanceof Stew    s) applyStew(s, target);
+        else if (pendingItem instanceof Antidote a) applyAntidote(a, target);
+        else if (pendingItem instanceof Scroll   s) applyScroll(s, target);
     }
 
     // ── Stew ──────────────────────────────────────────────────────────────────
 
     private void applyStew(Stew stew, BrainRot target) {
         if (target.getCurrentHp() >= target.getMaxHp()) {
-            setStatus(target.getName() + "'s HP is already full!");
-            // Stay in PARTY_SELECT so player can pick another
-            return;
+            setStatus(target.getName() + " HP is full!"); return;
         }
         int before = target.getCurrentHp();
         stew.use(target);
         int healed = target.getCurrentHp() - before;
         consumePendingItem();
-        setStatus(target.getName() + " recovered " + healed + " HP!");
+        setStatus(target.getName() + " +" + healed + " HP!");
         returnToItemList();
     }
 
@@ -235,66 +221,73 @@ public class InventoryUI {
         String cure = antidote.getStatusToCure().toUpperCase();
 
         if (cure.equals("DEBUFF")) {
-            // Check if any modifier is not neutral
-            boolean hasDebuff = target.getAttack()  < (int)(getBaseAtk(target))
-                    || target.getDefense() < (int)(getBaseDef(target))
-                    || target.getSpeed()   < (int)(getBaseSpd(target));
-            // Simpler check: if all effective stats equal base we skip
-            // We'll rely on resetModifiers being a no-op check via BrainRot
-            // Use the item and report based on outcome
+            // BUG FIX: Only consume if there are actual debuffs to clear.
+            // hasDebuffs() should ideally call BrainRot.hasActiveDebuffs() once
+            // that method is added. See the comment on hasDebuffs() below.
+            if (!hasDebuffs(target)) {
+                setStatus("No stat debuffs to clear!");
+                return;
+            }
             antidote.use(target);
             consumePendingItem();
-            setStatus(target.getName() + "'s stat debuffs cleared!");
+            setStatus(target.getName() + " debuffs cleared!");
             returnToItemList();
             return;
         }
 
         if (!target.hasStatus(cure)) {
-            String readable = capitalize(cure.replace("_", " ").toLowerCase());
-            setStatus(target.getName() + " isn't " + readable + "!");
-            return; // Stay in PARTY_SELECT
+            // Keep the feedback short so it isn't truncated in the status bar
+            String shortName = shortenName(target.getName());
+            setStatus(shortName + " isn't " + capitalize(cure.toLowerCase()) + "!");
+            return;
         }
-
         antidote.use(target);
         consumePendingItem();
-        setStatus(target.getName() + " was cured of " + capitalize(cure.toLowerCase()) + "!");
+        String shortName = shortenName(target.getName());
+        setStatus(shortName + " cured!");
         returnToItemList();
+    }
+
+    /**
+     * Returns true if the target has any active negative stat modifier.
+     */
+    private boolean hasDebuffs(BrainRot target) {
+        return target.hasActiveDebuffs();
     }
 
     // ── Scroll ────────────────────────────────────────────────────────────────
 
     private void applyScroll(Scroll scroll, BrainRot target) {
         Scroll.ScrollResult result = scroll.validate(target);
-
         switch (result) {
             case SUCCESS -> {
                 scroll.apply(target, null);
                 consumePendingItem();
-                setStatus(target.getName() + " learned " + scroll.getSkillName() + "!");
+                String shortName = shortenName(target.getName());
+                setStatus(shortName + " learned " + scroll.getSkillName() + "!");
                 returnToItemList();
             }
             case MOVESET_FULL -> {
-                // Enter MOVE_SWAP — let player pick which move to replace
+                // Not an error — open move-swap picker
                 pendingScrollTarget = target;
                 moveCursor = 0;
                 layout     = Layout.MOVE_SWAP;
                 clearStatus();
             }
             case TYPE_MISMATCH -> {
-                setStatus(target.getName() + " can't learn this move!");
+                String shortName = shortenName(target.getName());
+                setStatus(shortName + " can't learn this!");
             }
             case SIGNATURE_MISMATCH -> {
-                // Find the owner name for better feedback
                 String owner = findSignatureOwner(scroll.getSkillName());
-                setStatus("Only " + (owner != null ? owner : "its owner") + " can learn this!");
+                setStatus("Only " + (owner != null ? shortenName(owner) : "its owner") + " can learn this!");
             }
             case ALREADY_KNOWN -> {
-                setStatus(target.getName() + " already knows " + scroll.getSkillName() + "!");
+                String shortName = shortenName(target.getName());
+                setStatus(shortName + " already knows this!");
             }
-            case SKILL_NOT_FOUND -> {
-                setStatus("Error: skill not found in registry.");
-            }
-            default -> setStatus("Cannot use this scroll here.");
+            case SKILL_NOT_FOUND -> setStatus("Error: skill not found.");
+            default              -> setStatus("Cannot use this scroll.");
         }
         inputCooldown = INPUT_DELAY;
     }
@@ -305,32 +298,24 @@ public class InventoryUI {
         if (pendingScrollTarget == null) { cancelToItemList("Cancelled."); return; }
         int moveCount = pendingScrollTarget.getMoves().size();
 
-        // ESC — cancel scroll, return to item list immediately
         if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
             pendingScrollTarget = null;
             cancelToItemList("Scroll cancelled.");
             return;
         }
+        if (gp.KEYBOARDHANDLER.upPressed   && moveCursor > 0)            { moveCursor--; inputCooldown = INPUT_DELAY; return; }
+        if (gp.KEYBOARDHANDLER.downPressed  && moveCursor < moveCount - 1){ moveCursor++; inputCooldown = INPUT_DELAY; return; }
 
-        // W / S — navigate moves
-        if (gp.KEYBOARDHANDLER.upPressed && moveCursor > 0) {
-            moveCursor--; inputCooldown = INPUT_DELAY; return;
-        }
-        if (gp.KEYBOARDHANDLER.downPressed && moveCursor < moveCount - 1) {
-            moveCursor++; inputCooldown = INPUT_DELAY; return;
-        }
-
-        // ENTER — confirm swap
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
             if (pendingItem instanceof Scroll scroll) {
                 Scroll.ScrollResult result = scroll.apply(pendingScrollTarget, moveCursor);
                 if (result == Scroll.ScrollResult.SWAPPED) {
                     consumePendingItem();
-                    setStatus(pendingScrollTarget.getName() + " learned " + scroll.getSkillName() + "!");
+                    setStatus(shortenName(pendingScrollTarget.getName()) + " learned " + scroll.getSkillName() + "!");
                 } else {
-                    setStatus("Could not swap move (index invalid).");
+                    setStatus("Could not swap move.");
                 }
             }
             pendingScrollTarget = null;
@@ -341,16 +326,14 @@ public class InventoryUI {
 
     // ── State helpers ─────────────────────────────────────────────────────────
 
-    /** Return to ITEM_LIST, keeping the status message visible. */
     private void returnToItemList() {
         layout      = Layout.ITEM_LIST;
         pendingItem = null;
-        // Clamp cursor to remaining list
         int size = currentList().size();
-        if (itemCursor >= size && size > 0) itemCursor = size - 1;
+        if (size == 0) { itemCursor = 0; scrollOffset = 0; }
+        else if (itemCursor >= size) { itemCursor = size - 1; clampScroll(computeVisibleCount()); }
     }
 
-    /** Cancel back to ITEM_LIST with an explicit message. */
     private void cancelToItemList(String msg) {
         pendingItem         = null;
         pendingScrollTarget = null;
@@ -360,39 +343,31 @@ public class InventoryUI {
     }
 
     private void close() {
-        gp.GAMESTATE = "menu";  // go back to the pause menu that opened us
+        gp.GAMESTATE = "menu";
         gp.MENUUI.open();
-        System.out.println("[InventoryUI] Closed → back to menu.");
+        System.out.println("[InventoryUI] Closed → menu.");
     }
 
-    /** Remove the pending item from the player's backpack. */
     private void consumePendingItem() {
         if (pendingItem == null) return;
         gp.player.getInventory().removeItem(pendingItem);
         pendingItem = null;
     }
 
-    // ── Current list ──────────────────────────────────────────────────────────
+    // ── Item list helpers ─────────────────────────────────────────────────────
 
-    /**
-     * Builds the visible item list for the active tab.
-     * De-duplicates by returning one entry per unique item name
-     * (quantity is computed separately for display).
-     */
     private List<Item> currentList() {
         List<Item> all = gp.player.getInventory().getRawItems();
         List<Item> out = new ArrayList<>();
         Set<String> seen = new LinkedHashSet<>();
-
         for (Item item : all) {
-            boolean isCapsule = (item instanceof Capsule);
-            if (activeTab == Tab.CAPSULES && isCapsule && seen.add(item.getName())) out.add(item);
-            if (activeTab == Tab.ITEMS    && !isCapsule && seen.add(item.getName())) out.add(item);
+            boolean cap = (item instanceof Capsule);
+            if (activeTab == Tab.CAPSULES &&  cap && seen.add(item.getName())) out.add(item);
+            if (activeTab == Tab.ITEMS    && !cap && seen.add(item.getName())) out.add(item);
         }
         return out;
     }
 
-    /** Count how many of a given item name are in the backpack. */
     private int countOf(String name) {
         int c = 0;
         for (Item item : gp.player.getInventory().getRawItems())
@@ -412,33 +387,37 @@ public class InventoryUI {
         g2.setColor(new Color(0, 0, 0, 180));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        // Window bounds
+        // ── Window bounds ─────────────────────────────────────────────────────
         int winX = TILE_SIZE, winY = TILE_SIZE;
-        int winW = SCREEN_WIDTH  - TILE_SIZE * 2;
-        int winH = SCREEN_HEIGHT - TILE_SIZE * 2;
+        int winW = SCREEN_WIDTH  - TILE_SIZE * 2;   // 672 px
+        int winH = SCREEN_HEIGHT - TILE_SIZE * 2;   // 480 px
 
         drawWindow(g2, winX, winY, winW, winH);
         drawTitleBar(g2, base, winX, winY, winW);
 
-        int bodyY = winY + 52; // below title bar + gold divider
+        int bodyY = winY + 52;  // below title bar + gold divider
 
-        // Split panels
-        int leftW  = (int)(winW * LEFT_SPLIT / 100.0);
-        int divX   = winX + leftW;
+        // Status bar position — computed once, both panels use it as their floor
+        int statusBarH = STATUS_BAR_H;
+        int statusBarY = winY + winH - statusBarH - 8;
 
-        // Vertical divider
+        // ── Panel split ───────────────────────────────────────────────────────
+        int leftW = (int)(winW * LEFT_SPLIT / 100.0);
+        int divX  = winX + leftW;
+
+        // Vertical divider line
         g2.setColor(new Color(200, 195, 180));
-        g2.drawLine(divX, bodyY, divX, winY + winH - STATUS_BAR_H - 10);
+        g2.drawLine(divX, bodyY, divX, statusBarY - 4);
 
-        // Panels
-        drawLeftPanel (g2, base, winX, winY, winW, winH, bodyY, leftW);
-        drawRightPanel(g2, base, winX, winY, winW, winH, bodyY, divX);
+        // ── Draw left and right panels ────────────────────────────────────────
+        drawLeftPanel (g2, base, winX, bodyY, leftW, statusBarY);
+        drawRightPanel(g2, base, winX, winW,  bodyY, divX, statusBarY);
 
-        // Overlays on top of base layout
+        // ── Overlays on top ───────────────────────────────────────────────────
         if (layout == Layout.PARTY_SELECT) drawPartySelectOverlay(g2, base, winX, winY, winW, winH);
         if (layout == Layout.MOVE_SWAP)    drawMoveSwapOverlay   (g2, base, winX, winY, winW, winH);
 
-        drawStatusBar(g2, base, winX, winY, winW, winH);
+        drawStatusBar(g2, base, winX, winY, winW, statusBarY, statusBarH);
     }
 
     // ── Title bar ─────────────────────────────────────────────────────────────
@@ -451,9 +430,9 @@ public class InventoryUI {
         g2.setColor(new Color(241, 239, 232));
         g2.drawString("BACKPACK", winX + 28, winY + 32);
 
-        // Tab pill buttons — right-aligned in the title bar
-        String[]   labels = { "ITEMS", "CAPSULES" };
-        Tab[]      tabs   = { Tab.ITEMS, Tab.CAPSULES };
+        // Tab pills — right-aligned inside title bar
+        String[] labels = { "ITEMS", "CAPSULES" };
+        Tab[]    tabs   = { Tab.ITEMS, Tab.CAPSULES };
 
         g2.setFont(base.deriveFont(Font.BOLD, 10f));
         FontMetrics fm = g2.getFontMetrics();
@@ -466,7 +445,8 @@ public class InventoryUI {
             g2.setColor(active ? new Color(216, 184, 88) : new Color(80, 78, 72));
             g2.fillRoundRect(btnX, btnY, btnW, btnH, 6, 6);
             g2.setColor(active ? new Color(44, 44, 42) : new Color(200, 196, 185));
-            g2.drawString(labels[i], btnX + (btnW - fm.stringWidth(labels[i])) / 2,
+            g2.drawString(labels[i],
+                    btnX + (btnW - fm.stringWidth(labels[i])) / 2,
                     btnY + (btnH - fm.getHeight()) / 2 + fm.getAscent());
             right = btnX - gap;
         }
@@ -478,133 +458,190 @@ public class InventoryUI {
     // ── Left panel — image + description ──────────────────────────────────────
 
     private void drawLeftPanel(Graphics2D g2, Font base,
-                               int winX, int winY, int winW, int winH,
-                               int bodyY, int leftW) {
-        List<Item> list = currentList();
-        Item sel = (list.isEmpty() || itemCursor >= list.size()) ? null : list.get(itemCursor);
+                               int winX, int bodyY, int leftW, int statusBarY) {
 
-        int panelX = winX + OUTER_PAD;
-        int panelW = leftW - OUTER_PAD - 8;
+        List<Item> list = currentList();
+        Item sel = (!list.isEmpty() && itemCursor < list.size()) ? list.get(itemCursor) : null;
+
+        int panelX      = winX + OUTER_PAD;
+        int panelW      = leftW - OUTER_PAD - 10;
+        int panelBottom = statusBarY - 8;
 
         // ── Image card ────────────────────────────────────────────────────────
         int imgCardY = bodyY + 8;
-        int imgCardH = 160;
+        int imgCardH = 148;
+        if (imgCardY + imgCardH > panelBottom) imgCardH = panelBottom - imgCardY - 4;
         drawCard(g2, panelX, imgCardY, panelW, imgCardH, 8);
 
         if (sel != null) {
             BufferedImage img = loadItemImage(sel);
-            if (img != null) {
-                int margin = 12;
-                g2.drawImage(img, panelX + margin, imgCardY + margin,
-                        panelW - margin * 2, imgCardH - margin * 2, null);
-            } else {
-                drawCentredText(g2, base, panelX, imgCardY, panelW, imgCardH, "[img]");
-            }
+            int m = 10;
+            if (img != null) g2.drawImage(img, panelX + m, imgCardY + m, panelW - m * 2, imgCardH - m * 2, null);
+            else drawCentredText(g2, base, panelX, imgCardY, panelW, imgCardH, "[img]");
         } else {
             drawCentredText(g2, base, panelX, imgCardY, panelW, imgCardH, "—");
         }
 
-        // ── Description card ──────────────────────────────────────────────────
+        // ── Description card — fills remaining vertical space ─────────────────
         int descCardY = imgCardY + imgCardH + 6;
-        int descCardH = winH - (descCardY - winY) - STATUS_BAR_H - 16;
+        int descCardH = panelBottom - descCardY;
+        if (descCardH < 24) return;
+
         drawCard(g2, panelX, descCardY, panelW, descCardH, 8);
 
-        int tx = panelX + 10;
-        int ty = descCardY + 18;
-
-        if (sel != null) {
-            // Item name — bold
-            g2.setFont(base.deriveFont(Font.BOLD, 11f));
-            g2.setColor(new Color(44, 44, 42));
-            ty = drawWrappedText(g2, base.deriveFont(Font.BOLD, 11f),
-                    sel.getName(), tx, ty, panelW - 20, 16, new Color(44, 44, 42));
-            ty += 6;
-
-            // Description — wrapped
-            drawWrappedText(g2, base.deriveFont(9f),
-                    sel.getDescription(), tx, ty, panelW - 20, 14, new Color(80, 76, 70));
-        } else {
-            g2.setFont(base.deriveFont(10f));
+        if (sel == null) {
+            g2.setFont(base.deriveFont(11f));
             g2.setColor(new Color(140, 136, 128));
-            g2.drawString("Select an item.", tx, ty + 10);
-        }
-    }
-
-    // ── Right panel — item list ───────────────────────────────────────────────
-
-    private void drawRightPanel(Graphics2D g2, Font base,
-                                int winX, int winY, int winW, int winH,
-                                int bodyY, int divX) {
-        List<Item> list = currentList();
-
-        int listX = divX + OUTER_PAD;
-        int listW = winX + winW - listX - OUTER_PAD;
-        int listY = bodyY + 8;
-
-        // Section label
-        g2.setFont(base.deriveFont(10f));
-        g2.setColor(new Color(120, 116, 108));
-        String tabLabel = (activeTab == Tab.ITEMS) ? "ITEMS" : "CAPSULES";
-        g2.drawString(tabLabel, listX, listY + 12);
-
-        if (list.isEmpty()) {
-            g2.setFont(base.deriveFont(10f));
-            g2.setColor(new Color(150, 145, 138));
-            g2.drawString("Nothing here.", listX, listY + 36);
+            g2.drawString("Select an item.", panelX + 10, descCardY + 20);
             return;
         }
 
-        int rowH       = 30;
-        int firstRowY  = listY + 24;
+        // Clip to card interior — nothing bleeds outside
+        Shape prevClip = g2.getClip();
+        g2.setClip(panelX + 4, descCardY + 4, panelW - 8, descCardH - 8);
 
-        for (int i = 0; i < list.size(); i++) {
-            Item item = list.get(i);
-            int  rowY = firstRowY + i * rowH;
+        int tx    = panelX + 10;
+        int textW = panelW - 20;
+        int ty    = descCardY + 24;
+
+        // Name — word-wrapped, bold 12pt
+        // Long names like "TUNG TUNG TUNG SAHUR" will wrap rather than truncate
+        g2.setFont(base.deriveFont(Font.BOLD, 13f));
+        FontMetrics nameFm = g2.getFontMetrics();
+        ty = drawWordWrapped(g2, nameFm, sel.getName(), tx, ty, textW,
+                NAME_LINE_H, new Color(44, 44, 42));
+        ty += 6;
+
+        // Description — word-wrapped, 11pt
+        g2.setFont(base.deriveFont(11f));
+        drawWordWrapped(g2, g2.getFontMetrics(), sel.getDescription(),
+                tx, ty, textW, DESC_LINE_H, new Color(88, 84, 76));
+
+        g2.setClip(prevClip);
+    }
+
+    // ── Right panel — scrollable item list ────────────────────────────────────
+
+    private void drawRightPanel(Graphics2D g2, Font base,
+                                int winX, int winW, int bodyY,
+                                int divX, int statusBarY) {
+
+        List<Item> list  = currentList();
+        int totalCount   = list.size();
+
+        int listX       = divX + OUTER_PAD;
+        int listW       = winX + winW - listX - OUTER_PAD;
+        int labelY      = bodyY + 14;     // baseline of tab label
+        int firstRowY   = labelY + 8;    // top of first row rect
+        int listAreaBot = statusBarY - 8;
+        int listAreaH   = listAreaBot - firstRowY;
+        int visCount    = Math.max(1, listAreaH / ROW_H);
+
+        // ── Tab label (left) + counter (right) ────────────────────────────────
+        String tabLabel = activeTab == Tab.ITEMS ? "ITEMS" : "CAPSULES";
+        g2.setFont(base.deriveFont(10f));
+        g2.setColor(new Color(120, 116, 108));
+        g2.drawString(tabLabel, listX, labelY);
+
+        // Counter "1 / N" right of label, same baseline
+        if (totalCount > 0) {
+            String counter = (itemCursor + 1) + " / " + totalCount;
+            FontMetrics cfm = g2.getFontMetrics();
+            g2.drawString(counter, listX + listW - cfm.stringWidth(counter), labelY);
+        }
+
+        if (totalCount == 0) {
+            g2.setFont(base.deriveFont(10f));
+            g2.setColor(new Color(150, 145, 138));
+            g2.drawString("Nothing here.", listX, firstRowY + ROW_H / 2);
+            return;
+        }
+
+        clampScroll(visCount);
+
+        // Hard-clip the list area — partial bottom rows are cut off cleanly
+        Shape prevClip = g2.getClip();
+        g2.setClip(listX - 6, firstRowY, listW + 12, listAreaH);
+
+        int endIdx = Math.min(scrollOffset + visCount, totalCount);
+
+        for (int i = scrollOffset; i < endIdx; i++) {
+            Item    item    = list.get(i);
+            int     rowTop  = firstRowY + (i - scrollOffset) * ROW_H;
+            int     textY   = rowTop + ROW_H - 9;  // text baseline inside row
             boolean hovered = (i == itemCursor);
 
             if (hovered) {
-                // Highlight background
                 g2.setColor(new Color(178, 212, 244, 200));
-                g2.fillRoundRect(listX - 4, rowY - 16, listW + 4, rowH, 5, 5);
+                g2.fillRoundRect(listX - 4, rowTop, listW + 4, ROW_H - 2, 5, 5);
                 g2.setColor(new Color(24, 95, 165));
                 g2.setStroke(new BasicStroke(1.5f));
-                g2.drawRoundRect(listX - 4, rowY - 16, listW + 4, rowH, 5, 5);
+                g2.drawRoundRect(listX - 4, rowTop, listW + 4, ROW_H - 2, 5, 5);
                 g2.setStroke(new BasicStroke(1));
 
-                // Cursor triangle (same style as MenuUI)
-                int ts = 7, tx2 = listX, cy = rowY - 16 + rowH / 2;
+                // Cursor triangle
+                int ts = 7, cx = listX + 2, cy = rowTop + ROW_H / 2 - 1;
                 g2.setColor(new Color(80, 76, 70));
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.fillPolygon(
-                        new int[]{ tx2,      tx2,      tx2 + ts },
-                        new int[]{ cy - ts,  cy + ts,  cy       }, 3);
+                g2.fillPolygon(new int[]{ cx, cx, cx + ts }, new int[]{ cy - ts, cy + ts, cy }, 3);
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
             }
 
-            // Item name
+            // Item name — truncated to leave space for qty on the right
             g2.setFont(base.deriveFont(hovered ? Font.BOLD : Font.PLAIN, 11f));
             g2.setColor(new Color(44, 44, 42));
-            g2.drawString(item.getName(), listX + 14, rowY);
+            int nameMaxW = listW - 54;
+            g2.drawString(truncate(item.getName(), g2.getFontMetrics(), nameMaxW), listX + 16, textY);
 
             // Quantity — right-aligned
-            String qty     = "x " + countOf(item.getName());
+            String qty = "x " + countOf(item.getName());
             g2.setFont(base.deriveFont(10f));
             FontMetrics fm = g2.getFontMetrics();
             g2.setColor(new Color(80, 78, 72));
-            g2.drawString(qty, listX + listW - fm.stringWidth(qty), rowY);
+            g2.drawString(qty, listX + listW - fm.stringWidth(qty), textY);
+
+            // Row divider (skip after the very last visible row)
+            if (i < endIdx - 1) {
+                g2.setColor(new Color(205, 200, 190));
+                g2.drawLine(listX, rowTop + ROW_H - 1, listX + listW, rowTop + ROW_H - 1);
+            }
         }
+
+        g2.setClip(prevClip);
+
+        // ── Scroll hints outside clip region ──────────────────────────────────
+        g2.setFont(base.deriveFont(9f));
+        g2.setColor(new Color(140, 136, 128));
+        int arrowX = listX + listW / 2;
+        if (scrollOffset > 0)
+            g2.drawString("^ more", arrowX - 16, firstRowY - 2);
+        if (scrollOffset + visCount < totalCount) {
+            int hintY = firstRowY + visCount * ROW_H + 10;
+            if (hintY < listAreaBot + 14)
+                g2.drawString("v more", arrowX - 16, hintY);
+        }
+    }
+
+    /** Computes visible row count from screen geometry — used in update() for scroll sync. */
+    private int computeVisibleCount() {
+        int winY       = TILE_SIZE;
+        int winH       = SCREEN_HEIGHT - TILE_SIZE * 2;
+        int bodyY      = winY + 52;
+        int statusBarY = winY + winH - STATUS_BAR_H - 8;
+        int labelY     = bodyY + 14;
+        int firstRowY  = labelY + 12;
+        int listAreaH  = (statusBarY - 8) - firstRowY;
+        return Math.max(1, listAreaH / ROW_H);
     }
 
     // ── PARTY SELECT overlay ──────────────────────────────────────────────────
 
     private void drawPartySelectOverlay(Graphics2D g2, Font base,
                                         int winX, int winY, int winW, int winH) {
-        // Semi-transparent dark overlay on the window
         g2.setColor(new Color(0, 0, 0, 130));
         g2.fillRoundRect(winX, winY, winW, winH, 16, 16);
 
-        // Party panel — centred
-        int panelW = 400, panelH = 320;
+        int panelW = 430, panelH = 318;
         int panelX = winX + (winW - panelW) / 2;
         int panelY = winY + (winH - panelH) / 2;
         drawCard(g2, panelX, panelY, panelW, panelH, 12);
@@ -613,23 +650,26 @@ public class InventoryUI {
         g2.setFont(base.deriveFont(Font.BOLD, 13f));
         g2.setColor(new Color(44, 44, 42));
         g2.drawString("Choose a BrainRot", panelX + 14, panelY + 22);
-
         g2.setColor(new Color(200, 195, 180));
         g2.drawLine(panelX + 10, panelY + 28, panelX + panelW - 10, panelY + 28);
 
-        int rowH  = 42;
-        int listY = panelY + 36;
+        int rowH      = 44;
+        int listY     = panelY + 36;
         int partySize = gp.PCSYSTEM.getPartySize();
 
-        for (int i = 0; i < partySize; i++) {
-            BrainRot rot   = gp.PCSYSTEM.getPartyMember(i);
-            boolean hovered = (i == partyCursor);
-            boolean greyed  = isGreyedOut(rot);
+        // Clip rows to panel content area
+        Shape prev = g2.getClip();
+        g2.setClip(panelX + 4, listY, panelW - 8, panelH - 54);
 
-            int rowY = listY + i * rowH;
+        for (int i = 0; i < partySize; i++) {
+            BrainRot rot     = gp.PCSYSTEM.getPartyMember(i);
+            boolean  hovered = (i == partyCursor);
+            boolean  greyed  = isGreyedOut(rot);
+            int      rowY    = listY + i * rowH;
 
             // Row background
-            Color bg = hovered ? (greyed ? new Color(220, 210, 210) : new Color(178, 212, 244, 220))
+            Color bg = hovered
+                    ? (greyed ? new Color(220, 210, 210) : new Color(178, 212, 244, 220))
                     : new Color(235, 231, 223);
             g2.setColor(bg);
             g2.fillRoundRect(panelX + 8, rowY, panelW - 16, rowH - 4, 6, 6);
@@ -639,83 +679,85 @@ public class InventoryUI {
                 g2.setStroke(new BasicStroke(1.5f));
                 g2.drawRoundRect(panelX + 8, rowY, panelW - 16, rowH - 4, 6, 6);
                 g2.setStroke(new BasicStroke(1));
-
-                // Cursor triangle
-                int ts = 6, tx2 = panelX + 12, cy = rowY + (rowH - 4) / 2;
+                int ts = 6, cx = panelX + 12, cy = rowY + (rowH - 4) / 2;
                 g2.setColor(new Color(80, 76, 70));
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.fillPolygon(new int[]{ tx2, tx2, tx2 + ts }, new int[]{ cy - ts, cy + ts, cy }, 3);
+                g2.fillPolygon(new int[]{ cx, cx, cx + ts }, new int[]{ cy - ts, cy + ts, cy }, 3);
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
             }
 
             int textX = panelX + 26;
 
-            // Name
+            // BrainRot name — truncated, greyed if applicable
             g2.setFont(base.deriveFont(Font.BOLD, 11f));
             g2.setColor(greyed ? new Color(160, 155, 148) : new Color(44, 44, 42));
-            g2.drawString(rot.getName(), textX, rowY + 16);
+            int nameMaxW = panelW - 140;
+            g2.drawString(truncate(rot.getName(), g2.getFontMetrics(), nameMaxW), textX, rowY + 16);
 
-            // HP  / status
-            String info = "HP: " + rot.getCurrentHp() + "/" + rot.getMaxHp()
+            // HP / status sub-line
+            String info = "HP " + rot.getCurrentHp() + "/" + rot.getMaxHp()
                     + (rot.getStatus().equalsIgnoreCase("NONE") ? "" : "  [" + rot.getStatus() + "]");
             g2.setFont(base.deriveFont(9f));
             g2.setColor(greyed ? new Color(170, 165, 158) : new Color(88, 84, 76));
             g2.drawString(info, textX, rowY + 30);
 
-            // Grey reason hint on hovered greyed row
-            if (hovered && greyed) {
-                String hint = greyReason(rot);
-                g2.setFont(base.deriveFont(9f));
-                g2.setColor(new Color(180, 80, 60));
+            // Grey reason — always shown on greyed rows, right-aligned
+            if (greyed) {
+                String reason = greyReason(rot);
+                g2.setFont(base.deriveFont(8f));
                 FontMetrics fm = g2.getFontMetrics();
-                g2.drawString(hint, panelX + panelW - fm.stringWidth(hint) - 12, rowY + 22);
+                g2.setColor(new Color(180, 80, 60));
+                g2.drawString(reason, panelX + panelW - fm.stringWidth(reason) - 14, rowY + 24);
             }
         }
 
-        // ESC hint
-        g2.setFont(base.deriveFont(9f));
+        g2.setClip(prev);
+
+        g2.setFont(base.deriveFont(7f));
         g2.setColor(new Color(120, 116, 108));
-        g2.drawString("ESC Cancel", panelX + 14, panelY + panelH - 10);
+        g2.drawString("WS Move   ENT Confirm   ESC Cancel", panelX + 14, panelY + panelH - 10);
     }
 
     // ── MOVE SWAP overlay ─────────────────────────────────────────────────────
 
     private void drawMoveSwapOverlay(Graphics2D g2, Font base,
                                      int winX, int winY, int winW, int winH) {
-        // Semi-transparent overlay
         g2.setColor(new Color(0, 0, 0, 130));
         g2.fillRoundRect(winX, winY, winW, winH, 16, 16);
 
-        int panelW = 420, panelH = 260;
+        int panelW = 440, panelH = 270;
         int panelX = winX + (winW - panelW) / 2;
         int panelY = winY + (winH - panelH) / 2;
         drawCard(g2, panelX, panelY, panelW, panelH, 12);
 
-        // Title
+        // Title — "Learning: [skill name]"
         g2.setFont(base.deriveFont(Font.BOLD, 13f));
         g2.setColor(new Color(44, 44, 42));
-        String title = "Replace which move?";
-        if (pendingItem instanceof Scroll s)
-            title = "Learning: " + s.getSkillName() + " — Replace?";
+        String title = (pendingItem instanceof Scroll s)
+                ? "Learning: " + truncate(s.getSkillName(), g2.getFontMetrics(), panelW - 60)
+                : "Replace which move?";
         g2.drawString(title, panelX + 14, panelY + 22);
 
+        // Sub-label
+        g2.setFont(base.deriveFont(9f));
+        g2.setColor(new Color(100, 96, 90));
+        g2.drawString("Choose a move to replace:", panelX + 14, panelY + 37);
+
         g2.setColor(new Color(200, 195, 180));
-        g2.drawLine(panelX + 10, panelY + 28, panelX + panelW - 10, panelY + 28);
+        g2.drawLine(panelX + 10, panelY + 44, panelX + panelW - 10, panelY + 44);
 
         if (pendingScrollTarget == null) return;
 
-        List<Skill> moves = pendingScrollTarget.getMoves();
-        int rowH  = 44;
-        int listY = panelY + 36;
+        List<Skill> moves  = pendingScrollTarget.getMoves();
+        int rowH = 42, listY = panelY + 50;
         int badgeH = 16, padX = 5;
 
         for (int i = 0; i < moves.size(); i++) {
-            Skill mv     = moves.get(i);
-            boolean hov  = (i == moveCursor);
-            int rowY     = listY + i * rowH;
+            Skill   mv  = moves.get(i);
+            boolean hov = (i == moveCursor);
+            int     rowY = listY + i * rowH;
 
-            Color bg = hov ? new Color(178, 212, 244, 220) : new Color(235, 231, 223);
-            g2.setColor(bg);
+            g2.setColor(hov ? new Color(178, 212, 244, 220) : new Color(235, 231, 223));
             g2.fillRoundRect(panelX + 8, rowY, panelW - 16, rowH - 4, 6, 6);
 
             if (hov) {
@@ -723,19 +765,18 @@ public class InventoryUI {
                 g2.setStroke(new BasicStroke(1.5f));
                 g2.drawRoundRect(panelX + 8, rowY, panelW - 16, rowH - 4, 6, 6);
                 g2.setStroke(new BasicStroke(1));
-
-                int ts = 6, tx2 = panelX + 12, cy = rowY + (rowH - 4) / 2;
+                int ts = 6, cx = panelX + 12, cy = rowY + (rowH - 4) / 2;
                 g2.setColor(new Color(80, 76, 70));
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.fillPolygon(new int[]{ tx2, tx2, tx2 + ts }, new int[]{ cy - ts, cy + ts, cy }, 3);
+                g2.fillPolygon(new int[]{ cx, cx, cx + ts }, new int[]{ cy - ts, cy + ts, cy }, 3);
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
             }
 
             // Type badge
             g2.setFont(base.deriveFont(8f));
             FontMetrics fm = g2.getFontMetrics();
-            int badgeW = fm.stringWidth(mv.getType().name()) + padX * 2;
-            int badgeX = panelX + 24;
+            int badgeW    = fm.stringWidth(mv.getType().name()) + padX * 2;
+            int badgeX    = panelX + 24;
             int badgeTopY = rowY + (rowH - 4 - badgeH) / 2;
             g2.setColor(typeColor(mv.getType().name()));
             g2.fillRoundRect(badgeX, badgeTopY, badgeW, badgeH, 4, 4);
@@ -743,11 +784,12 @@ public class InventoryUI {
             g2.drawString(mv.getType().name(), badgeX + padX, badgeTopY + 11);
 
             // Move name
+            int nameX = panelX + 24 + badgeW + 8;
             g2.setFont(base.deriveFont(hov ? Font.BOLD : Font.PLAIN, 11f));
             g2.setColor(new Color(44, 44, 42));
-            g2.drawString(mv.getName(), panelX + 24 + badgeW + 8, rowY + rowH / 2 + 5);
+            g2.drawString(truncate(mv.getName(), g2.getFontMetrics(), panelW - 140), nameX, rowY + rowH / 2 + 5);
 
-            // SP cost
+            // SP cost — right-aligned
             String sp = "SP " + mv.getSpCost();
             g2.setFont(base.deriveFont(9f));
             fm = g2.getFontMetrics();
@@ -755,71 +797,96 @@ public class InventoryUI {
             g2.drawString(sp, panelX + panelW - fm.stringWidth(sp) - 16, rowY + rowH / 2 + 5);
         }
 
-        // Hints
-        g2.setFont(base.deriveFont(9f));
+        g2.setFont(base.deriveFont(7f));
         g2.setColor(new Color(120, 116, 108));
-        g2.drawString("ENT Replace   ESC Cancel", panelX + 14, panelY + panelH - 10);
+        g2.drawString("WS Move   ENT Replace   ESC Cancel", panelX + 14, panelY + panelH - 10);
     }
 
     // ── Status bar ────────────────────────────────────────────────────────────
 
-    private void drawStatusBar(Graphics2D g2, Font base, int winX, int winY, int winW, int winH) {
-        int barH = STATUS_BAR_H, barY = winY + winH - barH - 8;
-        int barX = winX + 8,    barW = winW - 16;
+    private void drawStatusBar(Graphics2D g2, Font base,
+                               int winX, int winY, int winW,
+                               int statusBarY, int statusBarH) {
+        int barX = winX + 8, barW = winW - 16;
 
         g2.setColor(new Color(215, 210, 200));
-        g2.fillRoundRect(barX, barY, barW, barH, 5, 5);
+        g2.fillRoundRect(barX, statusBarY, barW, statusBarH, 5, 5);
 
-        // Status message — left
-        if (!statusMessage.isEmpty()) {
-            g2.setFont(base.deriveFont(10f));
-            g2.setColor(new Color(44, 44, 42));
-            g2.drawString(statusMessage, barX + 12, barY + (barH - g2.getFontMetrics().getHeight()) / 2 + g2.getFontMetrics().getAscent());
-        }
-
-        // Controls — right
-        String hint = switch (layout) {
-            case ITEM_LIST    -> "WS Move  TAB Tab ";
-            case PARTY_SELECT -> "WS Move  ENT Confirm  ESC Cancel";
-            case MOVE_SWAP    -> "WS Move  ENT Replace  ESC Cancel";
-        };
+        // ── Nav hints — two lines, right-aligned ──────────────────────────────
+        String hint1 = "WS Move  TAB Tab";
+        String hint2 = "ENT Use  ESC Close";
 
         g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(120, 116, 108));
-        FontMetrics fm = g2.getFontMetrics();
-        g2.drawString(hint, barX + barW - 12 - fm.stringWidth(hint), barY + 18);
-        g2.setFont(base.deriveFont(8f));
-        fm = g2.getFontMetrics();
-        String hint2 = (layout == Layout.ITEM_LIST) ? "ENT Use  ESC Close" : "";
-        if (!hint2.isEmpty())
-            g2.drawString(hint2, barX + barW - 12 - fm.stringWidth(hint2), barY + 30);
+        FontMetrics hfm = g2.getFontMetrics();
+        int rx = barX + barW - 12;
+        g2.drawString(hint1, rx - hfm.stringWidth(hint1), statusBarY + 18);
+        g2.drawString(hint2, rx - hfm.stringWidth(hint2), statusBarY + 32);
+
+        // ── Feedback — centered in the left half ─────────────────────────────
+        if (!statusMessage.isEmpty()) {
+            g2.setFont(base.deriveFont(10f));
+            FontMetrics mfm = g2.getFontMetrics();
+
+            String msg   = truncate(statusMessage, mfm, barW);
+
+            int msgX = barX + 14;
+            int msgY = statusBarY + (statusBarH - mfm.getHeight()) / 2 + mfm.getAscent();
+
+            g2.setColor(new Color(44, 44, 42));
+            g2.drawString(msg, msgX, msgY);
+        }
     }
 
     // ── Grey-out logic ────────────────────────────────────────────────────────
 
     /**
-     * Returns true when the pending item cannot be used on this BrainRot.
-     * Greyed-out rows are still navigable but ENTER produces feedback instead of using.
+     * Returns true when the pending item cannot be usefully applied to this BrainRot.
+     * Scrolls with MOVESET_FULL are NOT greyed — the move-swap picker handles them.
      */
     private boolean isGreyedOut(BrainRot rot) {
-        if (pendingItem instanceof Stew) {
+        if (rot == null) return true;
+
+        if (pendingItem instanceof Stew)
             return rot.getCurrentHp() >= rot.getMaxHp();
-        }
+
         if (pendingItem instanceof Antidote antidote) {
             String cure = antidote.getStatusToCure().toUpperCase();
-            if (cure.equals("DEBUFF")) return false; // always allow; we check inside
+            if (cure.equals("DEBUFF")) return !hasDebuffs(rot);
             return !rot.hasStatus(cure);
         }
-        // Scrolls: all members shown, feedback on ENTER
+
+        if (pendingItem instanceof Scroll scroll) {
+            Scroll.ScrollResult result = scroll.validate(rot);
+            // SUCCESS and MOVESET_FULL are both actionable — do NOT grey out
+            return result != Scroll.ScrollResult.SUCCESS
+                    && result != Scroll.ScrollResult.MOVESET_FULL;
+        }
+
         return false;
     }
 
     private String greyReason(BrainRot rot) {
-        if (pendingItem instanceof Stew) return "HP is full!";
+        if (pendingItem instanceof Stew)
+            return "HP full";
+
         if (pendingItem instanceof Antidote a) {
-            String cure = a.getStatusToCure();
-            return "Not " + capitalize(cure.toLowerCase()) + "!";
+            String cure = a.getStatusToCure().toUpperCase();
+            if (cure.equals("DEBUFF")) return "No debuffs";
+            return "Not " + capitalize(cure.toLowerCase());
         }
+
+        if (pendingItem instanceof Scroll scroll) {
+            Scroll.ScrollResult r = scroll.validate(rot);
+            return switch (r) {
+                case TYPE_MISMATCH      -> "Wrong type";
+                case SIGNATURE_MISMATCH -> "Not its move";
+                case ALREADY_KNOWN      -> "Already known";
+                case SKILL_NOT_FOUND    -> "Not found";
+                default                 -> "Can't learn";
+            };
+        }
+
         return "";
     }
 
@@ -849,34 +916,55 @@ public class InventoryUI {
     }
 
     /**
-     * Draws word-wrapped text. Returns the y of the baseline of the last line drawn.
+     * Word-wraps {@code text} into lines of max {@code maxW} pixels.
+     * Returns the y-baseline of the line after the last one drawn
+     * (so the caller knows where to place the next element).
      */
-    private int drawWrappedText(Graphics2D g2, Font font, String text,
+    private int drawWordWrapped(Graphics2D g2, FontMetrics fm, String text,
                                 int x, int y, int maxW, int lineH, Color color) {
-        g2.setFont(font);
         g2.setColor(color);
-        FontMetrics fm = g2.getFontMetrics();
         int cy = y;
         StringBuilder line = new StringBuilder();
         for (String word : text.split(" ")) {
             String test = line.isEmpty() ? word : line + " " + word;
             if (fm.stringWidth(test) > maxW && !line.isEmpty()) {
                 g2.drawString(line.toString(), x, cy);
-                cy += lineH;
+                cy += lineH + 4;
                 line = new StringBuilder(word);
             } else {
                 line = new StringBuilder(test);
             }
         }
-        if (!line.isEmpty()) { g2.drawString(line.toString(), x, cy); }
+        if (!line.isEmpty()) { g2.drawString(line.toString(), x, cy); cy += lineH; }
         return cy;
     }
 
-    private void drawCentredText(Graphics2D g2, Font base, int bx, int by, int bw, int bh, String t) {
+    private void drawCentredText(Graphics2D g2, Font base,
+                                 int bx, int by, int bw, int bh, String t) {
         g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(150, 145, 138));
         FontMetrics fm = g2.getFontMetrics();
         g2.drawString(t, bx + (bw - fm.stringWidth(t)) / 2, by + bh / 2 + 4);
+    }
+
+    /** Truncates to fit within maxPx, appending "…". */
+    private String truncate(String text, FontMetrics fm, int maxPx) {
+        if (fm.stringWidth(text) <= maxPx) return text;
+        while (text.length() > 1 && fm.stringWidth(text + "…") > maxPx)
+            text = text.substring(0, text.length() - 1);
+        return text + "…";
+    }
+
+    /**
+     * Shortens a BrainRot name for status bar messages where space is tight.
+     * e.g. "TUNG TUNG TUNG SAHUR" → "TUNG TUNG..."
+     * Uses the first two words of the name.
+     */
+    private String shortenName(String name) {
+        if (name == null) return "";
+        String[] words = name.split(" ");
+        if (words.length <= 2) return name;
+        return words[0] + " " + words[1] + "...";
     }
 
     // ── Image loading ─────────────────────────────────────────────────────────
@@ -913,7 +1001,6 @@ public class InventoryUI {
     }
 
     private String findSignatureOwner(String skillName) {
-        // Check all BrainRot names via SkillPool
         for (String rot : new String[]{
                 "TUNG TUNG TUNG SAHUR", "TRALALERO TRALALA", "BOMBARDINO CROCODILO",
                 "LIRILI LARILA", "BRR BRR PATAPIM", "BONECA AMBALABU",
@@ -935,12 +1022,4 @@ public class InventoryUI {
         statusMessage = "";
         statusTimer   = 0;
     }
-
-    // ── Placeholder stat accessors (no base-stat getter on BrainRot) ──────────
-    // BrainRot only exposes effective (modified) stats, so we can't perfectly
-    // detect debuffs from outside. These are best-effort helpers.
-
-    private int getBaseAtk(BrainRot rot) { return rot.getAttack(); }   // if mods are 1.0, equals base
-    private int getBaseDef(BrainRot rot) { return rot.getDefense(); }
-    private int getBaseSpd(BrainRot rot) { return rot.getSpeed(); }
 }
