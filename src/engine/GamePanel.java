@@ -60,8 +60,8 @@ public class GamePanel extends JPanel {
 
         world.loadMap("/assets/Worlds/2/", true);
 
-        spawnEntitiesFromMap();
-        spawnCornerNPCs();
+//        spawnEntitiesFromMap();
+//        spawnCornerNPCs();
 
         // ── Seed the PC party with the player's starting team ────────────────
         // In a full game these would be loaded from save data.

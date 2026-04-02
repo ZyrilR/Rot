@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.ArrayList;
+
 public class Constants {
 
     // Screen Settings
@@ -34,4 +36,15 @@ public class Constants {
     public static final int    STATUS_TICKS = 60; // 2 s @ 30 FPS
     public static final int OUTER_PAD   = 18;
     public static final int STATUS_BAR_H = 44;
+
+    //Asset Constants
+    public static int[] BUSH_INDEXES = new int[]{2, 16};
+
+    public static final boolean contains(int[] arr, int val) {
+        for (int x : arr) {
+            if (x == val)
+                return true;
+        }
+        return false;
+    }
 }
