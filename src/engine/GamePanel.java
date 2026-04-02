@@ -58,7 +58,7 @@ public class GamePanel extends JPanel {
         this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(KEYBOARDHANDLER);
 
-        world.loadMap("/assets/Worlds/2/", true);
+        world.loadMap("/assets/Worlds/4/", true);
 
 //        spawnEntitiesFromMap();
 //        spawnCornerNPCs();
