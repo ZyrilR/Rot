@@ -5,9 +5,12 @@ import map.WorldLoader;
 import npc.NPC;
 import npc.MarketNPC;
 import overworld.Player;
+import storage.PCSystem;
 import tile.CollisionChecker;
 import tile.TileManager;
 import ui.DialogueBox;
+import ui.MenuUI;
+import ui.PCUI;
 import ui.ShopUI;
 
 import javax.swing.JPanel;
@@ -24,10 +27,23 @@ public class GamePanel extends JPanel {
 
     public String GAMESTATE = "play";
     public DialogueBox DIALOGUEBOX = new DialogueBox(this);
-    public ShopUI SHOPUI = new ShopUI(this);
+    public ShopUI      SHOPUI      = new ShopUI(this);
 
-    // GAME HANDLER
-    public KeyboardHandler KEYBOARDHANDLER = new KeyboardHandler();
+    // ── PC Storage ────────────────────────────────────────────────────────────
+
+    /**
+     * PCSystem is the data layer; PCUI is the renderer/input handler.
+     * PCSystem is created first so PCUI can hold a reference to it.
+     * Player.java also receives the same PCSystem reference so that
+     * captured BrainRots are stored correctly.
+     */
+    public final PCSystem PCSYSTEM = new PCSystem();
+    public final PCUI     PCUI     = new PCUI(this, PCSYSTEM);
+
+    public final MenuUI MENUUI = new MenuUI(this);
+    // ── Core handlers ─────────────────────────────────────────────────────────
+
+    public KeyboardHandler KEYBOARDHANDLER  = new KeyboardHandler();
     public CollisionChecker COLLISIONCHECKER = new CollisionChecker(this);
     public Player player = new Player(this, KEYBOARDHANDLER);
 
@@ -38,15 +54,67 @@ public class GamePanel extends JPanel {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
-        this.setFocusable(true);
+        this.setFocusable(true);this.requestFocusInWindow();
+        this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(KEYBOARDHANDLER);
 
-        world.loadMap("/assets/Worlds/4/", true);
-//        world.loadMap("/assets/Rooms/Market/", true);
-//        player.worldX = 100;
-//        player.worldY = 100;
-//        spawnEntitiesFromMap();
-//        spawnCornerNPCs();
+        world.loadMap("/assets/Worlds/2/", true);
+
+        spawnEntitiesFromMap();
+        spawnCornerNPCs();
+
+        // ── Seed the PC party with the player's starting team ────────────────
+        // In a full game these would be loaded from save data.
+        // For now we add test members so the PC UI has data to display.
+        seedTestParty();
+    }
+
+    // ── Test seed ─────────────────────────────────────────────────────────────
+
+    /**
+     * Populates the PC party with a small starter set.
+     * Replace / remove this once save/load is implemented.
+     */
+    private void seedTestParty() {
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TUNG TUNG TUNG SAHUR", brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TRALALERO TRALALA",    brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BOMBARDINO CROCODILO", brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("CAPUCCINO ASSASSINO",    brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("UDIN DIN DIN DIN DUN", brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TUNG TUNG TUNG SAHUR", brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("UDIN DIN DIN DIN DUN", brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("CAPUCCINO ASSASSINO",    brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TUNG TUNG TUNG SAHUR", brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TRALALERO TRALALA",    brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TUNG TUNG TUNG SAHUR", brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TRALALERO TRALALA",    brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BOMBARDINO CROCODILO", brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BOMBARDINO CROCODILO", brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("UDIN DIN DIN DIN DUN", brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("CAPUCCINO ASSASSINO",    brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("UDIN DIN DIN DIN DUN", brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TRALALERO TRALALA",    brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BOMBARDINO CROCODILO", brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("CAPUCCINO ASSASSINO",    brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.GOLD));
+        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.NORMAL));
+        System.out.println("[GamePanel] Test party seeded. Party size: " + PCSYSTEM.getPartySize());
     }
 
     // ── Layer accessors ───────────────────────────────────────────────────────
@@ -110,8 +178,9 @@ public class GamePanel extends JPanel {
 
     public void update() {
         switch (GAMESTATE.toUpperCase()) {
+
             case "PLAY":
-                // Update player movement only in play state
+                // Player movement only in play state
                 player.update();
 
                 // Update NPCs
@@ -126,6 +195,14 @@ public class GamePanel extends JPanel {
                     GAMESTATE = "shop";
                     System.out.println("[GamePanel] TEST: Shop opened via E key.");
                 }
+
+                // Open menu with ESC key
+                if (KEYBOARDHANDLER.escPressed) {
+                    KEYBOARDHANDLER.escPressed = false;
+                    MENUUI.open();
+                    GAMESTATE = "menu";
+                    System.out.println("[GamePanel] Menu opened via ESC key.");
+                }
                 break;
 
             case "DIALOGUE":
@@ -134,6 +211,14 @@ public class GamePanel extends JPanel {
 
             case "SHOP":
                 SHOPUI.update();
+                break;
+
+            case "PC":
+                PCUI.update();
+                break;
+
+            case "MENU":
+                MENUUI.update();
                 break;
 
             default:
@@ -151,27 +236,35 @@ public class GamePanel extends JPanel {
         g2.setColor(Color.BLACK);
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        // Draw world bottom layers (background, buildings)
+        // World bottom layers
         world.draw(g2);
 
-        // Draw NPCs
+        // NPCs
         for (NPC npc : npcs) {
             if (npc != null) npc.draw(g2, this);
         }
 
-        // Draw player
+        // Player
         player.draw(g2);
 
         // Draw world top layers (decorations that overlap player)
 //        world.drawTop(g2);
 
-        // Draw UI overlays
+        // ── UI overlays ───────────────────────────────────────────────────────
         if (GAMESTATE.equalsIgnoreCase("dialogue")) {
             DIALOGUEBOX.draw(g2);
         }
 
         if (GAMESTATE.equalsIgnoreCase("shop")) {
             SHOPUI.draw(g2);
+        }
+
+        if (GAMESTATE.equalsIgnoreCase("menu")) {
+            MENUUI.draw(g2);
+        }
+
+        if (GAMESTATE.equalsIgnoreCase("pc")) {
+            PCUI.draw(g2);
         }
 
         g2.dispose();

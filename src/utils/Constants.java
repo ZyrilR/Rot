@@ -4,11 +4,11 @@ public class Constants {
 
     // Screen Settings
     public static final int ORIGINAL_TILE_SIZE = 16; // 16x16 tile
-    public static final int SCALE = 3; //3
+    public static final int SCALE = 3;
 
     public static final int TILE_SIZE = ORIGINAL_TILE_SIZE * SCALE; // 48x48 tile
-    public static final int MAX_SCREEN_COL = 16; //16
-    public static final int MAX_SCREEN_ROW = 12; //12
+    public static final int MAX_SCREEN_COL = 16;
+    public static final int MAX_SCREEN_ROW = 12;
     public static final int SCREEN_WIDTH = TILE_SIZE * MAX_SCREEN_COL; // 768 pixels
     public static final int SCREEN_HEIGHT = TILE_SIZE * MAX_SCREEN_ROW; // 576 pixels
 
@@ -26,15 +26,12 @@ public class Constants {
     //Dialogue Settings
     public static final int TEXT_SPEED = 1;
 
-    //Tile Settings
-    public static int[] BUSH_INDEXES = new int[]{2, 16};
-
-    //Methods
-    public static boolean contains(int[] arr, int value) {
-        for (int v : arr) {
-            if (v == value)
-                return true;
-        }
-        return false;
-    }
+    // PC UI Constants
+    public static final int    GRID_COLS    = 5;
+    public static final int    GRID_ROWS    = 5;
+    public static final double PANEL_SPLIT  = 0.60;
+    public static final int    INPUT_DELAY  = 10;
+    public static final int    STATUS_TICKS = 60; // 2 s @ 30 FPS
+    public static final int OUTER_PAD   = 18;
+    public static final int STATUS_BAR_H = 44;
 }
