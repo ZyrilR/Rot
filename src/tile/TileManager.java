@@ -6,7 +6,6 @@ import npc.*;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static utils.AssetManager.loadImage;
 import static utils.Constants.*;
@@ -191,7 +190,7 @@ public class TileManager {
 
     public void loadRoom(int roomNo) {
         try {
-            InputStream is = getClass().getResourceAsStream("/assets/Rooms/room_" + roomNo + ".txt");
+            InputStream is = getClass().getResourceAsStream("/res/Rooms/room_" + roomNo + ".txt");
 
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
@@ -239,13 +238,13 @@ public class TileManager {
     public static void loadTiles() {
         //NonCollidable
         for (int i = 1; i <= 43; i++) {
-            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/NonCollidable/" + i + ".png")));
+            BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/NonCollidable/" + i + ".png")));
             System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
         }
 
         //Collidable
         for (int i = 44; i <= 67; i++) {
-            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/Collidable/" + i + ".png"), true));
+            BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/Collidable/" + i + ".png"), true));
             System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
         }
 
@@ -254,39 +253,39 @@ public class TileManager {
             Tile tile = null;
             //if first img = transparent : background : false
             if (i == 1 || i == 3 || (i >= 33 && i <= 38))
-                tile = new Tile(loadImage("/assets/Decorations/" + i + ".png"));
+                tile = new Tile(loadImage("/res/Decorations/" + i + ".png"));
             //if second img = bush : interactive : false
             else if (contains(BUSH_INDEXES, i)) {
                 switch (i) {
                     case 2:
-                        tile = new TileSpawner(loadImage("/assets/Decorations/" + i + ".png"), 1);
+                        tile = new TileSpawner(loadImage("/res/Decorations/" + i + ".png"), 1);
                         break;
                     case 16:
-                        tile = new TileSpawner(loadImage("/assets/Decorations/" + i + ".png"), 2);
+                        tile = new TileSpawner(loadImage("/res/Decorations/" + i + ".png"), 2);
                         break;
                 }
             }
             else
-                tile = new Tile(loadImage("/assets/Decorations/" + i + ".png"), true, "Background");
+                tile = new Tile(loadImage("/res/Decorations/" + i + ".png"), true, "Background");
 
             DECORATION_TILES.add(tile);
             System.out.println("ADDED: Decorations " + i + DECORATION_TILES.size());
         }
 
         for (int i = 1; i <= 17; i++) {
-            BUILDING_TILES.add(new Tile(loadImage("/assets/Buildings/1/" + i + ".png"), true));
+            BUILDING_TILES.add(new Tile(loadImage("/res/Buildings/1/" + i + ".png"), true));
             System.out.println("ADDED: Building 1 " + i + BACKGROUND_TILES.size());
         }
 
         //Market NPC
         for (int i = 1; i <= 5; i++) {
-            INTERACTIVE_TILES.add(new Tile(loadImage("/assets/Sprites/1/" + i + ".png"), true));
+            INTERACTIVE_TILES.add(new Tile(loadImage("/res/Sprites/1/" + i + ".png"), true));
             System.out.println("ADDED: Sprite 1 " + i + INTERACTIVE_TILES.size());
         }
 
         //TrainerNPC
         for (int i = 1; i <= 5; i++) {
-            INTERACTIVE_TILES.add(new Tile(loadImage("/assets/Sprites/2/" + i + ".png"), true));
+            INTERACTIVE_TILES.add(new Tile(loadImage("/res/Sprites/2/" + i + ".png"), true));
             System.out.println("ADDED: Sprite 1 " + i + INTERACTIVE_TILES.size());
         }
 

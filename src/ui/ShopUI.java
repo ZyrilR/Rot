@@ -104,7 +104,7 @@ public class ShopUI {
 
     private BufferedImage coinIcon() {
         if (!iconLoaded) {
-            coinIcon   = AssetManager.loadImage("/assets/Templates/Items/7.png");
+            coinIcon   = AssetManager.loadImage("/res/Templates/Items/7.png");
             iconLoaded = true;
             if (coinIcon == null) System.out.println("[ShopUI] Coin icon not found at /assets/Templates/Items/7.png");
         }

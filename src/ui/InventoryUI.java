@@ -152,7 +152,7 @@ public class InventoryUI {
             setStatus("Can't use capsules outside of battle!");
             return;
         }
-        if (gp.PCSYSTEM.getPartySize() == 0) {
+        if (gp.player.getPCSYSTEM().getPartySize() == 0) {
             setStatus("No BrainRots in your party!");
             return;
         }
@@ -165,7 +165,7 @@ public class InventoryUI {
     // ── PARTY_SELECT input ────────────────────────────────────────────────────
 
     private void updatePartySelect() {
-        int partySize = gp.PCSYSTEM.getPartySize();
+        int partySize = gp.player.getPCSYSTEM().getPartySize();
 
         if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
@@ -180,7 +180,7 @@ public class InventoryUI {
         }
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
-            BrainRot target = gp.PCSYSTEM.getPartyMember(partyCursor);
+            BrainRot target = gp.player.getPCSYSTEM().getPartyMember(partyCursor);
             if (target != null) applyItemToTarget(target);
             inputCooldown = INPUT_DELAY;
         }
@@ -665,14 +665,14 @@ public class InventoryUI {
 
         int rowH      = 44;
         int listY     = panelY + 36;
-        int partySize = gp.PCSYSTEM.getPartySize();
+        int partySize = gp.player.getPCSYSTEM().getPartySize();
 
         // Clip rows to panel content area
         Shape prev = g2.getClip();
         g2.setClip(panelX + 4, listY, panelW - 8, panelH - 54);
 
         for (int i = 0; i < partySize; i++) {
-            BrainRot rot     = gp.PCSYSTEM.getPartyMember(i);
+            BrainRot rot     = gp.player.getPCSYSTEM().getPartyMember(i);
             boolean  hovered = (i == partyCursor);
             boolean  greyed  = isGreyedOut(rot);
             int      rowY    = listY + i * rowH;

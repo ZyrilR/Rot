@@ -6,6 +6,7 @@ import brainrots.BrainRotFactory;
 import brainrots.BrainRotRegistry;
 import engine.*;
 import items.ItemRegistry;
+import save.DataManager;
 import tile.TileManager;
 import utils.AssetManager;
 
@@ -26,5 +27,6 @@ public class Main {
         windows.setVisible(true);
 
         new GameLoop(gamePanel).startGameThread();
+        DataManager.saveNewData();
     }
 }

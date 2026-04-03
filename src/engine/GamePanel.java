@@ -22,25 +22,26 @@ import items.ItemRegistry;
 
 import static utils.Constants.*;
 
+
 public class GamePanel extends JPanel {
-
-    public String GAMESTATE = "play";
-    public DialogueBox DIALOGUEBOX = new DialogueBox(this);
-
-    public final PCSystem PCSYSTEM = new PCSystem();
-    public final ShopUI SHOPUI = new ShopUI(this);
-    public final PCUI     PCUI     = new PCUI(this, PCSYSTEM);
-    public final MenuUI MENUUI = new MenuUI(this);
-    public final InventoryUI INVENTORYUI = new InventoryUI(this);
     // ── Core handlers ─────────────────────────────────────────────────────────
-
     public KeyboardHandler KEYBOARDHANDLER  = new KeyboardHandler();
     public EncounterSystem encounterSystem = new EncounterSystem();
     public CollisionChecker COLLISIONCHECKER = new CollisionChecker(this);
     public Player player = new Player(this, KEYBOARDHANDLER);
 
+    public String GAMESTATE = "play";
+    public DialogueBox DIALOGUEBOX = new DialogueBox(this);
+
+    public final ShopUI SHOPUI = new ShopUI(this);
+    public final PCUI     PCUI     = new PCUI(this, player.getPCSYSTEM());
+    public final MenuUI MENUUI = new MenuUI(this);
+    public final InventoryUI INVENTORYUI = new InventoryUI(this);
+
     public final WorldLoader world = new WorldLoader(this);
     public ArrayList<NPC> npcs = new ArrayList<>();
+
+    public String path;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -50,10 +51,7 @@ public class GamePanel extends JPanel {
         this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(KEYBOARDHANDLER);
 
-        world.loadMap("/assets/Worlds/4/", true);
-
-//        spawnEntitiesFromMap();
-//        spawnCornerNPCs();
+        world.loadMap(WORLD, true);
 
         // ── Seed the PC party with the player's starting team ────────────────
         // In a full game these would be loaded from save data.
@@ -68,6 +66,7 @@ public class GamePanel extends JPanel {
      * Replace / remove this once save/load is implemented.
      */
     private void seedTestParty() {
+        PCSystem PCSYSTEM = player.getPCSYSTEM();
         PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TUNG TUNG TUNG SAHUR", brainrots.Tier.NORMAL));
         PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TRALALERO TRALALA",    brainrots.Tier.GOLD));
         PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BOMBARDINO CROCODILO", brainrots.Tier.DIAMOND));
@@ -130,21 +129,17 @@ public class GamePanel extends JPanel {
     }
 
     // ── Layer accessors ───────────────────────────────────────────────────────
-
     public ArrayList<TileManager> getWorldBackgroundLayer() {
         return world.getBackgroundLayer();
     }
-
     public ArrayList<TileManager> getWorldBuildingLayer() {
         return world.getBuildingLayer();
     }
-
     public TileManager getWorldInteractiveLayer() {
         return world.getInteractiveLayer();
     }
 
     // ── Entity spawning ───────────────────────────────────────────────────────
-
 //    public void spawnEntitiesFromMap() {
 //        int[][] interactiveMap = world.getInteractiveLayer().getMap();
 //
@@ -187,7 +182,6 @@ public class GamePanel extends JPanel {
 //    }
 
     // ── Game loop ─────────────────────────────────────────────────────────────
-
     public void update() {
         switch (GAMESTATE.toUpperCase()) {
 
@@ -244,7 +238,6 @@ public class GamePanel extends JPanel {
     }
 
     // ── Rendering ─────────────────────────────────────────────────────────────
-
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -268,24 +261,23 @@ public class GamePanel extends JPanel {
 //        world.drawTop(g2);
 
         // ── UI overlays ───────────────────────────────────────────────────────
-        if (GAMESTATE.equalsIgnoreCase("dialogue")) {
-            DIALOGUEBOX.draw(g2);
-        }
+        switch (GAMESTATE.toLowerCase()) {
+            case "dialogue":
+                DIALOGUEBOX.draw(g2);
+                break;
+            case "shop":
+                SHOPUI.draw(g2);
+                break;
+            case "menu":
+                MENUUI.draw(g2);
+                break;
+            case "pc":
+                PCUI.draw(g2);
+                break;
+            case "inventory":
+                INVENTORYUI.draw(g2);
+                break;
 
-        if (GAMESTATE.equalsIgnoreCase("shop")) {
-            SHOPUI.draw(g2);
-        }
-
-        if (GAMESTATE.equalsIgnoreCase("menu")) {
-            MENUUI.draw(g2);
-        }
-
-        if (GAMESTATE.equalsIgnoreCase("pc")) {
-            PCUI.draw(g2);
-        }
-
-        if (GAMESTATE.equalsIgnoreCase("inventory")) {
-            INVENTORYUI.draw(g2);
         }
 
         g2.dispose();

@@ -1146,7 +1146,7 @@ public class PCUI {
     private BufferedImage getSprite(BrainRot rot) {
         String key = rot.getName() + "_" + rot.getTier().name();
         if (spriteCache.containsKey(key)) return spriteCache.get(key);
-        String path = "/assets/Sprites/Brainrots/" + toFolderName(rot.getName())
+        String path = "/res/Sprites/Brainrots/" + toFolderName(rot.getName())
                 + "/" + rot.getTier().name() + "_1.png";
         BufferedImage img = AssetManager.loadImage(path);
         spriteCache.put(key, img);

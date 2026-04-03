@@ -3,7 +3,7 @@ package overworld;
 import engine.GamePanel;
 import input.KeyboardHandler;
 import items.Inventory;
-import tile.TileManager;
+import storage.PCSystem;
 import utils.AssetManager;
 
 import java.awt.*;
@@ -13,8 +13,11 @@ import java.util.ArrayList;
 import static utils.Constants.*;
 
 public class Player {
-    GamePanel gp;
-    public KeyboardHandler kh;
+
+    //Player Attributes
+    private final Inventory inventory;
+    private int rotCoins; // in-game currency
+    private final PCSystem PCSYSTEM = new PCSystem();
 
     public int worldX, worldY; // map position
     public final int screenX, screenY; // where we draw player on screen
@@ -25,6 +28,10 @@ public class Player {
     private int moveProgress = 0;
     private boolean isWalking = false;
 
+    //Player Handler
+    GamePanel gp;
+    public KeyboardHandler kh;
+
     //Handle Sprite Images
     ArrayList<BufferedImage> walk_up, walk_down, walk_right, walk_left;
     private int spriteCounter;
@@ -32,9 +39,6 @@ public class Player {
     //Collision Handling
     public Rectangle solidArea;
     public boolean collisionOn = false;
-
-    private final Inventory inventory;
-    private int rotCoins; // in-game currency
 
     public Player(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
@@ -95,22 +99,22 @@ public class Player {
     }
 
     public void loadImage() {
-        walk_down.add(AssetManager.loadImage("/assets/Sprites/player/1.png"));
-        walk_down.add(AssetManager.loadImage("/assets/Sprites/player/2.png"));
-        walk_down.add(AssetManager.loadImage("/assets/Sprites/player/3.png"));
-        walk_up.add(AssetManager.loadImage("/assets/Sprites/player/4.png"));
-        walk_up.add(AssetManager.loadImage("/assets/Sprites/player/5.png"));
-        walk_up.add(AssetManager.loadImage("/assets/Sprites/player/6.png"));
-        walk_right.add(AssetManager.loadImage("/assets/Sprites/player/7.png"));
-        walk_right.add(AssetManager.loadImage("/assets/Sprites/player/8.png"));
-        walk_right.add(AssetManager.loadImage("/assets/Sprites/player/8.png"));
-        walk_right.add(AssetManager.loadImage("/assets/Sprites/player/9.png"));
-        walk_right.add(AssetManager.loadImage("/assets/Sprites/player/10.png"));
-        walk_left.add(AssetManager.loadImage("/assets/Sprites/player/11.png"));
-        walk_left.add(AssetManager.loadImage("/assets/Sprites/player/12.png"));
-        walk_left.add(AssetManager.loadImage("/assets/Sprites/player/12.png"));
-        walk_left.add(AssetManager.loadImage("/assets/Sprites/player/13.png"));
-        walk_left.add(AssetManager.loadImage("/assets/Sprites/player/14.png"));
+        walk_down.add(AssetManager.loadImage("/res/Sprites/player/1.png"));
+        walk_down.add(AssetManager.loadImage("/res/Sprites/player/2.png"));
+        walk_down.add(AssetManager.loadImage("/res/Sprites/player/3.png"));
+        walk_up.add(AssetManager.loadImage("/res/Sprites/player/4.png"));
+        walk_up.add(AssetManager.loadImage("/res/Sprites/player/5.png"));
+        walk_up.add(AssetManager.loadImage("/res/Sprites/player/6.png"));
+        walk_right.add(AssetManager.loadImage("/res/Sprites/player/7.png"));
+        walk_right.add(AssetManager.loadImage("/res/Sprites/player/8.png"));
+        walk_right.add(AssetManager.loadImage("/res/Sprites/player/8.png"));
+        walk_right.add(AssetManager.loadImage("/res/Sprites/player/9.png"));
+        walk_right.add(AssetManager.loadImage("/res/Sprites/player/10.png"));
+        walk_left.add(AssetManager.loadImage("/res/Sprites/player/11.png"));
+        walk_left.add(AssetManager.loadImage("/res/Sprites/player/12.png"));
+        walk_left.add(AssetManager.loadImage("/res/Sprites/player/12.png"));
+        walk_left.add(AssetManager.loadImage("/res/Sprites/player/13.png"));
+        walk_left.add(AssetManager.loadImage("/res/Sprites/player/14.png"));
     }
 
     public void resetSpriteCounter() {
@@ -246,5 +250,8 @@ public class Player {
                 // worldY = newStartY;
             }
         }
+    }
+    public PCSystem getPCSYSTEM() {
+        return PCSYSTEM;
     }
 }

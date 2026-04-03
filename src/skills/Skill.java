@@ -29,4 +29,12 @@ public class Skill {
     public String toString() {
         return name + " [" + type + "] PWR:" + power + " SP:" + spCost;
     }
+    public String toFileFormat() {
+        return name + ";" +
+                type + ";" +
+                power + ";" +
+                spCost + ";" +
+                effect + ";" +
+                description;
+    }
 }

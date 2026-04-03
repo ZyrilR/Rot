@@ -189,4 +189,31 @@ public class BrainRot {
         return name + " [" + primaryType + (secondaryType != null ? "/" + secondaryType : "") + "] "
                 + tier + " HP:" + currentHp + "/" + maxHp;
     }
+
+    public String toFileFormat() {
+        String format = name + ":" +
+                primaryType + ";" +
+                secondaryType + ";" +
+                tier + ";" +
+                description + ";" +
+                maxHp + ";" +
+                currentHp + ";" +
+                attack + ";" +
+                defense + ";" +
+                speed + ";" +
+                maxSp + ";" +
+                currentSp + ";" +
+                attackMod + ";" +
+                defenseMod + ";" +
+                speedMod + ";" +
+                status + ";" +
+                statusTurns + ";" +
+                turnCount + ":";
+
+        for (Skill move : moves) {
+            format += move.toFileFormat() + ",";
+        }
+
+        return format;
+    }
 }

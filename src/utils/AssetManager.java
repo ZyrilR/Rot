@@ -4,7 +4,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Objects;
 import javax.imageio.ImageIO;
 
@@ -27,15 +26,15 @@ public class AssetManager {
     public static void loadAll() {
         try {
             // Load PocketMonk
-            InputStream is1 = AssetManager.class.getResourceAsStream("/assets/Fonts/PocketMonk-15ze.ttf");
+            InputStream is1 = AssetManager.class.getResourceAsStream("/res/Fonts/PocketMonk-15ze.ttf");
             pocketMonk = Font.createFont(Font.TRUETYPE_FONT, is1).deriveFont(22f);
 
             // Load PokemonGB (The classic dialogue font)
-            InputStream is2 = AssetManager.class.getResourceAsStream("/assets/Fonts/PokemonGb-RAeo.ttf");
+            InputStream is2 = AssetManager.class.getResourceAsStream("/res/Fonts/PokemonGb-RAeo.ttf");
             pokemonGb = Font.createFont(Font.TRUETYPE_FONT, is2).deriveFont(18f);
 
             // Load Pokemon Solid (The logo font)
-            InputStream is3 = AssetManager.class.getResourceAsStream("/assets/Fonts/Pokemon Solid.ttf");
+            InputStream is3 = AssetManager.class.getResourceAsStream("/res/Fonts/Pokemon Solid.ttf");
             pokemonSolid = Font.createFont(Font.TRUETYPE_FONT, is3).deriveFont(24f);
             System.out.println("Loaded successfully");
         } catch (Exception e){

@@ -2,7 +2,6 @@ package npc;
 
 import engine.GamePanel;
 import overworld.Player;
-import tile.TileInteractive;
 import utils.AssetManager;
 
 import java.awt.*;
@@ -37,7 +36,7 @@ public class NPC {
 
     public void loadSprites(int folderId) {
         for (int i = 1; i <= 5; i++) {
-            sprites.add(AssetManager.loadImage("/assets/Sprites/" + folderId + "/" + i + ".png"));
+            sprites.add(AssetManager.loadImage("/res/Sprites/" + folderId + "/" + i + ".png"));
         }
     }
 

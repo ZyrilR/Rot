@@ -1,7 +1,5 @@
 package utils;
 
-import java.util.ArrayList;
-
 public class Constants {
 
     // Screen Settings
@@ -46,6 +44,11 @@ public class Constants {
     public static final int LEFT_SPLIT   = 38;  // % of window width for left panel
     public static final int NAME_LINE_H  = 15;  // line height for wrapped name in desc card
     public static final int DESC_LINE_H  = 13;  // line height for description body text
+
+    //Directories
+    public static final String SAVES = "/res/Saves";
+    public static final String WORLD = "/res/Worlds/4/";
+    public static final String MARKET = "/res/Rooms/Market/";
 
     //Asset Constants
     public static int[] BUSH_INDEXES = new int[]{2, 16};
