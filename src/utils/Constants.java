@@ -46,7 +46,7 @@ public class Constants {
     public static final int DESC_LINE_H  = 13;  // line height for description body text
 
     //Directories
-    public static final String SAVES = "/res/Saves";
+    public static final String SAVES = "src/res/Saves";
     public static final String WORLD = "/res/Worlds/4/";
     public static final String MARKET = "/res/Rooms/Market/";
 

@@ -19,6 +19,7 @@ public class Player {
     private int rotCoins; // in-game currency
     private final PCSystem PCSYSTEM = new PCSystem();
 
+    public String name = "DIN";
     public int worldX, worldY; // map position
     public final int screenX, screenY; // where we draw player on screen
     public int speed;

@@ -27,6 +27,6 @@ public class Main {
         windows.setVisible(true);
 
         new GameLoop(gamePanel).startGameThread();
-        DataManager.saveNewData();
+        DataManager.saveNewData(gamePanel.player);
     }
 }
