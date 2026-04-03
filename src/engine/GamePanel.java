@@ -4,6 +4,7 @@ import input.KeyboardHandler;
 import map.WorldLoader;
 import npc.NPC;
 import npc.MarketNPC;
+import overworld.EncounterSystem;
 import overworld.Player;
 import storage.PCSystem;
 import tile.CollisionChecker;
@@ -25,23 +26,16 @@ public class GamePanel extends JPanel {
 
     public String GAMESTATE = "play";
     public DialogueBox DIALOGUEBOX = new DialogueBox(this);
-    public ShopUI      SHOPUI      = new ShopUI(this);
 
-    // ── PC Storage ────────────────────────────────────────────────────────────
-
-    /**
-     * PCSystem is the data layer; PCUI is the renderer/input handler.
-     * PCSystem is created first so PCUI can hold a reference to it.
-     * Player.java also receives the same PCSystem reference so that
-     * captured BrainRots are stored correctly.
-     */
     public final PCSystem PCSYSTEM = new PCSystem();
+    public final ShopUI SHOPUI = new ShopUI(this);
     public final PCUI     PCUI     = new PCUI(this, PCSYSTEM);
     public final MenuUI MENUUI = new MenuUI(this);
     public final InventoryUI INVENTORYUI = new InventoryUI(this);
     // ── Core handlers ─────────────────────────────────────────────────────────
 
     public KeyboardHandler KEYBOARDHANDLER  = new KeyboardHandler();
+    public EncounterSystem encounterSystem = new EncounterSystem();
     public CollisionChecker COLLISIONCHECKER = new CollisionChecker(this);
     public Player player = new Player(this, KEYBOARDHANDLER);
 
@@ -198,7 +192,7 @@ public class GamePanel extends JPanel {
         switch (GAMESTATE.toUpperCase()) {
 
             case "PLAY":
-                // Player movement only in play state
+                // Update player movement
                 player.update();
 
                 // Update NPCs
@@ -206,12 +200,13 @@ public class GamePanel extends JPanel {
                     if (npc != null) npc.update(this);
                 }
 
-                // Open shop with E key (temp test)
+                // Check trainer line-of-sight every tick
+                encounterSystem.checkTrainerLook(player, npcs, this);
+
+                // E key: interact with the NPC or object the player is facing
                 if (KEYBOARDHANDLER.ePressed) {
                     KEYBOARDHANDLER.ePressed = false;
-                    SHOPUI.open();
-                    GAMESTATE = "shop";
-                    System.out.println("[GamePanel] TEST: Shop opened via E key.");
+                    player.checkInteraction();
                 }
 
                 // Open menu with ESC key
