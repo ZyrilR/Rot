@@ -135,7 +135,7 @@ public class MenuUI {
         for (int i = 0; i < ITEMS.length; i++) {
             MenuItem item    = ITEMS[i];
             int      rowY    = panelY + PAD_V + i * ROW_H;
-            int      cy      = rowY + ROW_H / 2;
+            int      cy      = rowY + ROW_H / 2 - 3;
             int      textY   = cy + fm.getAscent() / 2 - 1;
             boolean  hovered = (i == cursorIndex);
 

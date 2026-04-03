@@ -21,18 +21,18 @@ import static utils.Constants.*;
  * Renders and handles input for the BrainRot PC Storage system.
  *
  * Layout states:
- *   BOX    — 5×5 grid + data card
- *   PARTY  — 6-row list + data card
- *   DETAIL — overlay with INFO or MOVES sub-tab
+ *   BOX    - 5×5 grid + data card
+ *   PARTY  - 6-row list + data card
+ *   DETAIL - overlay with INFO or MOVES sub-tab
  *
  * Controls:
- *   WASD/Arrows — move cursor (BOX/PARTY)
- *   P           — toggle BOX ↔ PARTY
- *   TAB         — cycle box (BOX) | toggle INFO↔MOVES (DETAIL)
- *   E           — open DETAIL for hovered BrainRot
- *   ENTER       — select / confirm swap (BOX/PARTY)
- *   ESC         — deselect held → back to PC
- *   B           —  close
+ *   WASD/Arrows - move cursor (BOX/PARTY)
+ *   P           - toggle BOX ↔ PARTY
+ *   TAB         - cycle box (BOX) | toggle INFO↔MOVES (DETAIL)
+ *   E           - open DETAIL for hovered BrainRot
+ *   ENTER       - select / confirm swap (BOX/PARTY)
+ *   ESC         - deselect held → back to PC
+ *   B           -  close
  */
 public class PCUI {
 
@@ -409,7 +409,7 @@ public class PCUI {
         if (rot == null) {
             g2.setFont(base.deriveFont(10f));
             g2.setColor(new Color(160, 155, 148));
-            g2.drawString("— Empty —", x + 16, y + h / 2 + 4);
+            g2.drawString("- Empty -", x + 16, y + h / 2 + 4);
             return;
         }
 
@@ -520,7 +520,7 @@ public class PCUI {
         int lh = 22;
 
         if (rot != null) {
-            g2.setFont(base.deriveFont(Font.BOLD, 12f));
+            g2.setFont(base.deriveFont(Font.BOLD, 14f));
             g2.setColor(new Color(44, 44, 42));
             ty = drawWrappedName(g2, base, rot.getName(), tx, ty, cW - 24, lh);
 
@@ -533,7 +533,7 @@ public class PCUI {
         } else {
             g2.setFont(base.deriveFont(10f));
             g2.setColor(new Color(140, 136, 128));
-            for (String s : new String[]{ "—", "—", "—", "—" }) { g2.drawString(s, tx, ty); ty += lh; }
+            for (String s : new String[]{ "-", "-", "-", "-" }) { g2.drawString(s, tx, ty); ty += lh; }
         }
     }
 
@@ -601,11 +601,11 @@ public class PCUI {
         g2.setColor(new Color(200, 195, 180));
         g2.drawLine(divX, bodyY, divX, winY + winH - STATUS_BAR_H - 10);
 
-        // Left panel — varies per sub-tab
+        // Left panel - varies per sub-tab
         if (detailTab == DetailTab.INFO) drawInfoLeft (g2, base, winX, winY, winW, winH, bodyY, divX);
         else                              drawMovesLeft(g2, base, winX, winY, winW, winH, bodyY, divX);
 
-        // Right panel — shared between both sub-tabs
+        // Right panel - shared between both sub-tabs
         drawDetailRightPanel(g2, base, winX, winY, winW, winH, bodyY, divX);
 
         drawDetailStatusBar(g2, base, winX, winY, winW, winH);
@@ -673,10 +673,10 @@ public class PCUI {
         // Padding and line height matching drawDataCard
         int tx = panelX + 14;
         int ty = infoCardY + 24;
-        int lh = 22;
+        int lh = 20;
 
-        // Name - Bold 13pt
-        g2.setFont(base.deriveFont(Font.BOLD, 13f));
+        // Name - Bold 14pt
+        g2.setFont(base.deriveFont(Font.BOLD, 14f));
         g2.setColor(new Color(44, 44, 42));
         ty = drawWrappedName(g2, base, detailRot.getName(), tx, ty, panelW - 24, lh);
 
@@ -724,7 +724,7 @@ public class PCUI {
         g2.setColor(new Color(44, 44, 42));
         g2.drawString("Classification", panelX + cardPadX, panelY + cardPadTop);
 
-        // Type row — label baseline aligns with badge centre
+        // Type row - label baseline aligns with badge centre
         int badgeH      = 20;
         int labelIndent = cardPadX + 2;      // x for "Type /" and "Tier /" labels
         int badgeOffX   = labelIndent + 54;  // x where badges start (after label text)
@@ -744,7 +744,7 @@ public class PCUI {
                     panelX + badgeOffX + primBadgeW + 4, typeBadgeY, badgeH);
         }
 
-        // Tier row — same x alignment as type row, one rowLineH below
+        // Tier row - same x alignment as type row, one rowLineH below
         int tierRowY   = typeRowY + rowLineH;
         int tierBadgeY = tierRowY - badgeH + 8;
 
@@ -771,7 +771,7 @@ public class PCUI {
         g2.setColor(new Color(44, 44, 42));
         g2.drawString("Stats", panelX + cardPadX, statsCardY + cardPadTop);
 
-        // Stat rows — consistent indent and row spacing
+        // Stat rows - consistent indent and row spacing
         int statContentX = panelX + cardPadX + 4; // x for stat labels / bar start
         int statBarW     = panelW - cardPadX * 2 - 8;
         int statBarH     = 8;
@@ -820,7 +820,7 @@ public class PCUI {
         g2.setColor(new Color(44, 44, 42));
         g2.drawString("Moves", panelX + cardPadX, panelY + cardPadTop + 10);
 
-        // Move rows — evenly divide space below the title
+        // Move rows - evenly divide space below the title
         int rowListY = panelY + cardPadTop + 16;      // top of first row
         int rowH     = 38; // height per row
 
@@ -858,13 +858,13 @@ public class PCUI {
                 g2.setColor(Color.WHITE);
                 g2.drawString(mv.getType().name(), badgeX + badgePadX, badgeTopY + 11);
 
-                // Skill name — starts right after the badge with a small gap
+                // Skill name - starts right after the badge with a small gap
                 int nameX = 180;
                 g2.setFont(base.deriveFont(hovered ? Font.BOLD : Font.PLAIN, 11f));
                 g2.setColor(new Color(44, 44, 42));
                 g2.drawString(mv.getName(), nameX, rowY + rowTextOffsetY);
 
-                // SP cost — right-aligned
+                // SP cost - right-aligned
                 String spStr = "UP " + mv.getSpCost() + "/" + mv.getSpCost();
                 g2.setFont(base.deriveFont(10f));
                 g2.setColor(new Color(80, 76, 70));
@@ -874,7 +874,7 @@ public class PCUI {
             } else {
                 g2.setFont(base.deriveFont(10f));
                 g2.setColor(new Color(170, 165, 158));
-                g2.drawString("—", panelX + cardPadX + 4, rowY + rowTextOffsetY);
+                g2.drawString("-", panelX + cardPadX + 4, rowY + rowTextOffsetY);
             }
 
             // Row divider (skip after last row)
@@ -895,7 +895,7 @@ public class PCUI {
         g2.setColor(new Color(44, 44, 42));
         g2.drawString("Description", panelX + cardPadX, descCardY + cardPadTop + 10);
 
-        // Description text — starts one line below the title
+        // Description text - starts one line below the title
         int descTextY = descCardY + cardPadTop + 30;
         int descTextW = panelW - cardPadX * 2;
 
@@ -938,7 +938,7 @@ public class PCUI {
         g2.drawRoundRect(x, y, w, h, arc, arc);
     }
 
-    /** "LABEL [bar] value" stat row — used for HP. */
+    /** "LABEL [bar] value" stat row - used for HP. */
     private void drawStatRow(Graphics2D g2, Font base,
                              int x, int y, int totalW, int barH,
                              String label, String valueText,
@@ -988,7 +988,7 @@ public class PCUI {
         g2.drawString(valueText, barX + bw + padding, textY);
     }
 
-    /** "LABEL  value" plain stat row — used for Def and Spd. */
+    /** "LABEL  value" plain stat row - used for Def and Spd. */
     private void drawStatPlain(Graphics2D g2, Font base, int x, int y, String label, String value) {
         g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(80, 76, 70));
@@ -1103,8 +1103,8 @@ public class PCUI {
             case "HEAL"      -> " Restores user HP.";
             default          -> " No additional effect.";
         };
-        String pwr = (skill.getPower() > 0) ? " Power: " + skill.getPower() + "." : " Status move.";
-        return skill.getName() + " — " + skill.getType().name().toLowerCase() + "-type." + pwr + suffix;
+        String pwr = (skill.getPower() > 0) ? "Power: " + skill.getPower() + "." : " Status move.";
+        return skill.getName() + " - " + skill.getType().name().toLowerCase() + "-type." + pwr + suffix;
     }
 
     // ── Sprite loading ────────────────────────────────────────────────────────

@@ -19,12 +19,12 @@ public class ItemRegistry {
         // ── Stews (Potions) ───────────────────────────────────────────────────
         registerItem(new Stew(
                 "MILD STEW",
-                "A warm, lightly seasoned stew. Restores 25% of a BrainRot's max HP.",
+                "A warm, lightly seasoned stew. Restores 25 percent of a BrainRot's max HP.",
                 "/assets/Items/Stew/stew_mild.png", 25, 500));
 
         registerItem(new Stew(
                 "MODERATE STEW",
-                "A hearty bowl of stew with rich broth. Restores 50% of a BrainRot's max HP.",
+                "A hearty bowl of stew with rich broth. Restores 50 percent of a BrainRot's max HP.",
                 "/assets/Items/Stew/stew_moderate.png", 50, 800));
 
         registerItem(new Stew(
@@ -61,17 +61,17 @@ public class ItemRegistry {
 
         registerItem(new Capsule(
                 "BLUE CAPSULE",
-                "An improved capsule with a +10% capture bonus over the standard red.",
+                "An improved capsule with a +10 percent capture bonus over the standard red.",
                 "/assets/Templates/Items/9.png", 700));
 
         registerItem(new Capsule(
                 "SPEED CAPSULE",
-                "Engineered for fast targets. Grants +20% capture bonus against BrainRots with Speed above 30.",
+                "Engineered for fast targets. Grants +20 percent capture bonus against BrainRots with Speed above 30.",
                 "/assets/Templates/Items/9.png", 900));
 
         registerItem(new Capsule(
                 "HEAVY CAPSULE",
-                "Built for tough targets. Grants +20% capture bonus against BrainRots with Defense above 40.",
+                "Built for tough targets. Grants +20 percent capture bonus against BrainRots with Defense above 40.",
                 "/assets/Templates/Items/9.png", 1200));
 
         registerItem(new Capsule(
@@ -79,7 +79,7 @@ public class ItemRegistry {
                 "A legendary capsule forged from pure Rot energy. Guarantees capture, no questions asked.",
                 "/assets/Templates/Items/9.png", 1500));
 
-        // ── Scrolls — NORMAL pool ─────────────────────────────────────────────
+        // ── Scrolls - NORMAL pool ─────────────────────────────────────────────
         registerItem(new Scroll(
                 "Guard Up Scroll",
                 "Teach a BrainRot Guard Up. Raises the user's Defense. Any type can learn this.",
@@ -97,7 +97,7 @@ public class ItemRegistry {
 
         registerItem(new Scroll(
                 "Rest Scroll",
-                "Teach a BrainRot Rest. Restores 30% HP by taking a short breather. Any type.",
+                "Teach a BrainRot Rest. Restores 30 percent HP by taking a short breather. Any type.",
                 "/assets/Items/Scroll/scroll_normal.png", "Rest", 0));
 
         registerItem(new Scroll(
@@ -115,7 +115,7 @@ public class ItemRegistry {
                 "Teach a BrainRot Evasion Up. A mysterious dodge technique with no direct effect. Any type.",
                 "/assets/Items/Scroll/scroll_normal.png", "Evasion Up", 0));
 
-        // ── Scrolls — FIGHTING pool ───────────────────────────────────────────
+        // ── Scrolls - FIGHTING pool ───────────────────────────────────────────
         registerItem(new Scroll(
                 "Wooden Thump Scroll",
                 "Teach a BrainRot Wooden Thump. A raw, crushing Fighting-type strike.",
@@ -128,7 +128,7 @@ public class ItemRegistry {
 
         registerItem(new Scroll(
                 "Counter Guard Scroll",
-                "Teach a BrainRot Counter Guard. A defensive Fighting stance — no direct damage.",
+                "Teach a BrainRot Counter Guard. A defensive Fighting stance - no direct damage.",
                 "/assets/Items/Scroll/scroll_fighting.png", "Counter Guard", 0));
 
         registerItem(new Scroll(
@@ -136,7 +136,7 @@ public class ItemRegistry {
                 "Teach a BrainRot Battle Cry. An intimidating roar that lowers the target's Attack.",
                 "/assets/Items/Scroll/scroll_fighting.png", "Battle Cry", 0));
 
-        // ── Scrolls — WATER pool ──────────────────────────────────────────────
+        // ── Scrolls - WATER pool ──────────────────────────────────────────────
         registerItem(new Scroll(
                 "Aqua Dash Scroll",
                 "Teach a BrainRot Aqua Dash. A swift Water-type tackle through a wave.",
@@ -154,10 +154,10 @@ public class ItemRegistry {
 
         registerItem(new Scroll(
                 "Mist Veil Scroll",
-                "Teach a BrainRot Mist Veil. Wraps the user in obscuring mist — status only.",
+                "Teach a BrainRot Mist Veil. Wraps the user in obscuring mist - status only.",
                 "/assets/Items/Scroll/scroll_water.png", "Mist Veil", 0));
 
-        // ── Scrolls — PSYCHIC pool ────────────────────────────────────────────
+        // ── Scrolls - PSYCHIC pool ────────────────────────────────────────────
         registerItem(new Scroll(
                 "Mind Pulse Scroll",
                 "Teach a BrainRot Mind Pulse. A focused psychic burst dealing Psychic-type damage.",
@@ -178,7 +178,7 @@ public class ItemRegistry {
                 "Teach a BrainRot Confusion Wave. A disorienting wave with a high chance to Confuse.",
                 "/assets/Items/Scroll/scroll_psychic.png", "Confusion Wave", 0));
 
-        // ── Scrolls — FLYING pool ─────────────────────────────────────────────
+        // ── Scrolls - FLYING pool ─────────────────────────────────────────────
         registerItem(new Scroll(
                 "Sky Dive Scroll",
                 "Teach a BrainRot Sky Dive. Plummets from the sky for heavy Flying-type damage.",
@@ -196,10 +196,10 @@ public class ItemRegistry {
 
         registerItem(new Scroll(
                 "Wind Guard Scroll",
-                "Teach a BrainRot Wind Guard. Channels wind into a protective barrier — status move.",
+                "Teach a BrainRot Wind Guard. Channels wind into a protective barrier - status move.",
                 "/assets/Items/Scroll/scroll_fly.png", "Wind Guard", 0));
 
-        // ── Scrolls — SAND pool ───────────────────────────────────────────────
+        // ── Scrolls - SAND pool ───────────────────────────────────────────────
         registerItem(new Scroll(
                 "Prickly Trunk Scroll",
                 "Teach a BrainRot Prickly Trunk. Slams with a spiny, sand-crusted limb.",
@@ -220,7 +220,7 @@ public class ItemRegistry {
                 "Teach a BrainRot Desert Wall. Raises Defense by hardening a shell of compressed sand.",
                 "/assets/Items/Scroll/scroll_sand.png", "Desert Wall", 0));
 
-        // ── Scrolls — GRASS pool ──────────────────────────────────────────────
+        // ── Scrolls - GRASS pool ──────────────────────────────────────────────
         registerItem(new Scroll(
                 "Vine Lash Scroll",
                 "Teach a BrainRot Vine Lash. Whips the target with razor-sharp vines.",
@@ -241,7 +241,7 @@ public class ItemRegistry {
                 "Teach a BrainRot Root Bind. Entangles the target in fast-growing roots.",
                 "/assets/Items/Scroll/scroll_grass.png", "Root Bind", 0));
 
-        // ── Scrolls — ROCK pool ───────────────────────────────────────────────
+        // ── Scrolls - ROCK pool ───────────────────────────────────────────────
         registerItem(new Scroll(
                 "Rock Slam Scroll",
                 "Teach a BrainRot Rock Slam. Hurls a massive boulder that may cause Flinch.",
@@ -262,7 +262,7 @@ public class ItemRegistry {
                 "Teach a BrainRot Defense Curl. Curls into an impenetrable rocky ball, raising Defense.",
                 "/assets/Items/Scroll/scroll_stone.png", "Defense Curl", 0));
 
-        // ── Scrolls — FIRE pool ───────────────────────────────────────────────
+        // ── Scrolls - FIRE pool ───────────────────────────────────────────────
         registerItem(new Scroll(
                 "Flame Crash Scroll",
                 "Teach a BrainRot Flame Crash. A blazing slam with a high chance to Burn the target.",
@@ -283,7 +283,7 @@ public class ItemRegistry {
                 "Teach a BrainRot Burn Rush. Charges through the enemy, spreading flames and Burning on contact.",
                 "/assets/Items/Scroll/scroll_fire.png", "Burn Rush", 0));
 
-        // ── Scrolls — DARK pool ───────────────────────────────────────────────
+        // ── Scrolls - DARK pool ───────────────────────────────────────────────
         registerItem(new Scroll(
                 "Shadow Jab Scroll",
                 "Teach a BrainRot Shadow Jab. A quick, deceptive strike from the shadows.",
@@ -304,7 +304,7 @@ public class ItemRegistry {
                 "Teach a BrainRot Ambush. Strikes from a concealed position for pure Dark-type damage.",
                 "/assets/Items/Scroll/scroll_dark.png", "Ambush", 0));
 
-        // ── Scrolls — POISON pool ─────────────────────────────────────────────
+        // ── Scrolls - POISON pool ─────────────────────────────────────────────
         registerItem(new Scroll(
                 "Toxic Steam Scroll",
                 "Teach a BrainRot Toxic Steam. Releases a cloud of poisonous vapour.",
@@ -325,7 +325,7 @@ public class ItemRegistry {
                 "Teach a BrainRot Poison Fang. Bites with venom-soaked fangs.",
                 "/assets/Items/Scroll/scroll_poison.png", "Poison Fang", 0));
 
-        // ── Signature scrolls — TUNG TUNG TUNG SAHUR ──────────────────────────
+        // ── Signature scrolls - TUNG TUNG TUNG SAHUR ──────────────────────────
         registerItem(new Scroll(
                 "Sahur Chant Scroll",
                 "Signature scroll for Tung Tung Tung Sahur. The ancient Sahur chant saps the target's Speed.",
@@ -333,7 +333,7 @@ public class ItemRegistry {
 
         registerItem(new Scroll(
                 "Wake-Up Call Scroll",
-                "Signature scroll for Tung Tung Tung Sahur. A thunderous wake-up slam — no mercy.",
+                "Signature scroll for Tung Tung Tung Sahur. A thunderous wake-up slam - no mercy.",
                 "/assets/Items/Scroll/scroll_fighting.png", "Wake-Up Call", 0));
 
         registerItem(new Scroll(
@@ -341,7 +341,7 @@ public class ItemRegistry {
                 "Signature scroll for Tung Tung Tung Sahur. An unrelenting endless chant that Paralyzes the target.",
                 "/assets/Items/Scroll/scroll_fighting.png", "Infinite Sahur", 0));
 
-        // ── Signature scrolls — TRALALERO TRALALA ─────────────────────────────
+        // ── Signature scrolls - TRALALERO TRALALA ─────────────────────────────
         registerItem(new Scroll(
                 "Sneaker Dash Scroll",
                 "Signature scroll for Tralalero Tralala. A hypersonic Water-type sprint.",
@@ -357,7 +357,7 @@ public class ItemRegistry {
                 "Signature scroll for Tralalero Tralala. An overwhelming psychedelic burst of Psychic energy.",
                 "/assets/Items/Scroll/scroll_psychic.png", "Neon Rave", 0));
 
-        // ── Signature scrolls — BOMBARDINO CROCODILO ──────────────────────────
+        // ── Signature scrolls - BOMBARDINO CROCODILO ──────────────────────────
         registerItem(new Scroll(
                 "Caffeine Snap Scroll",
                 "Signature scroll for Bombardino Crocodilo. A hyper-caffeinated Water lunge that raises Speed.",
@@ -373,7 +373,7 @@ public class ItemRegistry {
                 "Signature scroll for Bombardino Crocodilo. A condensed espresso-powered Fire explosion. Burns.",
                 "/assets/Items/Scroll/scroll_fire.png", "Ristretto Nuke", 0));
 
-        // ── Signature scrolls — LIRILI LARILA ─────────────────────────────────
+        // ── Signature scrolls - LIRILI LARILA ─────────────────────────────────
         registerItem(new Scroll(
                 "Sandal Stomp Scroll",
                 "Signature scroll for Lirili Larila. Stomps with a sandal for Sand-type damage. May Flinch.",
@@ -386,10 +386,10 @@ public class ItemRegistry {
 
         registerItem(new Scroll(
                 "Timeline Rot Scroll",
-                "Signature scroll for Lirili Larila. Corrupts the target's timeline — high power, chaotic effect.",
+                "Signature scroll for Lirili Larila. Corrupts the target's timeline - high power, chaotic effect.",
                 "/assets/Items/Scroll/scroll_sand.png", "Timeline Rot", 0));
 
-        // ── Signature scrolls — BRR BRR PATAPIM ───────────────────────────────
+        // ── Signature scrolls - BRR BRR PATAPIM ───────────────────────────────
         registerItem(new Scroll(
                 "Patapim Stomp Scroll",
                 "Signature scroll for Brr Brr Patapim. A thunderous Grass-type ground stomp.",
@@ -405,7 +405,7 @@ public class ItemRegistry {
                 "Signature scroll for Brr Brr Patapim. A primal Grass-type battle cry of sheer power.",
                 "/assets/Items/Scroll/scroll_grass.png", "Forest Grunt", 0));
 
-        // ── Signature scrolls — BONECA AMBALABU ───────────────────────────────
+        // ── Signature scrolls - BONECA AMBALABU ───────────────────────────────
         registerItem(new Scroll(
                 "Tire Burnout Scroll",
                 "Signature scroll for Boneca Ambalabu. Screeches into the target leaving burning tyre marks.",
@@ -421,7 +421,7 @@ public class ItemRegistry {
                 "Signature scroll for Boneca Ambalabu. Relentlessly licks the target in a Fire-type frenzy.",
                 "/assets/Items/Scroll/scroll_fire.png", "Licking Loop", 0));
 
-        // ── Signature scrolls — UDIN DIN DIN DIN DUN ──────────────────────────
+        // ── Signature scrolls - UDIN DIN DIN DIN DUN ──────────────────────────
         registerItem(new Scroll(
                 "Frequency Pulse Scroll",
                 "Signature scroll for Udin Din Din Din Dun. A devastating Psychic frequency blast.",
@@ -437,7 +437,7 @@ public class ItemRegistry {
                 "Signature scroll for Udin Din Din Din Dun. Scrambles the target's brainwaves with Psychic energy.",
                 "/assets/Items/Scroll/scroll_psychic.png", "Brain Scramble", 0));
 
-        // ── Signature scrolls — CAPUCCINO ASSASSINO ───────────────────────────
+        // ── Signature scrolls - CAPUCCINO ASSASSINO ───────────────────────────
         registerItem(new Scroll(
                 "Steam Vent Scroll",
                 "Signature scroll for Capuccino Assassino. Blasts scalding steam for heavy Poison damage.",
@@ -445,7 +445,7 @@ public class ItemRegistry {
 
         registerItem(new Scroll(
                 "Metal Frother Scroll",
-                "Signature scroll for Capuccino Assassino. Bludgeons with a steel milk frother — Dark type.",
+                "Signature scroll for Capuccino Assassino. Bludgeons with a steel milk frother - Dark type.",
                 "/assets/Items/Scroll/scroll_dark.png", "Metal Frother", 0));
 
         registerItem(new Scroll(
