@@ -29,9 +29,10 @@ public class BrainRotFactory {
         };
     }
 
-    private static BrainRot build(String name, Type primary, Type secondary, Tier tier,
+    private static BrainRot build(String name, String description,
+                                  Type primary, Type secondary, Tier tier,
                                   int hp, int atk, int def, int spd, SkillType poolType) {
-        BrainRot rot = new BrainRot(name, primary, secondary, tier, hp, atk, def, spd);
+        BrainRot rot = new BrainRot(name, description, primary, secondary, tier, hp, atk, def, spd);
         assignStartingMoves(rot, name, poolType);
         return rot;
     }
@@ -45,31 +46,37 @@ public class BrainRotFactory {
     private static BrainRot makeTungTung(Tier tier) {
         int hp, atk, def, spd;
         switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(80,120); spd = RandomUtil.range(18,28); def = RandomUtil.range(30,50); atk = RandomUtil.range(45,80); }
+            case GOLD    -> { hp = RandomUtil.range(80,120);  spd = RandomUtil.range(18,28); def = RandomUtil.range(30,50); atk = RandomUtil.range(45,80);  }
             case DIAMOND -> { hp = RandomUtil.range(120,170); spd = RandomUtil.range(28,35); def = RandomUtil.range(50,65); atk = RandomUtil.range(80,110); }
-            default      -> { hp = RandomUtil.range(35,80);  spd = RandomUtil.range(8,18);  def = RandomUtil.range(15,30); atk = RandomUtil.range(20,45); }
+            default      -> { hp = RandomUtil.range(35,80);   spd = RandomUtil.range(8,18);  def = RandomUtil.range(15,30); atk = RandomUtil.range(20,45);  }
         }
-        return build("TUNG TUNG TUNG SAHUR", Type.FIGHTING, null, tier, hp, atk, def, spd, SkillType.FIGHTING);
+        return build("TUNG TUNG TUNG SAHUR",
+                "A cursed wooden log that wakes up at 3AM and just starts going. Nobody asked it to. Nobody can stop it. It has been drumming since before you were born and will still be drumming long after.",
+                Type.FIGHTING, null, tier, hp, atk, def, spd, SkillType.FIGHTING);
     }
 
     private static BrainRot makeTrala(Tier tier) {
         int hp, atk, def, spd;
         switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(70,110); spd = RandomUtil.range(28,40); def = RandomUtil.range(20,35); atk = RandomUtil.range(50,85); }
+            case GOLD    -> { hp = RandomUtil.range(70,110);  spd = RandomUtil.range(28,40); def = RandomUtil.range(20,35); atk = RandomUtil.range(50,85);  }
             case DIAMOND -> { hp = RandomUtil.range(110,150); spd = RandomUtil.range(40,45); def = RandomUtil.range(35,50); atk = RandomUtil.range(85,115); }
-            default      -> { hp = RandomUtil.range(30,70);  spd = RandomUtil.range(15,28); def = RandomUtil.range(8,20);  atk = RandomUtil.range(25,50); }
+            default      -> { hp = RandomUtil.range(30,70);   spd = RandomUtil.range(15,28); def = RandomUtil.range(8,20);  atk = RandomUtil.range(25,50);  }
         }
-        return build("TRALALERO TRALALA", Type.WATER, Type.PSYCHIC, tier, hp, atk, def, spd, SkillType.WATER);
+        return build("TRALALERO TRALALA",
+                "A shark wearing Nike shoes who absolutely does not care about your opinion. It walks on the ocean floor, it vibes, it confuses marine biologists, and it has never once explained itself. The shoes are real. They are fresh.",
+                Type.WATER, Type.PSYCHIC, tier, hp, atk, def, spd, SkillType.WATER);
     }
 
     private static BrainRot makeBombardino(Tier tier) {
         int hp, atk, def, spd;
         switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(85,130); spd = RandomUtil.range(22,32); def = RandomUtil.range(30,55); atk = RandomUtil.range(50,85); }
+            case GOLD    -> { hp = RandomUtil.range(85,130);  spd = RandomUtil.range(22,32); def = RandomUtil.range(30,55); atk = RandomUtil.range(50,85);  }
             case DIAMOND -> { hp = RandomUtil.range(130,175); spd = RandomUtil.range(32,42); def = RandomUtil.range(55,75); atk = RandomUtil.range(85,110); }
-            default      -> { hp = RandomUtil.range(40,85);  spd = RandomUtil.range(12,22); def = RandomUtil.range(15,30); atk = RandomUtil.range(22,50); }
+            default      -> { hp = RandomUtil.range(40,85);   spd = RandomUtil.range(12,22); def = RandomUtil.range(15,30); atk = RandomUtil.range(22,50);  }
         }
-        return build("BOMBARDINO CROCODILO", Type.WATER, Type.FLYING, tier, hp, atk, def, spd, SkillType.WATER);
+        return build("BOMBARDINO CROCODILO",
+                "An Italian military crocodile that runs entirely on espresso and unearned confidence. It flies a bomber jet it did not train for, drops things it probably shouldn't, and lands every time like it meant to do that.",
+                Type.WATER, Type.FLYING, tier, hp, atk, def, spd, SkillType.WATER);
     }
 
     private static BrainRot makeLirili(Tier tier) {
@@ -79,46 +86,56 @@ public class BrainRotFactory {
             case DIAMOND -> { hp = RandomUtil.range(150,210); spd = RandomUtil.range(22,30); def = RandomUtil.range(65,85); atk = RandomUtil.range(70,95); }
             default      -> { hp = RandomUtil.range(55,100);  spd = RandomUtil.range(5,12);  def = RandomUtil.range(20,40); atk = RandomUtil.range(15,35); }
         }
-        return build("LIRILI LARILA", Type.SAND, null, tier, hp, atk, def, spd, SkillType.SAND);
+        return build("LIRILI LARILA",
+                "A very old elephant wearing sandals who controls time and simply does not rush. It has seen civilizations collapse. It is currently in no hurry. The sandals are comfortable. The clock around its neck has never shown the correct time.",
+                Type.SAND, null, tier, hp, atk, def, spd, SkillType.SAND);
     }
 
     private static BrainRot makePatapim(Tier tier) {
         int hp, atk, def, spd;
         switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(95,145);  spd = RandomUtil.range(15,24); def = RandomUtil.range(35,60); atk = RandomUtil.range(40,75); }
+            case GOLD    -> { hp = RandomUtil.range(95,145);  spd = RandomUtil.range(15,24); def = RandomUtil.range(35,60); atk = RandomUtil.range(40,75);  }
             case DIAMOND -> { hp = RandomUtil.range(145,200); spd = RandomUtil.range(24,30); def = RandomUtil.range(60,85); atk = RandomUtil.range(75,100); }
-            default      -> { hp = RandomUtil.range(50,95);   spd = RandomUtil.range(6,15);  def = RandomUtil.range(20,35); atk = RandomUtil.range(20,40); }
+            default      -> { hp = RandomUtil.range(50,95);   spd = RandomUtil.range(6,15);  def = RandomUtil.range(20,35); atk = RandomUtil.range(20,40);  }
         }
-        return build("BRR BRR PATAPIM", Type.GRASS, Type.ROCK, tier, hp, atk, def, spd, SkillType.GRASS);
+        return build("BRR BRR PATAPIM",
+                "A large hairy thing from the forest that goes brr brr and then patapim. Scientists have not studied it. Scientists are afraid. It emerges from dense jungle, stomps twice, snorts once, and then just stands there looking at you.",
+                Type.GRASS, Type.ROCK, tier, hp, atk, def, spd, SkillType.GRASS);
     }
 
     private static BrainRot makeBoneca(Tier tier) {
         int hp, atk, def, spd;
         switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(95,145);  spd = RandomUtil.range(15,24); def = RandomUtil.range(35,60); atk = RandomUtil.range(40,75); }
+            case GOLD    -> { hp = RandomUtil.range(95,145);  spd = RandomUtil.range(15,24); def = RandomUtil.range(35,60); atk = RandomUtil.range(40,75);  }
             case DIAMOND -> { hp = RandomUtil.range(145,200); spd = RandomUtil.range(24,30); def = RandomUtil.range(60,85); atk = RandomUtil.range(75,100); }
-            default      -> { hp = RandomUtil.range(50,95);   spd = RandomUtil.range(6,15);  def = RandomUtil.range(20,35); atk = RandomUtil.range(20,40); }
+            default      -> { hp = RandomUtil.range(50,95);   spd = RandomUtil.range(6,15);  def = RandomUtil.range(20,35); atk = RandomUtil.range(20,40);  }
         }
-        return build("BONECA AMBALABU", Type.FIRE, Type.ROCK, tier, hp, atk, def, spd, SkillType.FIRE);
+        return build("BONECA AMBALABU",
+                "A frog doll riding car tires who is absolutely losing it at all times. It licks. It burns rubber. It cackles. It rolls into your life uninvited and leaves skid marks on everything you hold dear.",
+                Type.FIRE, Type.ROCK, tier, hp, atk, def, spd, SkillType.FIRE);
     }
 
     private static BrainRot makeUdin(Tier tier) {
         int hp, atk, def, spd;
         switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(85,135);  spd = RandomUtil.range(18,28); def = RandomUtil.range(30,50); atk = RandomUtil.range(50,85); }
+            case GOLD    -> { hp = RandomUtil.range(85,135);  spd = RandomUtil.range(18,28); def = RandomUtil.range(30,50); atk = RandomUtil.range(50,85);  }
             case DIAMOND -> { hp = RandomUtil.range(135,180); spd = RandomUtil.range(28,35); def = RandomUtil.range(50,65); atk = RandomUtil.range(85,110); }
-            default      -> { hp = RandomUtil.range(40,85);   spd = RandomUtil.range(8,18);  def = RandomUtil.range(15,30); atk = RandomUtil.range(25,50); }
+            default      -> { hp = RandomUtil.range(40,85);   spd = RandomUtil.range(8,18);  def = RandomUtil.range(15,30); atk = RandomUtil.range(25,50);  }
         }
-        return build("UDIN DIN DIN DIN DUN", Type.FIGHTING, null, tier, hp, atk, def, spd, SkillType.FIGHTING);
+        return build("UDIN DIN DIN DIN DUN",
+                "A being made entirely of a sound that should not exist. It says its own name over and over and somehow this is a psychic attack. The more you listen, the less you understand. The less you understand, the more it wins.",
+                Type.FIGHTING, null, tier, hp, atk, def, spd, SkillType.FIGHTING);
     }
 
     private static BrainRot makeCapuccino(Tier tier) {
         int hp, atk, def, spd;
         switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(65,105);  spd = RandomUtil.range(30,42); def = RandomUtil.range(20,35); atk = RandomUtil.range(55,90); }
+            case GOLD    -> { hp = RandomUtil.range(65,105);  spd = RandomUtil.range(30,42); def = RandomUtil.range(20,35); atk = RandomUtil.range(55,90);  }
             case DIAMOND -> { hp = RandomUtil.range(105,145); spd = RandomUtil.range(42,45); def = RandomUtil.range(35,50); atk = RandomUtil.range(90,120); }
-            default      -> { hp = RandomUtil.range(25,65);   spd = RandomUtil.range(18,30); def = RandomUtil.range(8,20);  atk = RandomUtil.range(30,55); }
+            default      -> { hp = RandomUtil.range(25,65);   spd = RandomUtil.range(18,30); def = RandomUtil.range(8,20);  atk = RandomUtil.range(30,55);  }
         }
-        return build("CAPUCCINO ASSASSINO", Type.DARK, Type.POISON, tier, hp, atk, def, spd, SkillType.DARK);
+        return build("CAPUCCINO ASSASSINO",
+                "A small assassin who smells like coffee and has already decided. It appears from steam. It hits you with a milk frother. It fires two espresso shots point blank. It was never here. The cup is empty. You are on the floor.",
+                Type.DARK, Type.POISON, tier, hp, atk, def, spd, SkillType.DARK);
     }
 }

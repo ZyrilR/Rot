@@ -714,34 +714,30 @@ public class PCUI {
                               int bodyY, int divX) {
         if (detailRot == null) return;
 
-        // ── Panel bounds ──────────────────────────────────────────────────────
-        int panelX = winX + OUTER_PAD;                           // left edge of left panel
-        int panelW = divX - winX - OUTER_PAD - 8;               // panel width (8px gap before divider)
-        int panelY = bodyY + 8;                                  // top of panel content
-        int panelH = winH - (bodyY - winY) - STATUS_BAR_H - 16; // total available height
+        int panelX = winX + OUTER_PAD;
+        int panelW = divX - winX - OUTER_PAD - 8;
+        int panelY = bodyY + 8;
+        int panelH = winH - (bodyY - winY) - STATUS_BAR_H - 16;
 
-        // ── Shared card layout constants ──────────────────────────────────────
-        int cardPadX    = 12;  // horizontal inner padding inside every card
-        int cardPadTop  = 24;  // y offset for card section title from card top
-        int cardGap     = 6;  // vertical gap between stacked cards
-        int rowLineH    = 26;  // baseline-to-baseline height for each label+badge row
+        int cardPadX    = 12;
+        int cardPadTop  = 24;
+        int cardGap     = 6;
+        int rowLineH    = 26;
 
-        // ── Classification card ───────────────────────────────────────────────
-        int classCardH = 100;
+        // ── Classification card ───────────────────────────────────────────────────
+        int classCardH = 93;
         drawCard(g2, panelX, panelY, panelW, classCardH, 8);
 
-        // Section title
         g2.setFont(base.deriveFont(Font.BOLD, 13f));
         g2.setColor(new Color(44, 44, 42));
         g2.drawString("Classification", panelX + cardPadX, panelY + cardPadTop);
 
-        // Type row - label baseline aligns with badge centre
         int badgeH      = 20;
-        int labelIndent = cardPadX + 2;      // x for "Type /" and "Tier /" labels
-        int badgeOffX   = labelIndent + 54;  // x where badges start (after label text)
+        int labelIndent = cardPadX + 2;
+        int badgeOffX   = labelIndent + 54;
 
-        int typeRowY    = panelY + cardPadTop + rowLineH;        // baseline for "Type /" label
-        int typeBadgeY  = typeRowY - badgeH + 8;                 // badge top aligned to label baseline
+        int typeRowY   = panelY + cardPadTop + rowLineH;
+        int typeBadgeY = typeRowY - badgeH + 8;
 
         g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(80, 76, 70));
@@ -755,7 +751,6 @@ public class PCUI {
                     panelX + badgeOffX + primBadgeW + 4, typeBadgeY, badgeH);
         }
 
-        // Tier row - same x alignment as type row, one rowLineH below
         int tierRowY   = typeRowY + rowLineH;
         int tierBadgeY = tierRowY - badgeH + 8;
 
@@ -772,22 +767,20 @@ public class PCUI {
         g2.setColor(Color.WHITE);
         g2.drawString(tierLabel, panelX + badgeOffX + 7, tierBadgeY + 12);
 
-        // ── Stats card ────────────────────────────────────────────────────────
+        // ── Stats card (shrunk) ───────────────────────────────────────────────────
         int statsCardY = panelY + classCardH + cardGap;
-        int statsCardH = 140;
+        int statsCardH = 106; //
         drawCard(g2, panelX, statsCardY, panelW, statsCardH, 8);
 
-        // Section title
         g2.setFont(base.deriveFont(Font.BOLD, 13f));
         g2.setColor(new Color(44, 44, 42));
         g2.drawString("Stats", panelX + cardPadX, statsCardY + cardPadTop);
 
-        // Stat rows - consistent indent and row spacing
-        int statContentX = panelX + cardPadX + 4; // x for stat labels / bar start
+        int statContentX = panelX + cardPadX + 4;
         int statBarW     = panelW - cardPadX * 2 - 8;
-        int statBarH     = 8;
-        int statRowH     = 28; // baseline-to-baseline for each stat row
-        int firstStatY   = statsCardY + cardPadTop + 14; // top of first bar
+        int statBarH     = 6;
+        int statRowH     = 24;
+        int firstStatY   = statsCardY + cardPadTop + 10;
 
         double hpFrac = (double) detailRot.getCurrentHp() / detailRot.getMaxHp();
         drawStatRow(g2, base, statContentX, firstStatY, statBarW, statBarH,
@@ -799,6 +792,56 @@ public class PCUI {
 
         drawStatPlain(g2, base, statContentX, firstStatY + statRowH * 2,
                 "Spd", String.valueOf(detailRot.getSpeed()));
+
+        // ── Description card ──────────────────────────────────────────────────────
+        int descCardY = statsCardY + statsCardH + cardGap;
+        int descCardH = panelY + panelH - descCardY - 13; // fill remaining space
+        if (descCardH < 30) return;
+
+        drawCard(g2, panelX, descCardY, panelW, descCardH, 8);
+
+        g2.setFont(base.deriveFont(Font.BOLD, 13f));
+        g2.setColor(new Color(44, 44, 42));
+        g2.drawString("Description", panelX + cardPadX, descCardY + cardPadTop);
+
+        // Clip so text never bleeds outside the card
+        Shape prevClip = g2.getClip();
+        g2.setClip(panelX + 4, descCardY + 4, panelW - 8, descCardH - 8);
+
+        String desc = detailRot.getDescription();
+        if (desc != null && !desc.isEmpty()) {
+            g2.setFont(base.deriveFont(10f));
+            FontMetrics descFm = g2.getFontMetrics();
+            int textX  = panelX + cardPadX;
+            int textW  = panelW - cardPadX * 2;
+            int textY  = descCardY + cardPadTop + 18;
+            int lineH  = descFm.getHeight() + 4;
+
+            // Word-wrap the description
+            StringBuilder line = new StringBuilder();
+            for (String word : desc.split(" ")) {
+                String test = line.isEmpty() ? word : line + " " + word;
+                if (descFm.stringWidth(test) > textW && !line.isEmpty()) {
+                    g2.setColor(new Color(64, 60, 55));
+                    g2.drawString(line.toString(), textX, textY);
+                    textY += lineH;
+                    line = new StringBuilder(word);
+                    if (textY > descCardY + descCardH - 6) break; // don't overflow
+                } else {
+                    line = new StringBuilder(test);
+                }
+            }
+            if (!line.isEmpty() && textY <= descCardY + descCardH - 6) {
+                g2.setColor(new Color(64, 60, 55));
+                g2.drawString(line.toString(), textX, textY);
+            }
+        } else {
+            g2.setFont(base.deriveFont(10f));
+            g2.setColor(new Color(150, 145, 138));
+            g2.drawString("No description.", panelX + cardPadX, descCardY + cardPadTop + 14);
+        }
+
+        g2.setClip(prevClip);
     }
 
     // ── MOVES left panel ──────────────────────────────────────────────────────
@@ -870,7 +913,7 @@ public class PCUI {
                 g2.drawString(mv.getType().name(), badgeX + badgePadX, badgeTopY + 11);
 
                 // Skill name - starts right after the badge with a small gap
-                int nameX = 180;
+                int nameX = 177;
                 g2.setFont(base.deriveFont(hovered ? Font.BOLD : Font.PLAIN, 11f));
                 g2.setColor(new Color(44, 44, 42));
                 g2.drawString(mv.getName(), nameX, rowY + rowTextOffsetY);
@@ -912,7 +955,7 @@ public class PCUI {
 
         if (!moves.isEmpty() && movesCursor < moves.size()) {
             drawWrappedText(g2, base.deriveFont(10f),
-                    buildTempDescription(moves.get(movesCursor)),
+                    moves.get(movesCursor).getDescription(),
                     panelX + cardPadX, descTextY, descTextW, 15, new Color(64, 60, 55));
         } else {
             g2.setFont(base.deriveFont(10f));
@@ -1096,26 +1139,6 @@ public class PCUI {
         if (fm.stringWidth(text) <= maxPx) return text;
         while (text.length() > 0 && fm.stringWidth(text + "…") > maxPx) text = text.substring(0, text.length() - 1);
         return text + "…";
-    }
-
-    /** Temp move description from effect tag until Skill gains a description field. */
-    private String buildTempDescription(Skill skill) {
-        String suffix = switch (skill.getEffect().toUpperCase()) {
-            case "BURN"      -> " May inflict BURN.";
-            case "PARALYZE"  -> " May inflict PARALYZE.";
-            case "CONFUSE"   -> " May CONFUSE the target.";
-            case "FLINCH"    -> " May cause FLINCH.";
-            case "LOWER_DEF" -> " Lowers target Defense.";
-            case "LOWER_ATK" -> " Lowers target Attack.";
-            case "LOWER_SPD" -> " Lowers target Speed.";
-            case "RAISE_ATK" -> " Raises user Attack.";
-            case "RAISE_DEF" -> " Raises user Defense.";
-            case "RAISE_SPD" -> " Raises user Speed.";
-            case "HEAL"      -> " Restores user HP.";
-            default          -> " No additional effect.";
-        };
-        String pwr = (skill.getPower() > 0) ? "Power: " + skill.getPower() + "." : " Status move.";
-        return skill.getName() + " - " + skill.getType().name().toLowerCase() + "-type." + pwr + suffix;
     }
 
     // ── Sprite loading ────────────────────────────────────────────────────────
