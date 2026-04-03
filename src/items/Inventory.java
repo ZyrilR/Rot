@@ -2,12 +2,14 @@ package items;
 
 import brainrots.BrainRot;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-public class Backpack {
+public class Inventory {
     private final ArrayList<Item> items; // stores player's items
     private final int capacity;          // maximum number of items allowed
 
-    public Backpack(int capacity) {
+    public Inventory(int capacity) {
         this.capacity = capacity;
         this.items = new ArrayList<>();
     }
@@ -22,7 +24,7 @@ public class Backpack {
         return true;
     }
 
-    /** Removes a specific item */
+    /** Removes the first occurrence of the specific item instance */
     public boolean removeItem(Item item) {
         return items.remove(item);
     }
@@ -53,6 +55,15 @@ public class Backpack {
         ArrayList<String> names = new ArrayList<>();
         for (Item item : items) names.add(item.getName());
         return names;
+    }
+
+    /**
+     * Returns the raw backing list as an unmodifiable view.
+     * Used by InventoryUI to read items for display / quantity counting
+     * without exposing mutability.
+     */
+    public List<Item> getRawItems() {
+        return Collections.unmodifiableList(items);
     }
 
     /** Get current inventory size */

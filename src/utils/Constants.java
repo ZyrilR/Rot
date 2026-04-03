@@ -37,6 +37,16 @@ public class Constants {
     public static final int OUTER_PAD   = 18;
     public static final int STATUS_BAR_H = 44;
 
+    // Menu UI Constants
+    public static final int PANEL_W = 135;
+    public static final int ROW_H   = 30;
+    public static final int PAD_V   = 12;
+
+    // Shop & Inventory UI constants
+    public static final int LEFT_SPLIT   = 38;  // % of window width for left panel
+    public static final int NAME_LINE_H  = 15;  // line height for wrapped name in desc card
+    public static final int DESC_LINE_H  = 13;  // line height for description body text
+
     //Asset Constants
     public static int[] BUSH_INDEXES = new int[]{2, 16};
 

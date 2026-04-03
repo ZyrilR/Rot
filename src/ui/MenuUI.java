@@ -86,9 +86,21 @@ public class MenuUI {
 
     private void handleSelection() {
         switch (ITEMS[cursorIndex]) {
-            case BACKPACK  -> System.out.println("[MenuUI] Backpack not yet implemented.");
-            case BRAINROTS -> { gp.PCUI.open(); gp.GAMESTATE = "pc"; System.out.println("[MenuUI] Opening BrainRots (PC)."); }
-            case EXIT      -> { System.out.println("[MenuUI] Exiting."); System.exit(0); }
+            case BACKPACK -> {
+                // Open the inventory UI and switch game state
+                gp.INVENTORYUI.open();
+                gp.GAMESTATE = "inventory";
+                System.out.println("[MenuUI] Opening Backpack.");
+            }
+            case BRAINROTS -> {
+                gp.PCUI.open();
+                gp.GAMESTATE = "pc";
+                System.out.println("[MenuUI] Opening BrainRots (PC).");
+            }
+            case EXIT -> {
+                System.out.println("[MenuUI] Exiting.");
+                System.exit(0);
+            }
         }
     }
 
@@ -114,8 +126,8 @@ public class MenuUI {
         drawWindow(g2, panelX, panelY, PANEL_W, panelH);
 
         // ── Menu rows ─────────────────────────────────────────────────────────
-        int   itemX  = panelX + 10; // fixed left margin for text
-        int   labelX = itemX + 16;  // text starts after cursor space
+        int   itemX  = panelX + 10;
+        int   labelX = itemX + 16;
 
         g2.setFont(labelFont);
         FontMetrics fm = g2.getFontMetrics();
@@ -123,13 +135,13 @@ public class MenuUI {
         for (int i = 0; i < ITEMS.length; i++) {
             MenuItem item    = ITEMS[i];
             int      rowY    = panelY + PAD_V + i * ROW_H;
-            int      cy      = rowY + ROW_H / 2;
+            int      cy      = rowY + ROW_H / 2 - 3;
             int      textY   = cy + fm.getAscent() / 2 - 1;
             boolean  hovered = (i == cursorIndex);
 
-            // Cursor triangle — gold, anchored to fixed itemX
+            // Cursor triangle — same style as InventoryUI
             if (hovered) {
-                int ts = 9;   // half-height → 18px tall total
+                int ts = 9;
                 int tx = itemX + 1;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(new Color(80, 76, 70));
@@ -141,7 +153,6 @@ public class MenuUI {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
             }
 
-            // Label — left-aligned, fixed indent past cursor
             g2.setFont(labelFont);
             g2.setColor(new Color(80, 76, 70));
             g2.drawString(item.label, labelX, textY);
@@ -150,7 +161,7 @@ public class MenuUI {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    /** 3px dark | 2px gold | 1px dark — thin triple-stroke border. */
+    /** 3px dark | 2px gold | 1px dark triple-stroke border. */
     private void drawWindow(Graphics2D g2, int x, int y, int w, int h) {
         int arc = 12;
         g2.setColor(new Color(245, 242, 235));

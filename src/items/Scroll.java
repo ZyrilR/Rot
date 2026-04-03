@@ -7,6 +7,8 @@ import skills.SkillPool;
 import skills.SkillRegistry;
 import skills.SkillType;
 
+import static skills.SkillType.NORMAL;
+
 /**
  * A Scroll teaches a BrainRot a new skill.
  *
@@ -140,7 +142,7 @@ public class Scroll extends Item {
      * SkillType and Type share identical names, so we compare by name string.
      */
     private boolean isTypeCompatible(SkillType skillType, BrainRot target) {
-        return typeMatches(skillType, target.getPrimaryType())
+        return skillType.equals(NORMAL) || typeMatches(skillType, target.getPrimaryType())
                 || (target.getSecondaryType() != null
                 && typeMatches(skillType, target.getSecondaryType()));
     }
