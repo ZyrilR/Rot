@@ -107,22 +107,35 @@ public class PCUI {
 
     // ── BOX layout input ──────────────────────────────────────────────────────
     private void updateBoxLayout() {
-        if (gp.KEYBOARDHANDLER.shiftPressed) {
-            gp.KEYBOARDHANDLER.shiftPressed = false;
+        if (gp.KEYBOARDHANDLER.tabPressed) {
+            gp.KEYBOARDHANDLER.tabPressed = false;
             layout = Layout.PARTY; previousLayout = Layout.PARTY;
             partyCursorRow = 0; inputCooldown = INPUT_DELAY;
             return;
         }
 
-        if      (gp.KEYBOARDHANDLER.upPressed    && boxCursorRow > 0)             { boxCursorRow--;  inputCooldown = INPUT_DELAY; }
-        else if (gp.KEYBOARDHANDLER.downPressed   && boxCursorRow < GRID_ROWS - 1) { boxCursorRow++;  inputCooldown = INPUT_DELAY; }
-        else if (gp.KEYBOARDHANDLER.leftPressed   && boxCursorCol > 0)             { boxCursorCol--;  inputCooldown = INPUT_DELAY; }
-        else if (gp.KEYBOARDHANDLER.rightPressed  && boxCursorCol < GRID_COLS - 1) { boxCursorCol++;  inputCooldown = INPUT_DELAY; }
-
-        if (gp.KEYBOARDHANDLER.tabPressed) {
-            gp.KEYBOARDHANDLER.tabPressed = false;
-            currentBox = (currentBox + 1) % PCSystem.BOX_COUNT;
-            inputCooldown = INPUT_DELAY;
+        if (gp.KEYBOARDHANDLER.upPressed && boxCursorRow > 0) {
+            boxCursorRow--; inputCooldown = INPUT_DELAY;
+        } else if (gp.KEYBOARDHANDLER.downPressed && boxCursorRow < GRID_ROWS - 1) {
+            boxCursorRow++; inputCooldown = INPUT_DELAY;
+        } else if (gp.KEYBOARDHANDLER.leftPressed) {
+            if (boxCursorCol > 0) {
+                boxCursorCol--; inputCooldown = INPUT_DELAY;
+            } else {
+                // Left edge → cycle to previous box, land on right edge
+                currentBox = (currentBox - 1 + PCSystem.BOX_COUNT) % PCSystem.BOX_COUNT;
+                boxCursorCol = GRID_COLS - 1;
+                inputCooldown = INPUT_DELAY;
+            }
+        } else if (gp.KEYBOARDHANDLER.rightPressed) {
+            if (boxCursorCol < GRID_COLS - 1) {
+                boxCursorCol++; inputCooldown = INPUT_DELAY;
+            } else {
+                // Right edge → cycle to next box, land on left edge
+                currentBox = (currentBox + 1) % PCSystem.BOX_COUNT;
+                boxCursorCol = 0;
+                inputCooldown = INPUT_DELAY;
+            }
         }
 
         if (gp.KEYBOARDHANDLER.ePressed) {
@@ -142,15 +155,15 @@ public class PCUI {
         if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
             if (selectedSlot != null) { selectedSlot = null; heldRot = null; setStatus("Deselected.", false); }
-            else{ gp.GAMESTATE = "play";System.out.println("[PCUI] PC closed (party view)."); }
+            else { gp.GAMESTATE = "play"; System.out.println("[PCUI] PC closed (box view)."); }
             inputCooldown = INPUT_DELAY;
         }
     }
 
     // ── PARTY layout input ────────────────────────────────────────────────────
     private void updatePartyLayout() {
-        if (gp.KEYBOARDHANDLER.shiftPressed) {
-            gp.KEYBOARDHANDLER.shiftPressed = false;
+        if (gp.KEYBOARDHANDLER.tabPressed) {
+            gp.KEYBOARDHANDLER.tabPressed = false;
             layout = Layout.BOX; previousLayout = Layout.BOX;
             inputCooldown = INPUT_DELAY;
             return;
@@ -175,7 +188,7 @@ public class PCUI {
         if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
             if (selectedSlot != null) { selectedSlot = null; heldRot = null; setStatus("Deselected.", false); }
-            else{ gp.GAMESTATE = "play";System.out.println("[PCUI] PC closed (party view)."); }
+            else { gp.GAMESTATE = "play"; System.out.println("[PCUI] PC closed (party view)."); }
             inputCooldown = INPUT_DELAY;
         }
     }
@@ -556,11 +569,9 @@ public class PCUI {
         }
 
         String line1 = (layout == Layout.BOX)
-                ? "WASD Move  TAB Box  Shift Party"
-                : "WS Move  Shift Box  E Info";
-        String line2 = (layout == Layout.BOX)
-                ? "E Info  ENT Select  ESC Cancel/Close"
-                : "ENT Select  ESC Cancel/Close";
+                ? "WASD Move  TAB Party  E Info"
+                : "WS Move  TAB Box  E Info";
+        String line2 = "ENT Select  ESC Cancel/Close";
 
         g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(120, 116, 108));
