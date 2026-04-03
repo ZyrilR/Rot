@@ -1,6 +1,8 @@
 package battle;
 
 import brainrots.BrainRot;
+import brainrots.ExperienceSystem;
+import brainrots.LevelUpResult;
 import items.Inventory;
 import skills.Skill;
 import skills.SkillEffect;
@@ -28,6 +30,7 @@ public class BattleManager {
 
     private BattleResult result = BattleResult.ONGOING;
     private boolean wildBattle; // true = wild BrainRot, can attempt capture
+    private List<LevelUpResult> levelUpResults = new java.util.ArrayList<>();
 
     public BattleManager(BrainRot playerRot, BrainRot enemyRot, List<BrainRot> playerTeam, Inventory playerInventory, boolean wildBattle) {
         this.playerRot       = playerRot;
@@ -133,16 +136,33 @@ public class BattleManager {
         if (enemyRot.isFainted()) {
             System.out.println(enemyRot.getName() + " fainted! Player wins!");
             result = BattleResult.PLAYER_WIN;
+            awardXp();
         } else if (playerRot.isFainted()) {
             System.out.println(playerRot.getName() + " fainted! Enemy wins!");
             result = BattleResult.ENEMY_WIN;
         }
     }
 
+    private void awardXp() {
+        int xp = ExperienceSystem.xpYield(enemyRot);
+        System.out.println(playerRot.getName() + " gained " + xp + " XP!");
+        levelUpResults = playerRot.gainXp(xp);
+        for (LevelUpResult lvl : levelUpResults) {
+            System.out.println(playerRot.getName() + " grew to level " + lvl.newLevel + "!");
+            System.out.println("  HP +" + lvl.hpGain + "  ATK +" + lvl.atkGain
+                    + "  DEF +" + lvl.defGain + "  SPD +" + lvl.spdGain);
+            if (lvl.skillUnlocked != null) {
+                System.out.println(playerRot.getName() + " can learn " + lvl.skillUnlocked.getName() + "!");
+            }
+        }
+    }
+
     // ── Getters ───────────────────────────────────────────────────────────────
 
-    public BattleResult getResult()    { return result; }
-    public boolean isOver()            { return result != BattleResult.ONGOING; }
-    public BrainRot getPlayerRot()     { return playerRot; }
-    public BrainRot getEnemyRot()      { return enemyRot; }
+    public BattleResult getResult()              { return result; }
+    public boolean isOver()                      { return result != BattleResult.ONGOING; }
+    public BrainRot getPlayerRot()               { return playerRot; }
+    public BrainRot getEnemyRot()                { return enemyRot; }
+    /** Level-up events from the last battle win (empty if no level-up occurred). */
+    public List<LevelUpResult> getLevelUpResults() { return levelUpResults; }
 }

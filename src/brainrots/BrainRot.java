@@ -32,6 +32,10 @@ public class BrainRot {
     private double defenseMod = 1.0;
     private double speedMod   = 1.0;
 
+    // Level and experience
+    private int level = 1;
+    private int currentXp = 0;
+
     // Battle state
     private String status = "NONE"; // NONE, BURN, PARALYZE, CONFUSE, FLINCH
     private int statusTurns = 0;
@@ -71,6 +75,48 @@ public class BrainRot {
     public boolean isFainted() {
         return currentHp <= 0;
     }
+
+    // ── Level and XP ─────────────────────────────────────────────────────────
+
+    /**
+     * Awards XP and processes any resulting level-ups.
+     * Returns one LevelUpResult per level gained (empty list = no level-up).
+     * Each result includes stat gains and the skill unlocked at that level (may be null).
+     */
+    public List<LevelUpResult> gainXp(int amount) {
+        List<LevelUpResult> results = new ArrayList<>();
+        if (level >= ExperienceSystem.MAX_LEVEL) return results;
+
+        currentXp += amount;
+        while (level < ExperienceSystem.MAX_LEVEL && currentXp >= ExperienceSystem.xpToNextLevel(level)) {
+            currentXp -= ExperienceSystem.xpToNextLevel(level);
+            results.add(levelUp());
+        }
+        return results;
+    }
+
+    private LevelUpResult levelUp() {
+        level++;
+
+        // Fixed stat growth per level
+        int hpGain  = 3;
+        int atkGain = 1;
+        int defGain = 1;
+        int spdGain = 1;
+
+        maxHp  += hpGain;
+        currentHp += hpGain; // heal by the amount gained so HP doesn't drop on level-up
+        attack += atkGain;
+        defense += defGain;
+        speed  += spdGain;
+
+        Skill unlocked = LevelUpLearnset.getSkillAt(name, level);
+        return new LevelUpResult(level, hpGain, atkGain, defGain, spdGain, unlocked);
+    }
+
+    public int getLevel()      { return level; }
+    public int getCurrentXp()  { return currentXp; }
+    public int getXpToNextLevel() { return ExperienceSystem.xpToNextLevel(level); }
 
     // ── SP ───────────────────────────────────────────────────────────────────
 
