@@ -16,6 +16,7 @@ public class BrainRot {
     private Type primaryType;
     private Type secondaryType; // nullable
     private Tier tier;
+    private String description;
 
     // Base stats (set at creation by Factory)
     private int maxHp;
@@ -41,9 +42,10 @@ public class BrainRot {
     private static final int MAX_MOVES = 4;
     private List<Skill> moves = new ArrayList<>();
 
-    public BrainRot(String name, Type primaryType, Type secondaryType, Tier tier,
+    public BrainRot(String name, String description, Type primaryType, Type secondaryType, Tier tier,
                     int maxHp, int attack, int defense, int speed) {
         this.name = name;
+        this.description = description;
         this.primaryType = primaryType;
         this.secondaryType = secondaryType;
         this.tier = tier;
@@ -164,6 +166,7 @@ public class BrainRot {
     public Type getPrimaryType()    { return primaryType; }
     public Type getSecondaryType()  { return secondaryType; }
     public Tier getTier()           { return tier; }
+    public String getDescription()  { return description; }
     public int getMaxHp()           { return maxHp; }
     public int getCurrentHp()       { return currentHp; }
     public int getAttack()          { return (int)(attack * attackMod); }
