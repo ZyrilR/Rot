@@ -5,7 +5,7 @@ import brainrots.BrainRot;
 import brainrots.BrainRotFactory;
 import brainrots.Tier;
 import engine.GamePanel;
-import items.Backpack;
+import items.Inventory;
 import npc.NPC;
 import npc.TrainerNPC;
 import tile.TileManager;
@@ -154,9 +154,9 @@ public class EncounterSystem {
      */
     public void startWildBattle(Player player, BrainRot wildRot, GamePanel gp) {
         BrainRot playerRot = getLeadBrainRot();
-        Backpack backpack  = player.getInventory();
+        Inventory inventory  = player.getInventory();
 
-        activeBattle = new BattleManager(playerRot, wildRot, playerTeam, backpack, true);
+        activeBattle = new BattleManager(playerRot, wildRot, playerTeam, inventory, true);
         gp.GAMESTATE = "battle";
         System.out.println("Wild battle started against " + wildRot.getName() + "!");
     }
@@ -168,9 +168,9 @@ public class EncounterSystem {
     public void startTrainerBattle(Player player, TrainerNPC trainer, GamePanel gp) {
         BrainRot trainerRot = trainer.getLeadBrainRot();
         BrainRot playerRot  = getLeadBrainRot();
-        Backpack backpack   = player.getInventory();
+        Inventory inventory   = player.getInventory();
 
-        activeBattle = new BattleManager(playerRot, trainerRot, playerTeam, backpack, false);
+        activeBattle = new BattleManager(playerRot, trainerRot, playerTeam, inventory, false);
         gp.GAMESTATE = "battle";
         System.out.println("Trainer battle started against " + trainer.name + "!");
     }

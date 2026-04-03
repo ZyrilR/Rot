@@ -13,8 +13,8 @@ public class TrainerNPC extends NPC {
     private final List<BrainRot> party = new ArrayList<>();
     private boolean defeated = false;
 
-    public TrainerNPC(String name, int folderId) {
-        super(name, "TrainerNPC", folderId);
+    public TrainerNPC(String name, int folderId, int x, int y) {
+        super(name, folderId, x, y);
         // Give each trainer a default lead BrainRot at NORMAL tier.
         // Replace with a configured team when setting up specific trainers.
         party.add(BrainRotFactory.create("LIRILI LARILA", Tier.NORMAL));

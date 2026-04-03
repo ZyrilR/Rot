@@ -29,6 +29,8 @@ public class DialogueBox {
 
     public void setPendingShopOpen(boolean open) {
         this.pendingShopOpen = open;
+        gp.GAMESTATE = "shop";
+        gp.SHOPUI.open();
     }
 
     public void startDialogue(String name, ArrayList<String> dialogues) {
