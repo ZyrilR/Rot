@@ -5,8 +5,8 @@ import engine.GamePanel;
 public class TrainerNPC extends NPC {
 
     // Updated constructor to match the new NPC blueprint!
-    public TrainerNPC(String name, int folderId) {
-        super(name, "TrainerNPC", folderId);
+    public TrainerNPC(String name, int folderId, int x, int y) {
+        super(name, folderId, x, y);
     }
 
     @Override

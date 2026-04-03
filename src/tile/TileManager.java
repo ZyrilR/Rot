@@ -1,11 +1,12 @@
 package tile;
 
 import engine.GamePanel;
-import npc.MarketNPC;
+import npc.*;
 
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static utils.AssetManager.loadImage;
 import static utils.Constants.*;
@@ -15,6 +16,7 @@ public class TileManager {
     //layerType : {BACKGROUND, DECORATION, BUILDING, INTERACTIVE}
     private String layerType;
     private int map[][];
+    private ArrayList<NPC> NPCs = new ArrayList<>();
 
     //TileSets
     public static ArrayList<Tile> BACKGROUND_TILES = new ArrayList<>();
@@ -30,6 +32,9 @@ public class TileManager {
     }
     public ArrayList<Tile> getTiles() {
         return tiles;
+    }
+    public ArrayList<NPC> getNPCs() {
+        return NPCs;
     }
 
     public TileManager(String layerType) {
@@ -50,11 +55,22 @@ public class TileManager {
                 // Access the 2D array: [Row][Col]
                 int tileNum = map[worldRow][worldCol];
 
-                if (tileNum == 0 && layerType.equalsIgnoreCase("Interactive"))
+                if (tileNum == 0 && (
+                        layerType.equalsIgnoreCase("Interactive") ||
+                        layerType.equalsIgnoreCase("Background")
+                ))
                     continue;
 
                 if (tileNum != 0)
                     tileNum--;
+
+//                if (layerType.equalsIgnoreCase("Background")) {
+//                    tileNum = 0;wasdd
+//                }
+
+
+//                if (layerType.equalsIgnoreCase("Background"))
+//                    tileNum--;
 
                 // Map indices to coordinates
                 int worldX = worldCol * TILE_SIZE; // Columns move along X
@@ -70,7 +86,7 @@ public class TileManager {
                         worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
                         worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT  - gp.player.screenY)) {
 
-//                    if (layerType.equalsIgnoreCase("Interactive")) {
+//                    if (layerType.equalsIgnoreCase("Background")) {
 //                        if (tileNum >= 0) {
 //                            System.out.println("TILE NUM: " + tileNum);
 //                            System.out.println("TILES SIZE: " + tiles.size());
@@ -79,13 +95,15 @@ public class TileManager {
 ////                                    g2.drawImage(tiles.get(0).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
 ////                                else
 ////                                    g2.drawImage(tiles.get(tileNum).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
-//                            g2.drawImage(tiles.get(1).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+//                            g2.drawImage(tiles.get(11).image, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
 //                            }
 //                        }
 //                    } else
 
                     if (tileNum >= 0) {
                         if (tileNum < tiles.size()) {
+//                            if (layerType.equalsIgnoreCase("BACKGROUND"))
+//                                tileNum--;
                             g2.drawImage(tiles.get(tileNum).image, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
 //                            g2.drawImage(tiles.get(3).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
                         }
@@ -136,6 +154,31 @@ public class TileManager {
                 row++;
             }
             displayMapValues();
+
+            if (layerType.equalsIgnoreCase("interactive")) {
+                br.readLine();
+                String line;
+                while((line = br.readLine()) != null) {
+                    System.out.println(line);
+
+                    String[] npc = line.split("\\|");
+
+                    NPC npc1 = switch (npc[1].toUpperCase()) {
+                        case "TRAINERNPC" -> new TrainerNPC(npc[0], Integer.parseInt(npc[2]), Integer.parseInt(npc[3]), Integer.parseInt(npc[4]));
+                        case "MARKETNPC" -> new MarketNPC(npc[0], Integer.parseInt(npc[2]), Integer.parseInt(npc[3]), Integer.parseInt(npc[4]));
+                        case "NPC" -> new NPC(npc[0], Integer.parseInt(npc[2]), Integer.parseInt(npc[3]), Integer.parseInt(npc[4]));
+                        case "GYMLEADER" -> new GymLeader(npc[0], Integer.parseInt(npc[2]), Integer.parseInt(npc[3]), Integer.parseInt(npc[4]));
+                        case "GYMMASTER" -> new GymMaster(npc[0], Integer.parseInt(npc[2]), Integer.parseInt(npc[3]), Integer.parseInt(npc[4]));
+                        default -> null;
+                    };
+
+                    String[] dialogues = npc[5].split(";");
+                    assert npc1 != null;
+                    npc1.setDialogue(dialogues);
+
+                    NPCs.add(npc1);
+                }
+            }
             br.close();
 
         } catch (Exception e) {
@@ -194,47 +237,35 @@ public class TileManager {
     }
 
     public static void loadTiles() {
-        int count = 1;
-
-        //Grass
-        for (int i = 1; i <= 30; i++, count++) {
-            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/NonCollidable/1/" + count + ".png")));
-            System.out.println("ADDED: Grass Tile " + BACKGROUND_TILES.size());
+        //NonCollidable
+        for (int i = 1; i <= 43; i++) {
+            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/NonCollidable/" + i + ".png")));
+            System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
         }
 
-        //Pathway Mud
-        for (int i = 1; i <= 4; i++, count++) {
-            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/NonCollidable/2/" + i + ".png")));
-            System.out.println("ADDED: Pathway Mud " + i + BACKGROUND_TILES.size());
-        }
-
-        //Walls
-        for (int i = 1; i <= 16; i++, count++) {
-            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/Collidable/1/" + i + ".png"), true));
-            System.out.println("ADDED: Walls " + i + BACKGROUND_TILES.size());
-        }
-
-        //Water
-        for (int i = 1; i <= 8; i++, count++) {
-            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/Collidable/2/" + i + ".png"), true));
-            System.out.println("ADDED: Water " + i + BACKGROUND_TILES.size());
-        }
-
-        //Floors
-        for (int i = 1; i <= 9; i++, count++) {
-            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/NonCollidable/3/" + i + ".png")));
-            System.out.println("ADDED: Floor " + i + BACKGROUND_TILES.size());
+        //Collidable
+        for (int i = 44; i <= 67; i++) {
+            BACKGROUND_TILES.add(new Tile(loadImage("/assets/Tiles/Collidable/" + i + ".png"), true));
+            System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
         }
 
         //Decorations
         for (int i = 1; i <= 50; i++) {
-            Tile tile;
+            Tile tile = null;
             //if first img = transparent : background : false
-            if (i == 1 || i == 3)
+            if (i == 1 || i == 3 || (i >= 33 && i <= 38))
                 tile = new Tile(loadImage("/assets/Decorations/" + i + ".png"));
             //if second img = bush : interactive : false
-            else if (i == 2)
-                tile = new TileInteractive(loadImage("/assets/Decorations/" + i + ".png"));
+            else if (contains(BUSH_INDEXES, i)) {
+                switch (i) {
+                    case 2:
+                        tile = new TileSpawner(loadImage("/assets/Decorations/" + i + ".png"), 1);
+                        break;
+                    case 16:
+                        tile = new TileSpawner(loadImage("/assets/Decorations/" + i + ".png"), 2);
+                        break;
+                }
+            }
             else
                 tile = new Tile(loadImage("/assets/Decorations/" + i + ".png"), true, "Background");
 
@@ -250,6 +281,12 @@ public class TileManager {
         //Market NPC
         for (int i = 1; i <= 5; i++) {
             INTERACTIVE_TILES.add(new Tile(loadImage("/assets/Sprites/1/" + i + ".png"), true));
+            System.out.println("ADDED: Sprite 1 " + i + INTERACTIVE_TILES.size());
+        }
+
+        //TrainerNPC
+        for (int i = 1; i <= 5; i++) {
+            INTERACTIVE_TILES.add(new Tile(loadImage("/assets/Sprites/2/" + i + ".png"), true));
             System.out.println("ADDED: Sprite 1 " + i + INTERACTIVE_TILES.size());
         }
 

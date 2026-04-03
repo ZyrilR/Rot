@@ -56,10 +56,10 @@ public class GamePanel extends JPanel {
         this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(KEYBOARDHANDLER);
 
-        world.loadMap("/assets/Worlds/2/", true);
+        world.loadMap("/assets/Worlds/4/", true);
 
-        spawnEntitiesFromMap();
-        spawnCornerNPCs();
+//        spawnEntitiesFromMap();
+//        spawnCornerNPCs();
 
         // ── Seed the PC party with the player's starting team ────────────────
         // In a full game these would be loaded from save data.
@@ -137,8 +137,8 @@ public class GamePanel extends JPanel {
 
     // ── Layer accessors ───────────────────────────────────────────────────────
 
-    public TileManager getWorldBackgroundLayer() {
-        return world.getBackgroundLayer().get(0);
+    public ArrayList<TileManager> getWorldBackgroundLayer() {
+        return world.getBackgroundLayer();
     }
 
     public ArrayList<TileManager> getWorldBuildingLayer() {
@@ -151,46 +151,46 @@ public class GamePanel extends JPanel {
 
     // ── Entity spawning ───────────────────────────────────────────────────────
 
-    public void spawnEntitiesFromMap() {
-        int[][] interactiveMap = world.getInteractiveLayer().getMap();
+//    public void spawnEntitiesFromMap() {
+//        int[][] interactiveMap = world.getInteractiveLayer().getMap();
+//
+//        for (int row = 0; row < MAX_WORLD_ROW; row++) {
+//            for (int col = 0; col < MAX_WORLD_COL; col++) {
+//                int tileNum = interactiveMap[row][col];
+//
+//                if (tileNum == 1) {
+//                    MarketNPC shopKeeper = new MarketNPC("Bob", 1);
+//                    shopKeeper.worldX = col * TILE_SIZE;
+//                    shopKeeper.worldY = row * TILE_SIZE;
+//                    shopKeeper.solidArea = new Rectangle(0, 0, TILE_SIZE, TILE_SIZE);
+//                    npcs.add(shopKeeper);
+//                    interactiveMap[row][col] = 0;
+//                }
+//            }
+//        }
+//    }
 
-        for (int row = 0; row < MAX_WORLD_ROW; row++) {
-            for (int col = 0; col < MAX_WORLD_COL; col++) {
-                int tileNum = interactiveMap[row][col];
-
-                if (tileNum == 1) {
-                    MarketNPC shopKeeper = new MarketNPC("Bob", 1);
-                    shopKeeper.worldX = col * TILE_SIZE;
-                    shopKeeper.worldY = row * TILE_SIZE;
-                    shopKeeper.solidArea = new Rectangle(0, 0, TILE_SIZE, TILE_SIZE);
-                    npcs.add(shopKeeper);
-                    interactiveMap[row][col] = 0;
-                }
-            }
-        }
-    }
-
-    public void spawnCornerNPCs() {
-        MarketNPC topLeftNpc = new MarketNPC("North-West Guard", 1);
-        topLeftNpc.worldX = 10 * TILE_SIZE;
-        topLeftNpc.worldY = 10 * TILE_SIZE;
-        npcs.add(topLeftNpc);
-
-        MarketNPC topRightNpc = new MarketNPC("North-East Wanderer", 2);
-        topRightNpc.worldX = 40 * TILE_SIZE;
-        topRightNpc.worldY = 10 * TILE_SIZE;
-        npcs.add(topRightNpc);
-
-        MarketNPC bottomLeftNpc = new MarketNPC("South-West Scout", 3);
-        bottomLeftNpc.worldX = 10 * TILE_SIZE;
-        bottomLeftNpc.worldY = 40 * TILE_SIZE;
-        npcs.add(bottomLeftNpc);
-
-        MarketNPC bottomRightNpc = new MarketNPC("South-East Merchant", 4);
-        bottomRightNpc.worldX = 40 * TILE_SIZE;
-        bottomRightNpc.worldY = 40 * TILE_SIZE;
-        npcs.add(bottomRightNpc);
-    }
+//    public void spawnCornerNPCs() {
+//        MarketNPC topLeftNpc = new MarketNPC("North-West Guard", 1);
+//        topLeftNpc.worldX = 10 * TILE_SIZE;
+//        topLeftNpc.worldY = 10 * TILE_SIZE;
+//        npcs.add(topLeftNpc);
+//
+//        MarketNPC topRightNpc = new MarketNPC("North-East Wanderer", 2);
+//        topRightNpc.worldX = 40 * TILE_SIZE;
+//        topRightNpc.worldY = 10 * TILE_SIZE;
+//        npcs.add(topRightNpc);
+//
+//        MarketNPC bottomLeftNpc = new MarketNPC("South-West Scout", 3);
+//        bottomLeftNpc.worldX = 10 * TILE_SIZE;
+//        bottomLeftNpc.worldY = 40 * TILE_SIZE;
+//        npcs.add(bottomLeftNpc);
+//
+//        MarketNPC bottomRightNpc = new MarketNPC("South-East Merchant", 4);
+//        bottomRightNpc.worldX = 40 * TILE_SIZE;
+//        bottomRightNpc.worldY = 40 * TILE_SIZE;
+//        npcs.add(bottomRightNpc);
+//    }
 
     // ── Game loop ─────────────────────────────────────────────────────────────
 

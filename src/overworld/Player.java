@@ -183,7 +183,7 @@ public class Player {
             gp.COLLISIONCHECKER.checkTile(this);
 
             // 2. CHECK NPCS (This is what stops you from ghosting!)
-            gp.COLLISIONCHECKER.checkNPC(this, gp.npcs);
+            gp.COLLISIONCHECKER.checkNPC(this, gp.getWorldInteractiveLayer().getNPCs());
 
             if (!collisionOn) {
                 isWalking = true;
