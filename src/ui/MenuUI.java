@@ -135,8 +135,8 @@ public class MenuUI {
         for (int i = 0; i < ITEMS.length; i++) {
             MenuItem item    = ITEMS[i];
             int      rowY    = panelY + PAD_V + i * ROW_H;
-            int      cy      = rowY + ROW_H / 2 - 3;
-            int      textY   = cy + fm.getAscent() / 2 - 1;
+            int      cy      = rowY + ROW_H / 2;
+            int      textY   = cy + fm.getAscent() / 2;
             boolean  hovered = (i == cursorIndex);
 
             // Cursor triangle — same style as InventoryUI

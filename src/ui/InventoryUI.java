@@ -228,13 +228,13 @@ public class InventoryUI {
 
         if (!target.hasStatus(cure)) {
             // Keep the feedback short so it isn't truncated in the status bar
-            String shortName = shortenName(target.getName());
+            String shortName = target.getName();
             setStatus(shortName + " isn't " + capitalize(cure.toLowerCase()) + "!");
             return;
         }
         antidote.use(target);
         consumePendingItem();
-        String shortName = shortenName(target.getName());
+        String shortName = target.getName();
         setStatus(shortName + " cured!");
         returnToItemList();
     }
@@ -254,7 +254,7 @@ public class InventoryUI {
             case SUCCESS -> {
                 scroll.apply(target, null);
                 consumePendingItem();
-                String shortName = shortenName(target.getName());
+                String shortName = target.getName();
                 setStatus(shortName + " learned " + scroll.getSkillName() + "!");
                 returnToItemList();
             }
@@ -266,15 +266,15 @@ public class InventoryUI {
                 clearStatus();
             }
             case TYPE_MISMATCH -> {
-                String shortName = shortenName(target.getName());
+                String shortName = target.getName();
                 setStatus(shortName + " can't learn this!");
             }
             case SIGNATURE_MISMATCH -> {
                 String owner = findSignatureOwner(scroll.getSkillName());
-                setStatus("Only " + (owner != null ? shortenName(owner) : "its owner") + " can learn this!");
+                setStatus("Only " + (owner != null ? owner : "its owner") + " can learn this!");
             }
             case ALREADY_KNOWN -> {
-                String shortName = shortenName(target.getName());
+                String shortName = target.getName();
                 setStatus(shortName + " already knows this!");
             }
             case SKILL_NOT_FOUND -> setStatus("Error: skill not found.");
@@ -304,7 +304,7 @@ public class InventoryUI {
                 Scroll.ScrollResult result = scroll.apply(pendingScrollTarget, moveCursor);
                 if (result == Scroll.ScrollResult.SWAPPED) {
                     consumePendingItem();
-                    setStatus(shortenName(pendingScrollTarget.getName()) + " learned " + scroll.getSkillName() + "!");
+                    setStatus(pendingScrollTarget.getName() + " learned " + scroll.getSkillName() + "!");
                 } else {
                     setStatus("Could not swap move.");
                 }
@@ -503,10 +503,29 @@ public class InventoryUI {
                 NAME_LINE_H, new Color(44, 44, 42));
         ty += 6;
 
-        // Description — word-wrapped, 11pt
-        g2.setFont(base.deriveFont(11f));
-        drawWordWrapped(g2, g2.getFontMetrics(), sel.getDescription(),
+        // Description — word-wrapped, 10pt
+        g2.setFont(base.deriveFont(10f));
+        ty = drawWordWrapped(g2, g2.getFontMetrics(), sel.getDescription(),
                 tx, ty, textW, DESC_LINE_H, new Color(88, 84, 76));
+        ty += 8;
+
+        // ── Scroll type badge — shown only for Scroll items ───────────────────
+        if (sel instanceof Scroll scroll) {
+            Skill scrollSkill = skills.SkillRegistry.get(scroll.getSkillName());
+            if (scrollSkill != null) {
+                String typeName = scrollSkill.getType().name();
+                g2.setFont(base.deriveFont(8f));
+                FontMetrics badgeFm = g2.getFontMetrics();
+                int badgePadX = 6, badgeH = 20;
+                int badgeW = badgeFm.stringWidth(typeName) + badgePadX * 2 + 6;
+
+                g2.setColor(typeColor(typeName));
+                g2.fillRoundRect(tx, ty - 8, badgeW, badgeH, 4, 4);
+                g2.setColor(Color.WHITE);
+                g2.drawString(typeName, tx + badgePadX + 3, ty + 5);
+                ty += badgeH + 6;
+            }
+        }
 
         g2.setClip(prevClip);
     }
@@ -946,18 +965,6 @@ public class InventoryUI {
         return text + "…";
     }
 
-    /**
-     * Shortens a BrainRot name for status bar messages where space is tight.
-     * e.g. "TUNG TUNG TUNG SAHUR" → "TUNG TUNG..."
-     * Uses the first two words of the name.
-     */
-    private String shortenName(String name) {
-        if (name == null) return "";
-        String[] words = name.split(" ");
-        if (words.length <= 2) return name;
-        return words[0] + " " + words[1] + "...";
-    }
-
     // ── Image loading ─────────────────────────────────────────────────────────
 
     private BufferedImage loadItemImage(Item item) {
@@ -965,6 +972,7 @@ public class InventoryUI {
         if (path == null || path.isEmpty()) return null;
         return imgCache.computeIfAbsent(path, AssetManager::loadImage);
     }
+
 
     // ── Colour helpers ────────────────────────────────────────────────────────
 
@@ -983,7 +991,6 @@ public class InventoryUI {
             default         -> new Color(130, 126, 118);
         };
     }
-
     // ── String helpers ────────────────────────────────────────────────────────
 
     private String capitalize(String s) {
