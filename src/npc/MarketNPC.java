@@ -5,8 +5,8 @@ import java.util.ArrayList;
 
 public class MarketNPC extends NPC {
 
-    public MarketNPC(String name, int folderId) {
-        super(name, "MarketNPC", folderId);
+    public MarketNPC(String name, int folderId, int x, int y) {
+        super(name, folderId, x, y);
         setDialogue();
     }
 

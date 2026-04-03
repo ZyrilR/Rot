@@ -8,10 +8,11 @@ import utils.AssetManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import static utils.Constants.*;
 
-public class NPC extends TileInteractive {
+public class NPC {
     public String name;
     public int worldX, worldY;
     public int speed = 2;
@@ -27,9 +28,10 @@ public class NPC extends TileInteractive {
     public ArrayList<BufferedImage> sprites = new ArrayList<>();
     public ArrayList<String> dialogues = new ArrayList<>();
 
-    public NPC(String name, String role, int folderId) {
-        super(true, role);
+    public NPC(String name, int folderId, int x, int y) {
         this.name = name;
+        worldX = x * TILE_SIZE;
+        worldY = y * TILE_SIZE;
         loadSprites(folderId);
     }
 
@@ -107,6 +109,9 @@ public class NPC extends TileInteractive {
     }
 
     public void setDialogue(ArrayList<String> dialogues) { this.dialogues = dialogues; }
+    public void setDialogue(String[] dialogues) {
+        this.dialogues.addAll(Arrays.asList(dialogues));
+    }
 
     // Abstract-like method for children to override
     public void interact(GamePanel gp) {}

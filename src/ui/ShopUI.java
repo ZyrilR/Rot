@@ -6,220 +6,173 @@ import items.ItemRegistry;
 import utils.AssetManager;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static utils.Constants.*;
 
 /**
- * Renders and manages the in-game shop UI overlay with category tabs.
+ * Renders and manages the in-game shop UI overlay.
  *
- * Navigation:
- *   LEFT / RIGHT — switch between category tabs (Potions, Capsules, Antidotes)
- *   UP   / DOWN  — move cursor within the current category's item list
- *   ENTER        — purchase selected item
- *   ESC          — close shop
+ * Layout (mirrors InventoryUI):
+ *   Title bar  — "BrainRot Market"  |  tab pills (Stew / Capsules / Antidotes)  |  coin icon + balance
+ *   Left panel — item image card + detail card (name, description, price)
+ *   Right panel— scrollable item list  (name left, price+icon right)
+ *   Status bar — feedback left, nav hints right
+ *
+ * Controls:
+ *   TAB     — cycle category tabs
+ *   W / S   — move cursor
+ *   ENTER   — purchase
+ *   ESC     — close
  */
 public class ShopUI {
 
-    GamePanel gp;
+    // ── Injected refs ─────────────────────────────────────────────────────────
 
-    // ── Category data ──────────────────────────────────────────────────────────
+    private final GamePanel gp;
 
-    /**
-     * Ordered map of category name → list of items in that category.
-     * LinkedHashMap preserves insertion order so tabs render left-to-right
-     * in the order we define them.
-     *
-     * TO ADD A CATEGORY: put a new entry in buildShopInventory() with a
-     * display name key and the item names that belong to it.
-     */
+    // ── Category data ─────────────────────────────────────────────────────────
+
     private final LinkedHashMap<String, ArrayList<Item>> categories = new LinkedHashMap<>();
-
-    // Flat list of category keys for indexed tab access
     private final ArrayList<String> categoryKeys = new ArrayList<>();
 
-    // Which tab is active (index into categoryKeys)
     private int selectedCategory = 0;
+    private int selectedIndex    = 0;
+    private int scrollOffset     = 0;
 
-    // Which item row is highlighted within the active category
-    private int selectedIndex = 0;
+    // ── Input / status ────────────────────────────────────────────────────────
 
-    // ── Input cooldown ─────────────────────────────────────────────────────────
-
-    private int inputCooldown = 0;
-    private static final int INPUT_DELAY = 10; // frames between key repeats
-
-    // ── Status bar ─────────────────────────────────────────────────────────────
-
+    private int    inputCooldown = 0;
     private String statusMessage = "";
-    private int statusTimer = 0;
-    private static final int STATUS_DURATION = 90; // ~3 seconds at 30 FPS
+    private int    statusTimer   = 0;
 
-    // ── Constructor ────────────────────────────────────────────────────────────
+    // ── Coin icon cache ───────────────────────────────────────────────────────
+
+    private BufferedImage coinIcon    = null;
+    private boolean       iconLoaded  = false;
+
+    // ── Item image cache ──────────────────────────────────────────────────────
+
+    private final java.util.Map<String, BufferedImage> imgCache = new java.util.HashMap<>();
+
+    // ── Constructor ───────────────────────────────────────────────────────────
 
     public ShopUI(GamePanel gp) {
         this.gp = gp;
         buildShopInventory();
     }
 
-    // ── Inventory setup ────────────────────────────────────────────────────────
+    // ── Inventory setup ───────────────────────────────────────────────────────
 
-    /**
-     * Defines which items belong to each category tab.
-     * Edit the string arrays to change shop stock.
-     * Edit the put() key strings to rename tabs.
-     *
-     * Scrolls are intentionally omitted — they aren't for sale.
-     */
     private void buildShopInventory() {
-        // --- Potions tab ---
-        String[] potionNames = { "TUBE POTION", "POTION", "HEAVY POTION" };
-        categories.put("Potions", resolveItems(potionNames));
+        String[] stewNames     = { "MILD STEW", "MODERATE STEW", "SUPER STEW" };
+        String[] capsuleNames  = { "RED CAPSULE", "BLUE CAPSULE", "SPEED CAPSULE", "HEAVY CAPSULE", "MASTER CAPSULE" };
+        String[] antidoteNames = { "CONFUSION CURE", "PARALYZE CURE", "SLEEP CURE", "BURN CURE", "DEBUFF TONIC" };
 
-        // --- Capsules tab ---
-        String[] capsuleNames = {
-                "RED CAPSULE", "BLUE CAPSULE",
-                "SPEED CAPSULE", "HEAVY CAPSULE", "MASTER CAPSULE"
-        };
-        categories.put("Capsules", resolveItems(capsuleNames));
-
-        // --- Antidotes tab ---
-        String[] antidoteNames = { "CONFUSION", "PARALYZE", "SLEEP", "DEBUFF" };
+        categories.put("Stews",      resolveItems(stewNames));
+        categories.put("Capsules",  resolveItems(capsuleNames));
         categories.put("Antidotes", resolveItems(antidoteNames));
 
-        // Build the flat key list for tab navigation
         categoryKeys.addAll(categories.keySet());
-
         System.out.println("[ShopUI] Categories loaded: " + categoryKeys);
-        for (String key : categoryKeys) {
-            System.out.println("[ShopUI]   " + key + ": " + categories.get(key).size() + " items");
-        }
     }
 
-    /**
-     * Helper: looks up each name in ItemRegistry and returns the resolved list.
-     * Logs a warning for any name that isn't found.
-     */
     private ArrayList<Item> resolveItems(String[] names) {
         ArrayList<Item> list = new ArrayList<>();
         for (String name : names) {
             Item item = ItemRegistry.getItem(name);
-            if (item != null) {
-                list.add(item);
-            } else {
-                System.out.println("[ShopUI] Warning: item not found: " + name);
-            }
+            if (item != null) list.add(item);
+            else System.out.println("[ShopUI] Warning: item not found: " + name);
         }
         return list;
     }
 
-    // ── Convenience accessors ──────────────────────────────────────────────────
+    // ── Accessors ─────────────────────────────────────────────────────────────
 
-    /** Returns the item list for whichever tab is currently active. */
     private ArrayList<Item> currentItems() {
         return categories.get(categoryKeys.get(selectedCategory));
     }
 
-    /** Returns the currently highlighted item, or null if the list is empty. */
     private Item selectedItem() {
         ArrayList<Item> items = currentItems();
-        if (items.isEmpty()) return null;
-        return items.get(selectedIndex);
+        return items.isEmpty() ? null : items.get(selectedIndex);
     }
 
-    // ── Public lifecycle ───────────────────────────────────────────────────────
+    // ── Coin icon (lazy load) ─────────────────────────────────────────────────
 
-    /**
-     * Resets all state when the shop is opened.
-     * Called by MarketNPC (via DialogueBox handshake) before GAMESTATE → "shop".
-     */
+    private BufferedImage coinIcon() {
+        if (!iconLoaded) {
+            coinIcon   = AssetManager.loadImage("/assets/Templates/Items/7.png");
+            iconLoaded = true;
+            if (coinIcon == null) System.out.println("[ShopUI] Coin icon not found at /assets/Templates/Items/7.png");
+        }
+        return coinIcon;
+    }
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
+
     public void open() {
         selectedCategory = 0;
         selectedIndex    = 0;
+        scrollOffset     = 0;
         statusMessage    = "";
         statusTimer      = 0;
-        // Double delay on open so ENTER from closing dialogue doesn't instantly buy
-        inputCooldown    = INPUT_DELAY * 2;
+        inputCooldown    = INPUT_DELAY * 2; // prevent ENTER bleed from dialogue
         System.out.println("[ShopUI] Shop opened.");
     }
 
-    // ── Update (called every frame in SHOP state) ──────────────────────────────
+    // ── Update ────────────────────────────────────────────────────────────────
 
-    /**
-     * Handles all keyboard input for the shop.
-     * Called by GamePanel.update() when GAMESTATE == "shop".
-     */
     public void update() {
-        if (inputCooldown > 0) inputCooldown--;
-        if (statusTimer > 0) {
-            statusTimer--;
-            if (statusTimer == 0) statusMessage = "";
-        }
+        if (inputCooldown > 0) { inputCooldown--; return; }
+        if (statusTimer   > 0) { statusTimer--;   if (statusTimer == 0) statusMessage = ""; }
 
-        if (inputCooldown > 0) return; // block input during cooldown
-
-        // --- LEFT: previous category tab ---
-        if (gp.KEYBOARDHANDLER.leftPressed) {
-            selectedCategory = (selectedCategory - 1 + categoryKeys.size()) % categoryKeys.size();
-            selectedIndex    = 0; // reset row cursor when switching tabs
-            inputCooldown    = INPUT_DELAY;
-            System.out.println("[ShopUI] Tab: " + categoryKeys.get(selectedCategory));
-        }
-
-        // --- RIGHT: next category tab ---
-        else if (gp.KEYBOARDHANDLER.rightPressed) {
+        if (gp.KEYBOARDHANDLER.tabPressed) {
+            gp.KEYBOARDHANDLER.tabPressed = false;
             selectedCategory = (selectedCategory + 1) % categoryKeys.size();
             selectedIndex    = 0;
+            scrollOffset     = 0;
             inputCooldown    = INPUT_DELAY;
             System.out.println("[ShopUI] Tab: " + categoryKeys.get(selectedCategory));
+            return;
         }
 
-        // --- UP: previous item in list ---
-        else if (gp.KEYBOARDHANDLER.upPressed) {
+        if (gp.KEYBOARDHANDLER.upPressed) {
             int size = currentItems().size();
-            if (size > 0) {
-                selectedIndex = (selectedIndex - 1 + size) % size;
+            if (size > 0 && selectedIndex > 0) {
+                selectedIndex--;
                 inputCooldown = INPUT_DELAY;
-                System.out.println("[ShopUI] Cursor: " + selectedItem().getName());
             }
+            return;
         }
 
-        // --- DOWN: next item in list ---
-        else if (gp.KEYBOARDHANDLER.downPressed) {
+        if (gp.KEYBOARDHANDLER.downPressed) {
             int size = currentItems().size();
-            if (size > 0) {
-                selectedIndex = (selectedIndex + 1) % size;
+            if (size > 0 && selectedIndex < size - 1) {
+                selectedIndex++;
                 inputCooldown = INPUT_DELAY;
-                System.out.println("[ShopUI] Cursor: " + selectedItem().getName());
             }
+            return;
         }
 
-        // --- ENTER: buy selected item ---
-        else if (gp.KEYBOARDHANDLER.enterPressed) {
-            gp.KEYBOARDHANDLER.enterPressed = false; // consume so it doesn't bleed
+        if (gp.KEYBOARDHANDLER.enterPressed) {
+            gp.KEYBOARDHANDLER.enterPressed = false;
             attemptPurchase();
             inputCooldown = INPUT_DELAY;
+            return;
         }
 
-        // --- ESC: close shop ---
-        else if (gp.KEYBOARDHANDLER.escPressed) {
+        if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
             gp.GAMESTATE = "play";
             System.out.println("[ShopUI] Shop closed.");
         }
     }
 
-    // ── Purchase logic ─────────────────────────────────────────────────────────
+    // ── Purchase ──────────────────────────────────────────────────────────────
 
-    /**
-     * Attempts to buy the currently selected item.
-     * Checks: coins sufficient → inventory not full → deduct → add item.
-     * Sets statusMessage with the outcome either way.
-     *
-     * TO MODIFY: discounts, bulk buy, quantity limits — all go here.
-     */
     private void attemptPurchase() {
         Item item = selectedItem();
         if (item == null) return;
@@ -228,228 +181,424 @@ public class ShopUI {
 
         if (gp.player.getRotCoins() < price) {
             statusMessage = "Not enough coins! Need " + price;
-            statusTimer   = STATUS_DURATION;
-            System.out.println("[ShopUI] Purchase failed (funds): " + item.getName());
+            statusTimer   = STATUS_TICKS;
             return;
         }
 
         if (!gp.player.getInventory().addItem(item)) {
             statusMessage = "Inventory is full!";
-            statusTimer   = STATUS_DURATION;
-            System.out.println("[ShopUI] Purchase failed (inventory full): " + item.getName());
+            statusTimer   = STATUS_TICKS;
             return;
         }
 
         gp.player.spendRotCoins(price);
         statusMessage = "Bought " + item.getName() + " for " + price + "!";
-        statusTimer   = STATUS_DURATION;
-        System.out.println("[ShopUI] Purchased: " + item.getName() +
-                " | Remaining coins: " + gp.player.getRotCoins());
+        statusTimer   = STATUS_TICKS;
+        System.out.println("[ShopUI] Purchased: " + item.getName()
+                + " | Remaining: " + gp.player.getRotCoins());
     }
 
-    // ── Draw ───────────────────────────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════════
+    // DRAW
+    // ══════════════════════════════════════════════════════════════════════════
 
-    /**
-     * Full shop overlay render.
-     * Called by GamePanel.paintComponent() when GAMESTATE == "shop".
-     *
-     * Structure (top to bottom):
-     *   1. Dim overlay over the game world
-     *   2. Main window (border + background)
-     *   3. Title bar  (shop name + coin count)
-     *   4. Category tabs (LEFT/RIGHT navigation)
-     *   5. Left panel  — item list for active tab
-     *   6. Right panel — detail card + controls hint
-     *   7. Status bar  — purchase feedback
-     *
-     * TO ADJUST LAYOUT: change winX/winY/winW/winH and the panel split (winW/2).
-     */
     public void draw(Graphics2D g2) {
-
-        Font base = (AssetManager.pokemonGb != null)
-                ? AssetManager.pokemonGb
-                : new Font("Arial", Font.PLAIN, 13);
-
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        // ── 1. Dim overlay ─────────────────────────────────────────
+        Font base = (AssetManager.pokemonGb != null)
+                ? AssetManager.pokemonGb : new Font("Arial", Font.PLAIN, 13);
+
+        // Dim overlay
         g2.setColor(new Color(0, 0, 0, 180));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        // ── 2. Main window ─────────────────────────────────────────
-        int winX = TILE_SIZE;
-        int winY = TILE_SIZE;
-        int winW = SCREEN_WIDTH - TILE_SIZE * 2;
+        // ── Window bounds ─────────────────────────────────────────────────────
+        int winX = TILE_SIZE, winY = TILE_SIZE;
+        int winW = SCREEN_WIDTH  - TILE_SIZE * 2;
         int winH = SCREEN_HEIGHT - TILE_SIZE * 2;
-        int arc  = 16;
 
-        g2.setColor(new Color(245, 242, 235));
-        g2.fillRoundRect(winX, winY, winW, winH, arc, arc);
+        drawWindow(g2, winX, winY, winW, winH);
+        drawTitleBar(g2, base, winX, winY, winW);
 
-        g2.setStroke(new BasicStroke(6));
-        g2.setColor(new Color(80, 80, 80));
-        g2.drawRoundRect(winX, winY, winW, winH, arc, arc);
+        int bodyY      = winY + 52;
+        int statusBarH = STATUS_BAR_H;
+        int statusBarY = winY + winH - statusBarH - 8;
 
-        g2.setStroke(new BasicStroke(4));
-        g2.setColor(new Color(216, 184, 88));
-        g2.drawRoundRect(winX + 1, winY + 1, winW - 2, winH - 2, arc, arc);
+        // ── Panel split ───────────────────────────────────────────────────────
+        int leftW = (int)(winW * LEFT_SPLIT / 100.0);
+        int divX  = winX + leftW;
 
-        g2.setStroke(new BasicStroke(2));
-        g2.setColor(new Color(80, 80, 80));
-        g2.drawRoundRect(winX + 4, winY + 4, winW - 8, winH - 8, arc - 4, arc - 4);
+        // Vertical divider
+        g2.setColor(new Color(200, 195, 180));
+        g2.drawLine(divX, bodyY, divX, statusBarY - 4);
 
-        g2.setStroke(new BasicStroke(1));
+        // ── Panels ───────────────────────────────────────────────────────────
+        drawLeftPanel (g2, base, winX, bodyY, leftW, statusBarY);
+        drawRightPanel(g2, base, winX, winW, bodyY, divX, statusBarY);
+        drawStatusBar (g2, base, winX, winY, winW, statusBarY, statusBarH);
+    }
 
-        // ── 3. Title bar ───────────────────────────────────────────
+    // ── Title bar ─────────────────────────────────────────────────────────────
+
+    private void drawTitleBar(Graphics2D g2, Font base, int winX, int winY, int winW) {
+        // Dark header
         g2.setColor(new Color(44, 44, 42));
         g2.fillRoundRect(winX + 8, winY + 8, winW - 16, 36, 8, 8);
 
+        // Title
         g2.setFont(base.deriveFont(Font.BOLD, 15f));
         g2.setColor(new Color(241, 239, 232));
         g2.drawString("BrainRot Market", winX + 28, winY + 32);
 
-        String coinText = "Coins: " + gp.player.getRotCoins();
+        // ── Coin balance (coin icon + number) — right side of title bar ───────
+        String coinText = String.valueOf(gp.player.getRotCoins());
         g2.setFont(base.deriveFont(12f));
-        FontMetrics fm = g2.getFontMetrics();
-        g2.drawString(coinText, winX + winW - fm.stringWidth(coinText) - 28, winY + 32);
+        FontMetrics numFm = g2.getFontMetrics();
+        int numW = numFm.stringWidth(coinText);
 
-        g2.setColor(new Color(216, 184, 88));
-        g2.drawLine(winX + 8, winY + 46, winX + winW - 8, winY + 46);
+        int iconSize  = 24;
+        int iconGap   = 4;
+        int rightPad  = 16;
 
-        // ── 4. Tabs ────────────────────────────────────────────────
-        int tabY = winY + 48;
-        int tabH = 28;
-        int tabW = (winW - 16) / categoryKeys.size();
+        // Total block width: icon + gap + number
+        int blockW  = iconSize + iconGap + numW;
+        int blockX  = winX + winW - 18 - blockW;  // right-anchored
+        int blockCY = winY + 28;                   // vertical centre of title bar
 
-        for (int i = 0; i < categoryKeys.size(); i++) {
-            int tabX = winX + 8 + i * tabW;
+        // Coin icon
+        BufferedImage icon = coinIcon();
+        if (icon != null) {
+            g2.drawImage(icon, blockX, blockCY - iconSize / 2 - 2, iconSize, iconSize, null);
+        } else {
+            // Fallback circle if asset missing
+            g2.setColor(new Color(216, 184, 88));
+            g2.fillOval(blockX, blockCY - iconSize / 2, iconSize, iconSize);
+        }
+
+        // Number
+        g2.setColor(new Color(241, 239, 232));
+        g2.setFont(base.deriveFont(Font.BOLD, 12f));
+        g2.drawString(coinText, blockX + iconSize + iconGap,
+                blockCY + numFm.getAscent() / 2 - 1);
+
+        // ── Tab pills — to the LEFT of the coin block ─────────────────────────
+        // Build tab pills right→left, stopping before coin block with a 10px gap
+        String[] labels = categoryKeys.toArray(new String[0]);
+
+        g2.setFont(base.deriveFont(Font.BOLD, 10f));
+        FontMetrics pillFm = g2.getFontMetrics();
+        int pillH   = 22;
+        int pillGap = 4;
+        int right   = blockX - 10; // stop before coin block
+
+        for (int i = labels.length - 1; i >= 0; i--) {
+            int pillW  = pillFm.stringWidth(labels[i]) + 16;
+            int pillX  = right - pillW;
+            int pillY  = winY + 14;
             boolean active = (i == selectedCategory);
 
-            g2.setColor(active ? new Color(241, 239, 232) : new Color(58, 58, 55));
-            g2.fillRect(tabX, tabY, tabW, tabH);
-
-            if (active) {
-                g2.setColor(new Color(216, 184, 88));
-                g2.setStroke(new BasicStroke(3));
-                g2.drawLine(tabX + 4, tabY + tabH - 2, tabX + tabW - 4, tabY + tabH - 2);
-                g2.setStroke(new BasicStroke(1));
-            }
-
-            g2.setFont(base.deriveFont(active ? Font.BOLD : Font.PLAIN, 12f));
-            g2.setColor(active ? new Color(44, 44, 42) : new Color(180, 176, 165));
-
-            FontMetrics tfm = g2.getFontMetrics();
-            String label = categoryKeys.get(i);
-            int labelX = tabX + (tabW - tfm.stringWidth(label)) / 2;
-            g2.drawString(label, labelX, tabY + 18);
+            g2.setColor(active ? new Color(216, 184, 88) : new Color(80, 78, 72));
+            g2.fillRoundRect(pillX, pillY, pillW, pillH, 6, 6);
+            g2.setColor(active ? new Color(44, 44, 42) : new Color(200, 196, 185));
+            g2.drawString(labels[i],
+                    pillX + (pillW - pillFm.stringWidth(labels[i])) / 2,
+                    pillY + (pillH - pillFm.getHeight()) / 2 + pillFm.getAscent());
+            right = pillX - pillGap;
         }
 
-        // Divider under tabs
-        int bodyY = tabY + tabH + 2;
-        g2.setColor(new Color(200, 195, 180));
-        g2.drawLine(winX + 8, bodyY, winX + winW - 8, bodyY);
+        // Gold divider
+        g2.setColor(new Color(216, 184, 88));
+        g2.drawLine(winX + 8, winY + 46, winX + winW - 8, winY + 46);
+    }
 
-        // ── 5. Left panel (ITEMS) ─────────────────────────────────
-        int listX = winX + 18;
-        int listY = bodyY + 18;
-        int listW = winW / 2 - 20;
-        int rowH  = 26;
+    // ── Left panel — image + detail card ─────────────────────────────────────
 
-        // Label
-        g2.setFont(base.deriveFont(10f));
-        g2.setColor(new Color(120, 116, 108));
-        g2.drawString("ITEMS", listX, listY);
-
-        listY += 26; // spacing below label
-
-        ArrayList<Item> items = currentItems();
-
-        for (int i = 0; i < items.size(); i++) {
-            Item item = items.get(i);
-            int rowY = listY + i * rowH;
-
-            if (i == selectedIndex) {
-                g2.setColor(new Color(178, 212, 244, 200));
-                g2.fillRoundRect(listX - 4, rowY - 16, listW + 4, rowH, 5, 5);
-
-                g2.setColor(new Color(24, 95, 165));
-                g2.drawRoundRect(listX - 4, rowY - 16, listW + 4, rowH, 5, 5);
-
-                g2.setColor(new Color(24, 95, 165));
-                g2.drawString("\u25BA", listX, rowY);
-            }
-
-            g2.setFont(base.deriveFont(12f));
-            g2.setColor(new Color(44, 44, 42));
-            g2.drawString(item.getName(), listX + 14, rowY);
-
-            String price = item.getPrice() + " \u20B5";
-            FontMetrics pfm = g2.getFontMetrics();
-            g2.setColor(new Color(80, 78, 72));
-            g2.drawString(price, listX + listW - pfm.stringWidth(price), rowY);
-        }
-
-        // ── 6. Right panel (DETAILS) ──────────────────────────────
-        int divX = winX + winW / 2;
-        int detailX = divX + 14;
-        int detailY = bodyY + 18;
-
-        g2.setColor(new Color(200, 195, 180));
-        g2.drawLine(divX, bodyY, divX, winY + winH - 36);
-
-        // Label
-        g2.setFont(base.deriveFont(10f));
-        g2.setColor(new Color(120, 116, 108));
-        g2.drawString("DETAILS", detailX, detailY);
-
-        detailY += 10;
-
-        // Card
-        int cardW = winW / 2 - 30;
-        int cardH = 80;
-        g2.setColor(new Color(230, 225, 215));
-        g2.fillRoundRect(detailX, detailY, cardW, cardH, 8, 8);
-        g2.setColor(new Color(190, 185, 172));
-        g2.drawRoundRect(detailX, detailY, cardW, cardH, 8, 8);
+    private void drawLeftPanel(Graphics2D g2, Font base,
+                               int winX, int bodyY, int leftW, int statusBarY) {
 
         Item sel = selectedItem();
+
+        int panelX      = winX + OUTER_PAD;
+        int panelW      = leftW - OUTER_PAD - 10;
+        int panelBottom = statusBarY - 8;
+
+        // ── Image card ────────────────────────────────────────────────────────
+        int imgCardY = bodyY + 8;
+        int imgCardH = 170;
+        if (imgCardY + imgCardH > panelBottom) imgCardH = panelBottom - imgCardY - 4;
+        drawCard(g2, panelX, imgCardY, panelW, imgCardH, 8);
+
         if (sel != null) {
-            g2.setFont(base.deriveFont(Font.BOLD, 12f));
-            g2.setColor(new Color(44, 44, 42));
-            g2.drawString(sel.getName(), detailX + 10, detailY + 24);
+            BufferedImage img = loadItemImage(sel);
+            int m = 10;
+            if (img != null) g2.drawImage(img, panelX + m, imgCardY + m, panelW - m * 2, imgCardH - m * 2, null);
+            else drawCentredText(g2, base, panelX, imgCardY, panelW, imgCardH, "[img]");
+        } else {
+            drawCentredText(g2, base, panelX, imgCardY, panelW, imgCardH, "—");
+        }
 
+        // ── Detail card — fills remaining vertical space ──────────────────────
+        int descCardY = imgCardY + imgCardH + 6;
+        int descCardH = panelBottom - descCardY;
+        if (descCardH < 24) return;
+
+        drawCard(g2, panelX, descCardY, panelW, descCardH, 8);
+
+        if (sel == null) {
             g2.setFont(base.deriveFont(11f));
-            g2.setColor(new Color(88, 84, 76));
-            g2.drawString(sel.getDescription(), detailX + 10, detailY + 44);
+            g2.setColor(new Color(140, 136, 128));
+            g2.drawString("Select an item.", panelX + 10, descCardY + 20);
+            return;
+        }
 
-            g2.setFont(base.deriveFont(12f));
+        // Clip to card interior
+        Shape prevClip = g2.getClip();
+        g2.setClip(panelX + 4, descCardY + 4, panelW - 8, descCardH - 8);
+
+        int tx    = panelX + 10;
+        int textW = panelW - 20;
+        int ty    = descCardY + 22;
+
+        // Name — word-wrapped, bold 13pt
+        g2.setFont(base.deriveFont(Font.BOLD, 13f));
+        FontMetrics nameFm = g2.getFontMetrics();
+        ty = drawWordWrapped(g2, nameFm, sel.getName(), tx, ty, textW,
+                NAME_LINE_H, new Color(44, 44, 42));
+        ty += 6;
+
+        // Description — word-wrapped, 11pt
+        g2.setFont(base.deriveFont(11f));
+        ty = drawWordWrapped(g2, g2.getFontMetrics(), sel.getDescription(),
+                tx, ty, textW, DESC_LINE_H, new Color(88, 84, 76));
+        ty += 12;
+
+        // ── Price row — coin icon + number ────────────────────────────────────
+        int iconSize = 24;
+        int iconGap  = 1;
+        String priceStr = String.valueOf(sel.getPrice());
+
+        g2.setFont(base.deriveFont(Font.BOLD, 12f));
+        FontMetrics priceFm = g2.getFontMetrics();
+
+        // Only draw if within card bounds
+        if (ty + iconSize <= descCardY + descCardH - 4) {
+            BufferedImage icon = coinIcon();
+            int iconY = ty - iconSize + 8;
+            if (icon != null) {
+                g2.drawImage(icon, tx - 4, iconY, iconSize, iconSize, null);
+            } else {
+                g2.setColor(new Color(216, 184, 88));
+                g2.fillOval(tx, iconY, iconSize, iconSize);
+            }
+
             g2.setColor(new Color(15, 110, 86));
-            g2.drawString("Price: " + sel.getPrice() + " \u20B5", detailX + 10, detailY + 64);
+            g2.drawString(priceStr, tx + iconSize + iconGap, ty);
         }
 
-        // ── 7. Status bar: navigation guide / status ────────────────────────────────────────
-        int barHeight = 36;
-        int barY = winY + winH - barHeight - 8; // shift upward to avoid border overlap
-        // Horizontal padding
-        int padX = 12; // space from left and right edges
+        g2.setClip(prevClip);
+    }
 
-    // Draw the rectangle
-        g2.setColor(new Color(215, 210, 200));
-        g2.fillRoundRect(winX + 8, barY, winW - 16, barHeight, 5, 5);
+    // ── Right panel — scrollable item list ────────────────────────────────────
 
-    // Left status message
-        if (!statusMessage.isEmpty()) {
-            g2.setFont(base.deriveFont(10f));
+    private void drawRightPanel(Graphics2D g2, Font base,
+                                int winX, int winW, int bodyY,
+                                int divX, int statusBarY) {
+
+        ArrayList<Item> items = currentItems();
+        int totalCount = items.size();
+
+        int listX       = divX + OUTER_PAD;
+        int listW       = winX + winW - listX - OUTER_PAD;
+        int labelY      = bodyY + 16;
+        int firstRowY   = labelY + 8;
+        int listAreaBot = statusBarY - 8;
+        int listAreaH   = listAreaBot - firstRowY;
+        int visCount    = Math.max(1, listAreaH / ROW_H);
+
+        // ── Section label + counter ───────────────────────────────────────────
+        String tabLabel = categoryKeys.get(selectedCategory).toUpperCase();
+        g2.setFont(base.deriveFont(10f));
+        g2.setColor(new Color(120, 116, 108));
+        g2.drawString(tabLabel, listX, labelY);
+
+        // Clip list area
+        Shape prevClip = g2.getClip();
+        g2.setClip(listX - 6, firstRowY, listW + 12, listAreaH);
+
+        int endIdx = Math.min(scrollOffset + visCount, totalCount);
+
+        for (int i = scrollOffset; i < endIdx; i++) {
+            Item    item    = items.get(i);
+            int     rowTop  = firstRowY + (i - scrollOffset) * ROW_H;
+            int     textY   = rowTop + ROW_H - 10;
+            boolean hovered = (i == selectedIndex);
+
+            // Row highlight
+            if (hovered) {
+                g2.setColor(new Color(178, 212, 244, 200));
+                g2.fillRoundRect(listX - 4, rowTop, listW + 4, ROW_H - 2, 5, 5);
+                g2.setColor(new Color(24, 95, 165));
+                g2.setStroke(new BasicStroke(1.5f));
+                g2.drawRoundRect(listX - 4, rowTop, listW + 4, ROW_H - 2, 5, 5);
+                g2.setStroke(new BasicStroke(1));
+
+                // Cursor triangle (polygon — pokemonGb can't render ▶)
+                int ts = 7, cx = listX + 2, cy = rowTop + ROW_H / 2 - 1;
+                g2.setColor(new Color(80, 76, 70));
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.fillPolygon(new int[]{ cx, cx, cx + ts }, new int[]{ cy - ts, cy + ts, cy }, 3);
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
+            }
+
+            // Item name — truncated to leave room for the price block on the right
+            g2.setFont(base.deriveFont(hovered ? Font.BOLD : Font.PLAIN, 11f));
             g2.setColor(new Color(44, 44, 42));
-            g2.drawString(statusMessage, winX + 8 + padX, barY + 22);
+            int iconSize  = 20;
+            int iconGap   = 4;
+            String priceStr = String.valueOf(item.getPrice());
+            g2.setFont(base.deriveFont(9f));
+            int priceW = g2.getFontMetrics().stringWidth(priceStr) + iconSize + iconGap + 8;
+            g2.setFont(base.deriveFont(hovered ? Font.BOLD : Font.PLAIN, 11f));
+            int nameMaxW = listW - priceW - 20;
+            g2.drawString(truncate(item.getName(), g2.getFontMetrics(), nameMaxW), listX + 16, textY);
+
+            // Price — coin icon + number, right-aligned
+            g2.setFont(base.deriveFont(11f));
+            FontMetrics pFm    = g2.getFontMetrics();
+            int         numW   = pFm.stringWidth(priceStr);
+            int         blockW = iconSize + iconGap + numW;
+            int         blockX = listX + listW - blockW - 6;
+            int         iconY  = textY - iconSize + 4;
+
+            BufferedImage icon = coinIcon();
+            if (icon != null) {
+                g2.drawImage(icon, blockX, iconY, iconSize, iconSize, null);
+            } else {
+                g2.setColor(new Color(216, 184, 88));
+                g2.fillOval(blockX, iconY, iconSize, iconSize);
+            }
+            g2.setColor(new Color(80, 78, 72));
+            g2.drawString(priceStr, blockX + iconSize + iconGap, textY - 2);
+
+            // Row divider (skip after last visible row)
+            if (i < endIdx - 1) {
+                g2.setColor(new Color(205, 200, 190));
+                g2.drawLine(listX, rowTop + ROW_H - 1, listX + listW, rowTop + ROW_H - 1);
+            }
         }
 
-    // Right navigation guide
+        g2.setClip(prevClip);
+    }
+
+    // ── Status bar ────────────────────────────────────────────────────────────
+
+    private void drawStatusBar(Graphics2D g2, Font base,
+                               int winX, int winY, int winW,
+                               int statusBarY, int statusBarH) {
+        int barX = winX + 8, barW = winW - 16;
+
+        g2.setColor(new Color(215, 210, 200));
+        g2.fillRoundRect(barX, statusBarY, barW, statusBarH, 5, 5);
+
+        // Nav hints — two lines, right-aligned
+        String hint1 = "WS Move  TAB Tab";
+        String hint2 = "ENTER Buy  ESC Close";
+
         g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(120, 116, 108));
-        String navGuide = "U/P Move  L/R Tab  ENTER Buy  ESC Exit";
-        fm = g2.getFontMetrics();
-        int guideX = winX + winW - 8 - padX - fm.stringWidth(navGuide);
-        g2.drawString(navGuide, guideX, barY + 22);
+        FontMetrics hfm = g2.getFontMetrics();
+        int rx = barX + barW - 12;
+        g2.drawString(hint1, rx - hfm.stringWidth(hint1), statusBarY + 18);
+        g2.drawString(hint2, rx - hfm.stringWidth(hint2), statusBarY + 30);
+
+        // Feedback message — left
+        if (!statusMessage.isEmpty()) {
+            g2.setFont(base.deriveFont(10f));
+            FontMetrics mfm = g2.getFontMetrics();
+            g2.setColor(new Color(44, 44, 42));
+            g2.drawString(truncate(statusMessage, mfm, barW / 2 - 12),
+                    barX + 14,
+                    statusBarY + (statusBarH - mfm.getHeight()) / 2 + mfm.getAscent());
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // SHARED DRAW HELPERS
+    // ══════════════════════════════════════════════════════════════════════════
+
+    /** Triple-stroke window border — 6px dark / 4px gold / 2px dark */
+    private void drawWindow(Graphics2D g2, int x, int y, int w, int h) {
+        int arc = 16;
+        g2.setColor(new Color(245, 242, 235));
+        g2.fillRoundRect(x, y, w, h, arc, arc);
+        g2.setStroke(new BasicStroke(6));
+        g2.setColor(new Color(80, 80, 80));
+        g2.drawRoundRect(x, y, w, h, arc, arc);
+        g2.setStroke(new BasicStroke(4));
+        g2.setColor(new Color(216, 184, 88));
+        g2.drawRoundRect(x + 1, y + 1, w - 2, h - 2, arc, arc);
+        g2.setStroke(new BasicStroke(2));
+        g2.setColor(new Color(80, 80, 80));
+        g2.drawRoundRect(x + 4, y + 4, w - 8, h - 8, arc - 4, arc - 4);
+        g2.setStroke(new BasicStroke(1));
+    }
+
+    /** Rounded content card */
+    private void drawCard(Graphics2D g2, int x, int y, int w, int h, int arc) {
+        g2.setColor(new Color(230, 226, 218));
+        g2.fillRoundRect(x, y, w, h, arc, arc);
+        g2.setColor(new Color(190, 185, 172));
+        g2.drawRoundRect(x, y, w, h, arc, arc);
+    }
+
+    /** Centred placeholder text inside a card */
+    private void drawCentredText(Graphics2D g2, Font base,
+                                 int bx, int by, int bw, int bh, String t) {
+        g2.setFont(base.deriveFont(10f));
+        g2.setColor(new Color(150, 145, 138));
+        FontMetrics fm = g2.getFontMetrics();
+        g2.drawString(t, bx + (bw - fm.stringWidth(t)) / 2, by + bh / 2 + 4);
+    }
+
+    /**
+     * Word-wraps text into lines of max maxW pixels.
+     * Returns the y-baseline after the last line drawn.
+     */
+    private int drawWordWrapped(Graphics2D g2, FontMetrics fm, String text,
+                                int x, int y, int maxW, int lineH, Color color) {
+        g2.setColor(color);
+        int cy = y;
+        StringBuilder line = new StringBuilder();
+        for (String word : text.split(" ")) {
+            String test = line.isEmpty() ? word : line + " " + word;
+            if (fm.stringWidth(test) > maxW && !line.isEmpty()) {
+                g2.drawString(line.toString(), x, cy);
+                cy += lineH + 4;
+                line = new StringBuilder(word);
+            } else {
+                line = new StringBuilder(test);
+            }
+        }
+        if (!line.isEmpty()) { g2.drawString(line.toString(), x, cy); cy += lineH; }
+        return cy;
+    }
+
+    /** Truncates with "…" if text exceeds maxPx pixels */
+    private String truncate(String text, FontMetrics fm, int maxPx) {
+        if (fm.stringWidth(text) <= maxPx) return text;
+        while (text.length() > 1 && fm.stringWidth(text + "…") > maxPx)
+            text = text.substring(0, text.length() - 1);
+        return text + "…";
+    }
+
+    // ── Item image loading ────────────────────────────────────────────────────
+
+    private BufferedImage loadItemImage(Item item) {
+        String path = item.getAssetPath();
+        if (path == null || path.isEmpty()) return null;
+        // Prepend slash if needed (asset paths stored without leading slash)
+        String key = path.startsWith("/") ? path : "/" + path;
+        return imgCache.computeIfAbsent(key, AssetManager::loadImage);
     }
 }
+

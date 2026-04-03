@@ -1,0 +1,6 @@
+5,8,10
+Background:BACKGROUND
+safsa:BACKGROUND
+Decoration:DECORATION
+Building:BUILDING
+Interactive:INTERACTIVE
