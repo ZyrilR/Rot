@@ -1,9 +1,13 @@
 package save;
 
 import brainrots.BrainRot;
+import engine.GamePanel;
 import overworld.Player;
 import storage.PCSystem;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.Scanner;
 
@@ -35,7 +39,8 @@ public class DataManager {
             [m] separated by semicolon
     */
 
-    public static void saveNewData(Player plr) {
+    public static void saveNewData(GamePanel gp) {
+        Player plr = gp.player;
         int folders = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(new File(SAVES, "saves_config.txt")))){
             //get configuration file and check for how many folders there are
@@ -76,6 +81,10 @@ public class DataManager {
 
                 fileWriter.write(format);
 
+                File img = new File(newFolder, "screenshot.png");
+
+                ImageIO.write(screenshotGamePanel(gp), "png", img);
+
                 fileWriter.close();
             }
 
@@ -86,5 +95,18 @@ public class DataManager {
 
     public static void loadData(int slotNo) {
 
+    }
+
+    public static BufferedImage screenshotGamePanel(GamePanel gamePanel) {
+        BufferedImage image = new BufferedImage(
+                gamePanel.getWidth(),
+                gamePanel.getHeight(),
+                BufferedImage.TYPE_INT_ARGB
+        );
+        gamePanel.save();
+        Graphics2D g2 = image.createGraphics();
+        gamePanel.printAll(g2); // Better than .paint() for capturing current state
+        g2.dispose();
+        return image;
     }
 }

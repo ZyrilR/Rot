@@ -1,6 +1,7 @@
 package ui;
 
 import engine.GamePanel;
+import save.DataManager;
 import utils.AssetManager;
 
 import java.awt.*;
@@ -99,6 +100,8 @@ public class MenuUI {
             }
             case EXIT -> {
                 System.out.println("[MenuUI] Exiting.");
+                DataManager.saveNewData(gp);
+
                 System.exit(0);
             }
         }
