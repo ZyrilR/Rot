@@ -8,6 +8,7 @@ import java.util.List;
 
 import static brainrots.Type.getType;
 import static brainrots.Tier.getTier;
+import static utils.Constants.MAX_SPEED;
 
 /**
  * Represents a BrainRot creature with stats, type, moves, and status.
@@ -28,7 +29,6 @@ public class BrainRot {
     private int attack;
     private int defense;
     private int speed;
-    private int maxSp;
     private int currentSp;
 
     // Stat modifiers (as multipliers applied on base, capped at ±40%)
@@ -43,7 +43,6 @@ public class BrainRot {
     // Battle state
     private String status = "NONE"; // NONE, BURN, PARALYZE, CONFUSE, FLINCH
     private int statusTurns = 0;
-    private boolean ultimateUsed = false;
     private int turnCount = 0;
 
     // Moves (max 4)
@@ -61,8 +60,7 @@ public class BrainRot {
         this.attack = attack;
         this.defense = defense;
         this.speed = speed;
-        this.maxSp = 100;
-        this.currentSp = maxSp;
+        this.currentSp = MAX_SPEED;
     }
 
     // ── HP / Damage / Healing ────────────────────────────────────────────────
@@ -227,8 +225,6 @@ public class BrainRot {
 
     public void restoreForBattle() {
         currentHp = maxHp;
-        currentSp = maxSp;
-        clearStatus();
         resetModifiers();
     }
 

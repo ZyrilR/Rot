@@ -17,27 +17,6 @@ import static utils.Constants.*;
 
 public class DataManager {
 
-    /*
-    Format:
-    player_name;x;y;rotCoins;direction
-    [INVENTORY]
-    item_name;qty
-    [PCSYSTEM]
-    ==PARTY==
-    [1] attributes
-        [n] separated by semicolon
-    [2] skills
-        [n] separated by comma
-            [m] separated by semicolon
-    ==STORED==
-    [1] name
-    [2] attributes
-        [n] separated by semicolon
-    [3] skills
-        [n] separated by comma
-            [m] separated by semicolon
-    */
-
     public static void saveCurrentLoad(GamePanel gp) {
         saveData(gp, CURRENT_LOAD, false);
     }

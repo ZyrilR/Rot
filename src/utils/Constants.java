@@ -61,8 +61,11 @@ public class Constants {
     //Load Handler
     public static int CURRENT_LOAD = 2;
 
-    //Brainrot Descriptions
+    //Brainrot Handlers
     public static HashMap<String, String> BRAINROT_DESCRIPTIONS = new HashMap<>();
+
+    //Brainrot Attributes
+    public static final int MAX_SPEED = 100;
 
     public static final void InitializeBrainrotDescriptions() {
         BRAINROT_DESCRIPTIONS.put("TUNG TUNG TUNG SAHUR", "A cursed wooden log that wakes up at 3AM and just starts going. Nobody asked it to. Nobody can stop it. It has been drumming since before you were born and will still be drumming long after.");

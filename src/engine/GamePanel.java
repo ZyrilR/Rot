@@ -28,21 +28,21 @@ import static utils.Constants.*;
 
 public class GamePanel extends JPanel {
     // ── Core handlers ─────────────────────────────────────────────────────────
-    public KeyboardHandler KEYBOARDHANDLER  = new KeyboardHandler();
-    public EncounterSystem encounterSystem = new EncounterSystem();
-    public CollisionChecker COLLISIONCHECKER = new CollisionChecker(this);
-    public Player player = new Player(this, KEYBOARDHANDLER);
+    public KeyboardHandler KEYBOARDHANDLER      = new KeyboardHandler();
+    public EncounterSystem encounterSystem      = new EncounterSystem();
+    public CollisionChecker COLLISIONCHECKER    = new CollisionChecker(this);
+    public Player player                        = new Player(this, KEYBOARDHANDLER);
 
-    public String GAMESTATE = "play";
-    public DialogueBox DIALOGUEBOX = new DialogueBox(this);
+    public String GAMESTATE               = "play";
+    public DialogueBox DIALOGUEBOX        = new DialogueBox(this);
 
-    public final ShopUI SHOPUI = new ShopUI(this);
-    public final PCUI     PCUI     = new PCUI(this, player.getPCSYSTEM());
-    public final MenuUI MENUUI = new MenuUI(this);
-    public final InventoryUI INVENTORYUI = new InventoryUI(this);
+    public final ShopUI SHOPUI            = new ShopUI(this);
+    public final PCUI     PCUI            = new PCUI(this, player.getPCSYSTEM());
+    public final MenuUI MENUUI            = new MenuUI(this);
+    public final InventoryUI INVENTORYUI  = new InventoryUI(this);
 
-    public final WorldLoader world = new WorldLoader(this);
-    public ArrayList<NPC> npcs = new ArrayList<>();
+    public final WorldLoader world        = new WorldLoader(this);
+    public ArrayList<NPC> npcs            = new ArrayList<>();
 
     public String path;
 
@@ -61,6 +61,7 @@ public class GamePanel extends JPanel {
         // For now we add test members so the PC UI has data to display.
 //        seedTestParty();
     }
+
 
     // ── Test seed ─────────────────────────────────────────────────────────────
 
@@ -157,48 +158,6 @@ public class GamePanel extends JPanel {
         return world.getInteractiveLayer();
     }
 
-    // ── Entity spawning ───────────────────────────────────────────────────────
-//    public void spawnEntitiesFromMap() {
-//        int[][] interactiveMap = world.getInteractiveLayer().getMap();
-//
-//        for (int row = 0; row < MAX_WORLD_ROW; row++) {
-//            for (int col = 0; col < MAX_WORLD_COL; col++) {
-//                int tileNum = interactiveMap[row][col];
-//
-//                if (tileNum == 1) {
-//                    MarketNPC shopKeeper = new MarketNPC("Bob", 1);
-//                    shopKeeper.worldX = col * TILE_SIZE;
-//                    shopKeeper.worldY = row * TILE_SIZE;
-//                    shopKeeper.solidArea = new Rectangle(0, 0, TILE_SIZE, TILE_SIZE);
-//                    npcs.add(shopKeeper);
-//                    interactiveMap[row][col] = 0;
-//                }
-//            }
-//        }
-//    }
-
-//    public void spawnCornerNPCs() {
-//        MarketNPC topLeftNpc = new MarketNPC("North-West Guard", 1);
-//        topLeftNpc.worldX = 10 * TILE_SIZE;
-//        topLeftNpc.worldY = 10 * TILE_SIZE;
-//        npcs.add(topLeftNpc);
-//
-//        MarketNPC topRightNpc = new MarketNPC("North-East Wanderer", 2);
-//        topRightNpc.worldX = 40 * TILE_SIZE;
-//        topRightNpc.worldY = 10 * TILE_SIZE;
-//        npcs.add(topRightNpc);
-//
-//        MarketNPC bottomLeftNpc = new MarketNPC("South-West Scout", 3);
-//        bottomLeftNpc.worldX = 10 * TILE_SIZE;
-//        bottomLeftNpc.worldY = 40 * TILE_SIZE;
-//        npcs.add(bottomLeftNpc);
-//
-//        MarketNPC bottomRightNpc = new MarketNPC("South-East Merchant", 4);
-//        bottomRightNpc.worldX = 40 * TILE_SIZE;
-//        bottomRightNpc.worldY = 40 * TILE_SIZE;
-//        npcs.add(bottomRightNpc);
-//    }
-
     // ── Game loop ─────────────────────────────────────────────────────────────
     public void update() {
         switch (GAMESTATE.toUpperCase()) {
@@ -274,9 +233,6 @@ public class GamePanel extends JPanel {
 
         // Player
         player.draw(g2);
-
-        // Draw world top layers (decorations that overlap player)
-//        world.drawTop(g2);
 
         // ── UI overlays ───────────────────────────────────────────────────────
         switch (GAMESTATE.toLowerCase()) {
