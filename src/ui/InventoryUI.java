@@ -483,7 +483,7 @@ public class InventoryUI {
         if (sel == null) {
             g2.setFont(base.deriveFont(11f));
             g2.setColor(new Color(140, 136, 128));
-            g2.drawString("Select an item.", panelX + 10, descCardY + 20);
+            g2.drawString("Select an item.", panelX + 12, descCardY + 20);
             return;
         }
 
@@ -491,7 +491,7 @@ public class InventoryUI {
         Shape prevClip = g2.getClip();
         g2.setClip(panelX + 4, descCardY + 4, panelW - 8, descCardH - 8);
 
-        int tx    = panelX + 10;
+        int tx    = panelX + 14;
         int textW = panelW - 20;
         int ty    = descCardY + 24;
 
