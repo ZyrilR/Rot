@@ -103,7 +103,8 @@ public class DataManager {
                 gamePanel.getHeight(),
                 BufferedImage.TYPE_INT_ARGB
         );
-        gamePanel.save();
+        gamePanel.GAMESTATE = "play";
+        gamePanel.update();
         Graphics2D g2 = image.createGraphics();
         gamePanel.printAll(g2); // Better than .paint() for capturing current state
         g2.dispose();

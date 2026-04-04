@@ -283,8 +283,4 @@ public class GamePanel extends JPanel {
         g2.dispose();
     }
 
-    public void save() {
-        GAMESTATE = "play";
-        update();
-    }
 }

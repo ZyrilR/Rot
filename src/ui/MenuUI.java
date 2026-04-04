@@ -6,6 +6,7 @@ import utils.AssetManager;
 
 import java.awt.*;
 
+import static java.awt.FileDialog.SAVE;
 import static utils.Constants.*;
 
 /**
@@ -23,6 +24,7 @@ public class MenuUI {
     private enum MenuItem {
         BACKPACK  ("BACKPACK"),
         BRAINROTS ("BRAINROTS"),
+        SAVE      ("SAVE"),
         EXIT      ("EXIT");
 
         final String label;
@@ -94,14 +96,16 @@ public class MenuUI {
                 System.out.println("[MenuUI] Opening Backpack.");
             }
             case BRAINROTS -> {
-                gp.PCUI.open();
                 gp.GAMESTATE = "pc";
+                gp.PCUI.open();
                 System.out.println("[MenuUI] Opening BrainRots (PC).");
+            }
+            case SAVE -> {
+                DataManager.saveNewData(gp);
+                System.out.println("[MenuUI] Saving Slot.");
             }
             case EXIT -> {
                 System.out.println("[MenuUI] Exiting.");
-                DataManager.saveNewData(gp);
-
                 System.exit(0);
             }
         }
