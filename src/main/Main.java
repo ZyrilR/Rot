@@ -2,18 +2,19 @@ package main;
 
 import javax.swing.*;
 
-import brainrots.BrainRotFactory;
-import brainrots.BrainRotRegistry;
 import engine.*;
-import items.ItemRegistry;
 import save.DataManager;
 import tile.TileManager;
 import utils.AssetManager;
+import utils.Constants;
 
 public class Main {
     public static void main(String[] args) {
         AssetManager.loadAll();
         TileManager.loadTiles();
+        Constants.InitializeBrainrotDescriptions();
+
+        Constants.CURRENT_LOAD = 1;
 
         JFrame windows = new JFrame();
         windows.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -25,6 +26,8 @@ public class Main {
         windows.pack();
         windows.setLocationRelativeTo(null);
         windows.setVisible(true);
+
+        DataManager.loadLatestData(gamePanel);
 
         new GameLoop(gamePanel).startGameThread();
     }

@@ -6,8 +6,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class Inventory {
-    private final ArrayList<Item> items; // stores player's items
-    private final int capacity;          // maximum number of items allowed
+    private ArrayList<Item> items; // stores player's items
+    private final int capacity;   // maximum number of items allowed
 
     public Inventory(int capacity) {
         this.capacity = capacity;
@@ -74,5 +74,9 @@ public class Inventory {
     /** Get inventory capacity */
     public int getCapacity() {
         return capacity;
+    }
+
+    public void reset() {
+        items = new ArrayList<>();
     }
 }

@@ -808,7 +808,7 @@ public class PCUI {
         Shape prevClip = g2.getClip();
         g2.setClip(panelX + 4, descCardY + 4, panelW - 8, descCardH - 8);
 
-        String desc = detailRot.getDescription();
+        String desc = getDescription(detailRot.getName());
         if (desc != null && !desc.isEmpty()) {
             g2.setFont(base.deriveFont(10f));
             FontMetrics descFm = g2.getFontMetrics();

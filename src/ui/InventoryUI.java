@@ -359,13 +359,6 @@ public class InventoryUI {
         return out;
     }
 
-    private int countOf(String name) {
-        int c = 0;
-        for (Item item : gp.player.getInventory().getRawItems())
-            if (item.getName().equalsIgnoreCase(name)) c++;
-        return c;
-    }
-
     // ── DRAW ──────────────────────────────────────────────────────────────────
 
     public void draw(Graphics2D g2) {
@@ -603,8 +596,8 @@ public class InventoryUI {
             int nameMaxW = listW - 54;
             g2.drawString(truncate(item.getName(), g2.getFontMetrics(), nameMaxW), listX + 16, textY);
 
-            // Quantity — right-aligned
-            String qty = "x " + countOf(item.getName());
+            // Quantity — right-aligned 
+            String qty = "x " + countOf(item.getName(), gp.player.getInventory());
             g2.setFont(base.deriveFont(10f));
             FontMetrics fm = g2.getFontMetrics();
             g2.setColor(new Color(80, 78, 72));

@@ -1,8 +1,13 @@
 package brainrots;
 
 import skills.Skill;
+import skills.SkillRegistry;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import static brainrots.Type.getType;
+import static brainrots.Tier.getTier;
 
 /**
  * Represents a BrainRot creature with stats, type, moves, and status.
@@ -16,7 +21,6 @@ public class BrainRot {
     private Type primaryType;
     private Type secondaryType; // nullable
     private Tier tier;
-    private String description;
 
     // Base stats (set at creation by Factory)
     private int maxHp;
@@ -42,10 +46,9 @@ public class BrainRot {
     private static final int MAX_MOVES = 4;
     private List<Skill> moves = new ArrayList<>();
 
-    public BrainRot(String name, String description, Type primaryType, Type secondaryType, Tier tier,
+    public BrainRot(String name, Type primaryType, Type secondaryType, Tier tier,
                     int maxHp, int attack, int defense, int speed) {
         this.name = name;
-        this.description = description;
         this.primaryType = primaryType;
         this.secondaryType = secondaryType;
         this.tier = tier;
@@ -166,7 +169,6 @@ public class BrainRot {
     public Type getPrimaryType()    { return primaryType; }
     public Type getSecondaryType()  { return secondaryType; }
     public Tier getTier()           { return tier; }
-    public String getDescription()  { return description; }
     public int getMaxHp()           { return maxHp; }
     public int getCurrentHp()       { return currentHp; }
     public int getAttack()          { return (int)(attack * attackMod); }
@@ -190,18 +192,40 @@ public class BrainRot {
                 + tier + " HP:" + currentHp + "/" + maxHp;
     }
 
+    public BrainRot(String name, String primaryType, String secondaryType, String tier, int maxHp, int currentHp,
+    int attack, int defense, int speed, int currentSp, double attackMod, double defenseMod, double speedMod, String status,
+    int statusTurns, int turnCount, String[] moves) {
+        this.name = name;
+        this.primaryType = getType(primaryType);
+        this.secondaryType = getType(secondaryType);
+        this.tier = Tier.getTier(tier);
+        this.maxHp = maxHp;
+        this.currentHp = currentHp;
+        this.attack = attack;
+        this.defense = defense;
+        this.speed = speed;
+        this.currentSp = currentSp;
+        this.attackMod = attackMod;
+        this.defenseMod = defenseMod;
+        this.speedMod = speedMod;
+        this.status = status;
+        this.statusTurns = statusTurns;
+        this.turnCount = turnCount;
+        for (String move : moves) {
+            addMove(SkillRegistry.get(move));
+        }
+    }
+
     public String toFileFormat() {
-        String format = name + ":" +
+        String format = name + ";" +
                 primaryType + ";" +
                 secondaryType + ";" +
                 tier + ";" +
-                description + ";" +
                 maxHp + ";" +
                 currentHp + ";" +
                 attack + ";" +
                 defense + ";" +
                 speed + ";" +
-                maxSp + ";" +
                 currentSp + ";" +
                 attackMod + ";" +
                 defenseMod + ";" +
@@ -209,9 +233,12 @@ public class BrainRot {
                 status + ";" +
                 statusTurns + ";" +
                 turnCount + ":";
-
+        int i = 0;
         for (Skill move : moves) {
-            format += move.toFileFormat() + ",";
+            format += move.getName();
+            if (i < moves.size() - 1)
+                format += "|";
+            i++;
         }
 
         return format;

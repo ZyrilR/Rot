@@ -25,6 +25,8 @@ public class MenuUI {
         BACKPACK  ("BACKPACK"),
         BRAINROTS ("BRAINROTS"),
         SAVE      ("SAVE"),
+        SAVENEWSLOT      ("SAVENEW"),
+        LOAD      ("LOAD"),
         EXIT      ("EXIT");
 
         final String label;
@@ -101,8 +103,19 @@ public class MenuUI {
                 System.out.println("[MenuUI] Opening BrainRots (PC).");
             }
             case SAVE -> {
+                DataManager.saveCurrentLoad(gp);
+                gp.GAMESTATE = "play";
+                System.out.println("[MenuUI] Saving Current Slot.");
+            }
+            case SAVENEWSLOT -> {
                 DataManager.saveNewData(gp);
-                System.out.println("[MenuUI] Saving Slot.");
+                gp.GAMESTATE = "play";
+                System.out.println("[MenuUI] Saving New Slot.");
+            }
+            case LOAD -> {
+                DataManager.loadData(gp, 2);
+                gp.GAMESTATE = "play";
+                System.out.println("[MenuUI] Loading Slot 2.");
             }
             case EXIT -> {
                 System.out.println("[MenuUI] Exiting.");

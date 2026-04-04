@@ -25,13 +25,13 @@ public class PCSystem {
      * Party list. Size never exceeds PARTY_CAPACITY.
      * A null entry is not used here — party entries are contiguous.
      */
-    private final List<BrainRot> party = new ArrayList<>();
+    private List<BrainRot> party = new ArrayList<>();
 
     /**
      * Boxes: boxes[b][s] where b=0..9, s=0..24.
      * null = empty slot.
      */
-    private final BrainRot[][] boxes = new BrainRot[BOX_COUNT][BOX_CAPACITY];
+    private BrainRot[][] boxes = new BrainRot[BOX_COUNT][BOX_CAPACITY];
 
     // ── Result enum ───────────────────────────────────────────────────────────
 
@@ -56,6 +56,16 @@ public class PCSystem {
     public int getPartySize()   { return party.size(); }
     public boolean isPartyFull(){ return party.size() >= PARTY_CAPACITY; }
     public boolean isPartyEmpty(){ return party.isEmpty(); }
+    public int getPCCount() {
+        int count = 0;
+        for (int i = 0; i < BOX_COUNT; i++) {
+            for (int j = 0; j < BOX_CAPACITY; j++) {
+                if (boxes[i][j] != null)
+                    count++;
+            }
+        }
+        return count;
+    }
 
     /** Returns the BrainRot at party index, or null if out of bounds / empty slot. */
     public BrainRot getPartyMember(int index) {
@@ -101,6 +111,26 @@ public class PCSystem {
 
         System.out.println("[PCSystem] All storage full — cannot add " + rot.getName() + ".");
         return MoveResult.BOX_FULL;
+    }
+    public MoveResult addBrainRotToParty(BrainRot rot) {
+        if (!isPartyFull()) {
+            party.add(rot);
+            System.out.println("[PCSystem] Added " + rot.getName() + " to party.");
+            return MoveResult.SUCCESS;
+        } else {
+            System.out.println("[PCSystem] Party Slot Full — cannot add " + rot.getName() + ".");
+            return MoveResult.PARTY_FULL;
+        }
+    }
+    public MoveResult addBrainRot(BrainRot rot, int box, int slot) {
+        if (boxes[box][slot] == null) {
+            boxes[box][slot] = rot;
+            System.out.println("[PCSystem] Added " + rot.getName() + " to Box " + (box + 1) + " slot " + (slot + 1) + ".");
+            return MoveResult.SUCCESS;
+        } else {
+            System.out.println("[PCSystem] All storage full — cannot add " + rot.getName() + ".");
+            return MoveResult.BOX_FULL;
+        }
     }
 
     // ── Core move / swap ──────────────────────────────────────────────────────
@@ -214,5 +244,10 @@ public class PCSystem {
             case BOX_FULL            -> "All boxes are full!";
             case SAME_SLOT           -> "";
         };
+    }
+
+    public void reset() {
+        party = new ArrayList<>();
+        boxes = new BrainRot[BOX_COUNT][BOX_CAPACITY];
     }
 }

@@ -24,6 +24,16 @@ public class Player {
     public final int screenX, screenY; // where we draw player on screen
     public int speed;
 
+    public void reset() {
+        name = "";
+        worldX = 0;
+        worldY = 0;
+        setRotCoins(0);
+        setDirection("Down");
+        inventory.reset();
+        PCSYSTEM.reset();
+    }
+
     private String direction;
     private boolean isMoving;
     private int moveProgress = 0;
@@ -254,5 +264,8 @@ public class Player {
     }
     public PCSystem getPCSYSTEM() {
         return PCSYSTEM;
+    }
+    public void setRotCoins(int rotCoins) {
+        this.rotCoins = rotCoins;
     }
 }
