@@ -18,7 +18,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Random;
+
 import items.ItemRegistry;
+import utils.RandomUtil;
 
 import static utils.Constants.*;
 
@@ -126,6 +129,21 @@ public class GamePanel extends JPanel {
         player.getInventory().addItem(ItemRegistry.getItem("Power Combo Scroll"));
         player.getInventory().addItem(ItemRegistry.getItem("Aqua Engine Scroll"));
         System.out.println("[GamePanel] Test party & items seeded.");
+
+        for (brainrots.BrainRot rot : PCSYSTEM.getParty()) {
+            java.util.List<brainrots.LevelUpResult> results = rot.gainXp(RandomUtil.range(100,10000));
+            for (brainrots.LevelUpResult r : results) {
+                System.out.println("[DEV] " + rot.getName()
+                        + " → Lv." + r.newLevel
+                        + " | +" + r.hpGain + "HP"
+                        + " +" + r.atkGain + "ATK"
+                        + " +" + r.defGain + "DEF"
+                        + " +" + r.spdGain + "SPD"
+                        + (r.skillUnlocked != null ? " | Learned: " + r.skillUnlocked.getName() : ""));
+            }
+        }
+        System.out.println("[DEV] XP awarded.");
+
     }
 
     // ── Layer accessors ───────────────────────────────────────────────────────

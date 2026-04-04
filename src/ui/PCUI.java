@@ -1,6 +1,7 @@
 package ui;
 
 import brainrots.BrainRot;
+import brainrots.ExperienceSystem;
 import brainrots.Tier;
 import engine.GamePanel;
 import skills.Skill;
@@ -447,10 +448,31 @@ public class PCUI {
         g2.setColor(new Color(44, 44, 42));
         g2.drawString(rot.getName(), tx, y + 18);
 
-        // Lvl placeholder
+        // Level + inline XP bar
+        boolean maxLvl = rot.getLevel() >= ExperienceSystem.MAX_LEVEL;
+        double xpFrac  = maxLvl ? 1.0
+                : (rot.getXpToNextLevel() > 0 ? (double) rot.getCurrentXp() / rot.getXpToNextLevel() : 0.0);
+        int lvlY    = y + 31;
+        int xpBarH  = 6;
+        int xpBarY  = lvlY - xpBarH - 1;
+
+        // "Lv. #" label
         g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(120, 116, 108));
-        g2.drawString("LVL?? [TODO]", tx, y + 30);
+        String lvlLabel = "LVL" + rot.getLevel();
+        FontMetrics lvlFm = g2.getFontMetrics();
+        g2.drawString(lvlLabel, tx, lvlY);
+
+        // XP bar — fills remaining space to the right of the label
+        int lvlLabelW = lvlFm.stringWidth(lvlLabel) + 4;
+        int xpBarX    = tx + lvlLabelW;
+        int xpBarW    = 160 - lvlLabelW;
+        g2.setColor(new Color(200, 196, 186));
+        g2.fillRoundRect(xpBarX, xpBarY, xpBarW, xpBarH, 2, 2);
+        int xpFillW = (int)(xpBarW * Math.min(1.0, Math.max(0.0, xpFrac)));
+        if (xpFillW > 0) { g2.setColor(new Color(0, 220, 220)); g2.fillRoundRect(xpBarX, xpBarY, xpFillW, xpBarH, 2, 2); }
+        g2.setColor(new Color(160, 155, 145));
+        g2.drawRoundRect(xpBarX, xpBarY, xpBarW, xpBarH, 3, 3);
 
         // HP bar + number
         int barY  = y + 36, barH2 = 7, hpBarW = 160, hpOff = 18;
@@ -529,7 +551,7 @@ public class PCUI {
         int infoY = imgY + imgH + 6;
         drawCard(g2, cX, infoY, cW, infoH, 8);
         int tx = cX + 14;
-        int ty = infoY + 24;
+        int ty = infoY + 26;
         int lh = 22;
 
         if (rot != null) {
@@ -683,7 +705,7 @@ public class PCUI {
 
         // Padding and line height matching drawDataCard
         int tx = panelX + 14;
-        int ty = infoCardY + 24;
+        int ty = infoCardY + 26;
         int lh = 20;
 
         // Name - Bold 14pt
@@ -694,18 +716,29 @@ public class PCUI {
         // Level & Type Info - 10pt
         g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(80, 76, 70));
-        g2.drawString("Lv. ??", tx, ty);
+        boolean isMaxLevel = detailRot.getLevel() >= ExperienceSystem.MAX_LEVEL;
+        g2.drawString("LVL " + detailRot.getLevel(), tx, ty);
 
         // XP Bar - Positioned below the level/type line
         ty += 12; // Gap before bar
-        int barW = panelW - 28;
-        drawLabeledBar(g2, base, tx, ty, barW, 8, "XP",
-                0.0, new Color(120, 200, 100), new Color(200, 196, 186));
+        int barW = panelW - 2;
+        int curXp  = detailRot.getCurrentXp();
+        int nextXp = detailRot.getXpToNextLevel();
+
+        // Guard: avoid divide-by-zero at max level
+        double xpFraction = isMaxLevel ? 1.0
+                : (nextXp > 0 ? (double) curXp / nextXp : 0.0);
+
+        drawLabeledBar(g2, base, tx - 28, ty, barW, 8, "",
+                xpFraction, new Color(0, 220, 220), new Color(200, 196, 186));
 
         // Footer text - 8pt
         g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(140, 136, 128));
-        g2.drawString("XP system TODO", tx, ty + 18);
+        String xpFooter = isMaxLevel
+                ? "MAX LEVEL"
+                : curXp + " / " + nextXp + " XP";
+        g2.drawString(xpFooter, tx, ty + 22);
     }
 
     // ── INFO left panel ───────────────────────────────────────────────────────
@@ -1118,7 +1151,6 @@ public class PCUI {
             if (fm.stringWidth(t) <= maxW) { first = new StringBuilder(t); split = i; }
             else break;
         }
-        g2.setFont(base.deriveFont(Font.BOLD, 11f));
         g2.drawString(first.toString(), x, y);
         StringBuilder second = new StringBuilder();
         for (int i = split + 1; i < words.length; i++) second.append(i > split + 1 ? " " : "").append(words[i]);
