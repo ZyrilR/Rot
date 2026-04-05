@@ -120,21 +120,33 @@ public class PCUI {
         } else if (gp.KEYBOARDHANDLER.downPressed && boxCursorRow < GRID_ROWS - 1) {
             boxCursorRow++; inputCooldown = INPUT_DELAY;
         } else if (gp.KEYBOARDHANDLER.leftPressed) {
-            if (boxCursorCol > 0) {
-                boxCursorCol--; inputCooldown = INPUT_DELAY;
-            } else {
-                // Left edge → cycle to previous box, land on right edge
+            if (gp.KEYBOARDHANDLER.shiftPressed) {
+                // SHIFT+LEFT → cycle to previous box, keep cursor col
                 currentBox = (currentBox - 1 + PCSystem.BOX_COUNT) % PCSystem.BOX_COUNT;
-                boxCursorCol = GRID_COLS - 1;
+                inputCooldown = INPUT_DELAY;
+            } else {
+                // LEFT → move cursor col, wrap box silently at edge
+                if (boxCursorCol > 0) {
+                    boxCursorCol--;
+                } else {
+                    currentBox = (currentBox - 1 + PCSystem.BOX_COUNT) % PCSystem.BOX_COUNT;
+                    boxCursorCol = GRID_COLS - 1;
+                }
                 inputCooldown = INPUT_DELAY;
             }
         } else if (gp.KEYBOARDHANDLER.rightPressed) {
-            if (boxCursorCol < GRID_COLS - 1) {
-                boxCursorCol++; inputCooldown = INPUT_DELAY;
-            } else {
-                // Right edge → cycle to next box, land on left edge
+            if (gp.KEYBOARDHANDLER.shiftPressed) {
+                // SHIFT+RIGHT → cycle to next box, keep cursor col
                 currentBox = (currentBox + 1) % PCSystem.BOX_COUNT;
-                boxCursorCol = 0;
+                inputCooldown = INPUT_DELAY;
+            } else {
+                // RIGHT → move cursor col, wrap box silently at edge
+                if (boxCursorCol < GRID_COLS - 1) {
+                    boxCursorCol++;
+                } else {
+                    currentBox = (currentBox + 1) % PCSystem.BOX_COUNT;
+                    boxCursorCol = 0;
+                }
                 inputCooldown = INPUT_DELAY;
             }
         }
@@ -591,11 +603,13 @@ public class PCUI {
         }
 
         String line1 = (layout == Layout.BOX)
-                ? "WASD Move  TAB Party  E Info"
+                ? "WASD Move  SHIFT+LR Box  E Info"
                 : "WS Move  TAB Box  E Info";
-        String line2 = "ENT Select  ESC Cancel/Close";
+        String line2 = (layout == Layout.BOX)
+                ? "Tab Party  ENT Select  ESC Cancel/Close"
+                : "ENT Select  ESC Cancel/Close";
 
-        g2.setFont(base.deriveFont(8f));
+        g2.setFont(base.deriveFont(7f));
         g2.setColor(new Color(120, 116, 108));
         FontMetrics fm = g2.getFontMetrics();
         int rx = barX + barW - padding;
@@ -753,12 +767,12 @@ public class PCUI {
         int panelH = winH - (bodyY - winY) - STATUS_BAR_H - 16;
 
         int cardPadX    = 12;
-        int cardPadTop  = 24;
+        int cardPadTop  = 22;
         int cardGap     = 6;
         int rowLineH    = 26;
 
         // ── Classification card ───────────────────────────────────────────────────
-        int classCardH = 93;
+        int classCardH = 90;
         drawCard(g2, panelX, panelY, panelW, classCardH, 8);
 
         g2.setFont(base.deriveFont(Font.BOLD, 13f));
@@ -769,8 +783,8 @@ public class PCUI {
         int labelIndent = cardPadX + 2;
         int badgeOffX   = labelIndent + 54;
 
-        int typeRowY   = panelY + cardPadTop + rowLineH;
-        int typeBadgeY = typeRowY - badgeH + 8;
+        int typeRowY   = panelY + cardPadTop + rowLineH - 1;
+        int typeBadgeY = typeRowY - badgeH + 7;
 
         g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(80, 76, 70));
@@ -802,7 +816,7 @@ public class PCUI {
 
         // ── Stats card (shrunk) ───────────────────────────────────────────────────
         int statsCardY = panelY + classCardH + cardGap;
-        int statsCardH = 106; //
+        int statsCardH = 118; //
         drawCard(g2, panelX, statsCardY, panelW, statsCardH, 8);
 
         g2.setFont(base.deriveFont(Font.BOLD, 13f));
@@ -813,17 +827,20 @@ public class PCUI {
         int statBarW     = panelW - cardPadX * 2 - 8;
         int statBarH     = 6;
         int statRowH     = 24;
-        int firstStatY   = statsCardY + cardPadTop + 10;
+        int firstStatY   = statsCardY + cardPadTop + 13;
 
         double hpFrac = (double) detailRot.getCurrentHp() / detailRot.getMaxHp();
         drawStatRow(g2, base, statContentX, firstStatY, statBarW, statBarH,
                 "HP", detailRot.getCurrentHp() + "/" + detailRot.getMaxHp(),
                 hpFrac, hpColor(detailRot));
 
-        drawStatPlain(g2, base, statContentX, firstStatY + statRowH,
+        drawStatPlain(g2, base, statContentX, firstStatY + statRowH - 8,
+                "Atk", String.valueOf(detailRot.getAttack()));
+
+        drawStatPlain(g2, base, statContentX, (firstStatY + statRowH * 2) - 10,
                 "Def", String.valueOf(detailRot.getDefense()));
 
-        drawStatPlain(g2, base, statContentX, firstStatY + statRowH * 2,
+        drawStatPlain(g2, base, statContentX, (firstStatY + statRowH * 3) - 12,
                 "Spd", String.valueOf(detailRot.getSpeed()));
 
         // ── Description card ──────────────────────────────────────────────────────
@@ -1005,7 +1022,7 @@ public class PCUI {
 
         String line1 = (detailTab == DetailTab.INFO) ? "TAB Moves" : "WS Move  TAB Info";
         String line2 = "ESC Back";
-        g2.setFont(base.deriveFont(8f));
+        g2.setFont(base.deriveFont(7f));
         g2.setColor(new Color(120, 116, 108));
         FontMetrics fm = g2.getFontMetrics();
         int rx = winX + winW - 8 - 12;
