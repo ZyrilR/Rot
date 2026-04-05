@@ -59,7 +59,7 @@ public class GamePanel extends JPanel {
         // ── Seed the PC party with the player's starting team ────────────────
         // In a full game these would be loaded from save data.
         // For now we add test members so the PC UI has data to display.
-//        seedTestParty();
+        seedTestParty();
     }
 
 
@@ -119,8 +119,21 @@ public class GamePanel extends JPanel {
         player.getInventory().addItem(ItemRegistry.getItem("PARALYZE CURE"));
         player.getInventory().addItem(ItemRegistry.getItem("BURN CURE"));
         player.getInventory().addItem(ItemRegistry.getItem("DEBUFF TONIC"));
+        player.getInventory().addItem(ItemRegistry.getItem("NORMAL CAPSULE"));
         player.getInventory().addItem(ItemRegistry.getItem("RED CAPSULE"));
         player.getInventory().addItem(ItemRegistry.getItem("BLUE CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("SPEED CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("HEAVY CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("FIGHTING CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("WATER CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("PSYCHIC CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("FLYING CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("SAND CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("GRASS CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("ROCK CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("FIRE CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("DARK CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("POISON CAPSULE"));
         player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
         player.getInventory().addItem(ItemRegistry.getItem("Focus Stance Scroll"));
         player.getInventory().addItem(ItemRegistry.getItem("Sahur Chant Scroll"));
@@ -178,13 +191,15 @@ public class GamePanel extends JPanel {
                 if (KEYBOARDHANDLER.ePressed) {
                     KEYBOARDHANDLER.ePressed = false;
                     player.checkInteraction();
+                    SHOPUI.open();
+                    GAMESTATE = "SHOP";
                 }
 
                 // Open menu with ESC key
                 if (KEYBOARDHANDLER.escPressed) {
                     KEYBOARDHANDLER.escPressed = false;
                     MENUUI.open();
-                    GAMESTATE = "menu";
+                    GAMESTATE = "MENU";
                     System.out.println("[GamePanel] Menu opened via ESC key.");
                 }
                 break;

@@ -77,8 +77,8 @@ public class BattleManager {
             return;
         }
 
-        // Pass enemyRot and playerTeam to the Capsule
-        playerInventory.useItem(capsuleIndex, enemyRot, playerTeam);
+        // Pass playerTeam and active playerRot to the Capsule
+        playerInventory.useItem(capsuleIndex, enemyRot, playerTeam, playerRot);
 
         if (playerTeam.contains(enemyRot)) {
             result = BattleResult.CAPTURED;

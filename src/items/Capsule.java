@@ -11,16 +11,17 @@ public class Capsule extends Item {
         super(name, description, assetPath, price);
     }
 
-    /** Basic use method for compatibility */
     @Override
     public void use(BrainRot target, Object... extraArgs) {
-        if (extraArgs.length == 0 || !(extraArgs[0] instanceof List<?> playerTeam)) {
-            System.out.println("Capsule requires player team as argument!");
+        if (extraArgs.length < 2
+                || !(extraArgs[0] instanceof List<?>)
+                || !(extraArgs[1] instanceof BrainRot playerRot)) {
+            System.out.println("Capsule requires player team and active BrainRot as arguments!");
             return;
         }
 
         @SuppressWarnings("unchecked")
-        List<BrainRot> team = (List<BrainRot>) playerTeam;
-        CaptureManager.attempt(this, target, team); // perform capture
+        List<BrainRot> team = (List<BrainRot>) extraArgs[0];
+        CaptureManager.attempt(this, target, playerRot, team);
     }
 }

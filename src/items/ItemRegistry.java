@@ -36,12 +36,12 @@ public class ItemRegistry {
         registerItem(new Antidote(
                 "CONFUSION CURE",
                 "Snaps a confused BrainRot back to its senses. Clears the CONFUSE status.",
-                "/res/Templates/Items/4.png", "CONFUSE", 600));
+                "/res/Items/Antidote/CONFUSION.png", "CONFUSE", 600));
 
         registerItem(new Antidote(
                 "PARALYZE CURE",
                 "A fast-acting tonic that restores full mobility. Clears the PARALYZE status.",
-                "/res/Templates/Items/4.png", "PARALYZE", 600));
+                "/res/Items/Antidote/PARALYZE.png", "PARALYZE", 600));
 
         registerItem(new Antidote(
                 "BURN CURE",
@@ -51,34 +51,90 @@ public class ItemRegistry {
         registerItem(new Antidote(
                 "DEBUFF TONIC",
                 "A restorative brew that resets all lowered stats back to normal.",
-                "/res/Templates/Items/4.png", "DEBUFF", 700));
+                "/res/Items/Antidote/DEBUFF.png", "DEBUFF", 700));
 
         // ── Capsules ──────────────────────────────────────────────────────────
         registerItem(new Capsule(
+                "NORMAL CAPSULE",
+                "A plain capture capsule. Capture rate scales with the target's missing HP.",
+                "/res/Items/Capsule/NORMAL.png", 400));
+
+        registerItem(new Capsule(
                 "RED CAPSULE",
                 "A standard capture capsule. Capture rate scales with the target's missing HP.",
-                "/res/Templates/Items/9.png", 500));
+                "/res/Items/Capsule/RED.png", 400));
 
         registerItem(new Capsule(
                 "BLUE CAPSULE",
-                "An improved capsule with a +10 percent capture bonus over the standard red.",
-                "/res/Templates/Items/9.png", 700));
+                "A sturdy capsule. Capture rate scales with the target's missing HP.",
+                "/res/Items/Capsule/BLUE.png", 400));
 
         registerItem(new Capsule(
                 "SPEED CAPSULE",
-                "Engineered for fast targets. Grants +20 percent capture bonus against BrainRots with Speed above 30.",
-                "/res/Templates/Items/9.png", 900));
+                "Engineered for fast targets. Grants +20 percent capture bonus if your BrainRot's Speed exceeds the target's.",
+                "/res/Items/Capsule/SPEED.png", 800));
 
         registerItem(new Capsule(
                 "HEAVY CAPSULE",
-                "Built for tough targets. Grants +20 percent capture bonus against BrainRots with Defense above 40.",
-                "/res/Templates/Items/9.png", 1200));
+                "Built for tough targets. Grants +20 percent capture bonus if your BrainRot's Defense exceeds the target's.",
+                "/res/Items/Capsule/HEAVY.png", 800));
+
+        registerItem(new Capsule(
+                "FIGHTING CAPSULE",
+                "A capsule tuned to Fighting-type BrainRots. Grants +20 percent capture bonus against them.",
+                "/res/Items/Capsule/FIGHTING.png", 0));
+
+        registerItem(new Capsule(
+                "WATER CAPSULE",
+                "A capsule tuned to Water-type BrainRots. Grants +20 percent capture bonus against them.",
+                "/res/Items/Capsule/WATER.png", 0));
+
+        registerItem(new Capsule(
+                "PSYCHIC CAPSULE",
+                "A capsule tuned to Psychic-type BrainRots. Grants +20 percent capture bonus against them.",
+                "/res/Items/Capsule/PSYCHIC.png", 0));
+
+        registerItem(new Capsule(
+                "FLYING CAPSULE",
+                "A capsule tuned to Flying-type BrainRots. Grants +20 percent capture bonus against them.",
+                "/res/Items/Capsule/FLY.png", 0));
+
+        registerItem(new Capsule(
+                "SAND CAPSULE",
+                "A capsule tuned to Sand-type BrainRots. Grants +20 percent capture bonus against them.",
+                "/res/Items/Capsule/SAND.png", 0));
+
+        registerItem(new Capsule(
+                "GRASS CAPSULE",
+                "A capsule tuned to Grass-type BrainRots. Grants +20 percent capture bonus against them.",
+                "/res/Items/Capsule/GRASS.png", 0));
+
+        registerItem(new Capsule(
+                "ROCK CAPSULE",
+                "A capsule tuned to Rock-type BrainRots. Grants +20 percent capture bonus against them.",
+                "/res/Items/Capsule/STONE.png", 0));
+
+        registerItem(new Capsule(
+                "FIRE CAPSULE",
+                "A capsule tuned to Fire-type BrainRots. Grants +20 percent capture bonus against them.",
+                "/res/Items/Capsule/FIRE.png", 0));
+
+        registerItem(new Capsule(
+                "DARK CAPSULE",
+                "A capsule tuned to Dark-type BrainRots. Grants +20 percent capture bonus against them.",
+                "/res/Items/Capsule/DARK.png", 0));
+
+        registerItem(new Capsule(
+                "POISON CAPSULE",
+                "A capsule tuned to Poison-type BrainRots. Grants +20 percent capture bonus against them.",
+                "/res/Items/Capsule/POISON.png", 0));
 
         registerItem(new Capsule(
                 "MASTER CAPSULE",
                 "A legendary capsule forged from pure Rot energy. Guarantees capture, no questions asked.",
-                "/res/Templates/Items/9.png", 1500));
+                "/res/Items/Capsule/NORMAL.png", 0));
 
+        // ── Scrolls ──────────────────────────────────────────────────────────
         registerItem(new Scroll(
                 "GUARD UP SCROLL",
                 "Teach a BrainRot Guard Up. Raises the user's Defense.",
