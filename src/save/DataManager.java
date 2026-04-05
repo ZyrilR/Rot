@@ -20,7 +20,6 @@ public class DataManager {
     public static void saveCurrentLoad(GamePanel gp) {
         saveData(gp, CURRENT_LOAD, false);
     }
-
     public static void saveNewData(GamePanel gp) {
         File currentFolder = new File(SAVES);
 
@@ -35,13 +34,11 @@ public class DataManager {
         }
 
     }
-
     private static void saveData(GamePanel gp, int folderID, boolean newFolder) {
         File currentFolder = new File(SAVES, "/" + folderID);
         gp.GAMESTATE = "play";
 
         try {
-
             if (newFolder) {
                 currentFolder.mkdir();
             }
@@ -49,7 +46,7 @@ public class DataManager {
             File data = new File(currentFolder, "data.txt");
             File img = new File(currentFolder, "screenshot.png");
 
-            ImageIO.write(screenshotGamePanel(gp), "png", img);
+            ImageIO.write(getScreenshot(gp), "png", img);
 
             FileWriter fileWriter = new FileWriter(data);
             fileWriter.write(getData(gp));
@@ -60,51 +57,9 @@ public class DataManager {
         }
     }
 
-    private static String getData(GamePanel gp) {
-        Player plr = gp.player;
-        //====WRITE CONTENT====
-        String format =
-                "[PLAYER]\n" +
-                        plr.name + ";" +
-                        plr.worldX + ";" + plr.worldY + ";" +
-                        plr.getRotCoins() + ";" + plr.getDirection() + "\n" + "[INVENTORY]\n";
-
-        ArrayList<String> names = new ArrayList<>();
-
-        int i = 0;
-        for (Item item : plr.getInventory().getRawItems()) {
-            if (names.contains(item.getName().toLowerCase())) {
-                i++;
-                continue;
-            }
-            names.add(item.getName().toLowerCase());
-            format += countOf(item.getName(), plr.getInventory()) + ";" + item.getName();
-            if (i < plr.getInventory().getRawItems().size() - 1)
-                format += ":";
-            i++;
-        }
-
-        format += "\n[PCSYSTEM]\n==PARTY==\n" + plr.getPCSYSTEM().getPartySize() + "\n";
-
-        for (BrainRot rot : plr.getPCSYSTEM().getParty())
-            format += rot.toFileFormat() + "\n";
-
-        format += "==STORED==\n" + plr.getPCSYSTEM().getPCCount() + "\n";
-        for (i = 0; i < BOX_COUNT; i++) {
-            for (int j = 0; j < BOX_CAPACITY; j++) {
-                BrainRot rot = plr.getPCSYSTEM().getBoxMember(i, j);
-                if (rot != null) {
-                    format += i + ";" + j + "-" + rot.toFileFormat() + "\n";
-                }
-            }
-        }
-        return format;
-    }
-
     public static void loadLatestData(GamePanel gp) {
         loadData(gp, CURRENT_LOAD);
     }
-
     public static void loadData(GamePanel gp, int slotNo) {
         gp.player.reset();
         String line;
@@ -226,8 +181,47 @@ public class DataManager {
                 );
         return rot;
     }
+    private static String getData(GamePanel gp) {
+        Player plr = gp.player;
+        //====WRITE CONTENT====
+        String format =
+                "[PLAYER]\n" +
+                        plr.name + ";" +
+                        plr.worldX + ";" + plr.worldY + ";" +
+                        plr.getRotCoins() + ";" + plr.getDirection() + "\n" + "[INVENTORY]\n";
 
-    public static BufferedImage screenshotGamePanel(GamePanel gamePanel) {
+        ArrayList<String> names = new ArrayList<>();
+
+        int i = 0;
+        for (Item item : plr.getInventory().getRawItems()) {
+            if (names.contains(item.getName().toLowerCase())) {
+                i++;
+                continue;
+            }
+            names.add(item.getName().toLowerCase());
+            format += countOf(item.getName(), plr.getInventory()) + ";" + item.getName();
+            if (i < plr.getInventory().getRawItems().size() - 1)
+                format += ":";
+            i++;
+        }
+
+        format += "\n[PCSYSTEM]\n==PARTY==\n" + plr.getPCSYSTEM().getPartySize() + "\n";
+
+        for (BrainRot rot : plr.getPCSYSTEM().getParty())
+            format += rot.toFileFormat() + "\n";
+
+        format += "==STORED==\n" + plr.getPCSYSTEM().getPCCount() + "\n";
+        for (i = 0; i < BOX_COUNT; i++) {
+            for (int j = 0; j < BOX_CAPACITY; j++) {
+                BrainRot rot = plr.getPCSYSTEM().getBoxMember(i, j);
+                if (rot != null) {
+                    format += i + ";" + j + "-" + rot.toFileFormat() + "\n";
+                }
+            }
+        }
+        return format;
+    }
+    public static BufferedImage getScreenshot(GamePanel gamePanel) {
         BufferedImage image = new BufferedImage(
                 gamePanel.getWidth(),
                 gamePanel.getHeight(),
@@ -239,4 +233,5 @@ public class DataManager {
         g2.dispose();
         return image;
     }
+
 }
