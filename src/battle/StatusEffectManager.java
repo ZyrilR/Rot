@@ -38,6 +38,10 @@ public class StatusEffectManager {
                 System.out.println(rot.getName() + " flinched and couldn't move!");
                 rot.clearStatus(); // flinch only lasts one turn
                 return false;
+
+            case "SLEEP":
+                System.out.println(rot.getName() + " is fast asleep!");
+                return false;
         }
         return true;
     }
