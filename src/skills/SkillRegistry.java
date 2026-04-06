@@ -26,6 +26,8 @@ public class SkillRegistry {
                 "Braces every joint and tightens every guard.  Raises Defense with a stalwart stance."));
         register(new Skill("Evasion Up", SkillType.NORMAL, 0, 10, "NONE",
                 "Slips into an unpredictable rhythm that makes every strike feel like a guess.  Raises Evasion for 3 turns."));
+        register(new Skill("Lullaby", SkillType.NORMAL, 0, 10, "SLEEP",
+                "A soothing melody that may cause the target to fall Asleep."));
 
         // ── Fighting ─────────────────────────────────────────────────────────
         register(new Skill("Wooden Thump", SkillType.FIGHTING, 20, 20, "NONE",
@@ -56,6 +58,8 @@ public class SkillRegistry {
                 "A shattering psi blast that punches straight through mental barriers.  Power: 20 - Lowers the target's Defense."));
         register(new Skill("Confusion Wave", SkillType.PSYCHIC, 15, 15, "CONFUSE",
                 "Sends a disorienting shockwave rippling through the mind.  Power: 15 - May leave the target Confused."));
+        register(new Skill("Dream Haze", SkillType.PSYCHIC, 0, 15, "SLEEP",
+                "Surrounds the enemy in a thick mist; 40% chance to inflict Sleep."));
 
         // ── Flying ───────────────────────────────────────────────────────────
         register(new Skill("Sky Dive", SkillType.FLYING, 20, 20, "NONE",
