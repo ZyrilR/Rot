@@ -52,7 +52,7 @@ public class Constants {
 
     //Directories
     public static final String SAVES = "src/res/Saves";
-    public static final String WORLD = "/res/Worlds/4/";
+    public static final String WORLD = "/res/Worlds/5/";
     public static final String MARKET = "/res/Rooms/Market/";
 
     //Asset Constants
@@ -60,6 +60,7 @@ public class Constants {
 
     //Load Handler
     public static int CURRENT_LOAD = 2;
+    public static int[] SPAWN_POINT = new int[2];
 
     //Brainrot Descriptions
     public static HashMap<String, String> BRAINROT_DESCRIPTIONS = new HashMap<>();

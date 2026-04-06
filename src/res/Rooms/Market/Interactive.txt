@@ -5,5 +5,7 @@
 0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0
+26,0,0,0,0,0,0,0,0,0
 [METADATA]
+Spawn|Teleporter|26|0|7|WORLD~|You are about to exit Rot Marketplace
+Bob|MarketNPC|1|1|2||Hello welcome to Rot Marketplace!;Here are items that are currently on shelves!

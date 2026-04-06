@@ -243,4 +243,94 @@ public class CollisionChecker {
             }
         }
     }
+    public static Tile getTileInFront(GamePanel gp, Player player) {
+        int playerLeftWorldX = player.worldX + player.solidArea.x;
+        int playerRightWorldX = player.worldX + player.solidArea.x + player.solidArea.width - 1;
+        int playerTopWorldY = player.worldY + player.solidArea.y;
+        int playerBottomWorldY = player.worldY + player.solidArea.y + player.solidArea.height - 1;
+
+        int centerX = (playerLeftWorldX + playerRightWorldX) / 2;
+        int centerY = (playerTopWorldY + playerBottomWorldY) / 2;
+
+        int speed = player.getCurrentSpeed();
+        int row, col;
+
+        switch (player.getDirection()) {
+            case "up"    -> { row = (playerTopWorldY - speed) / TILE_SIZE; col = centerX / TILE_SIZE; }
+            case "down"  -> { row = (playerBottomWorldY + speed) / TILE_SIZE; col = centerX / TILE_SIZE; }
+            case "left"  -> { row = centerY / TILE_SIZE; col = (playerLeftWorldX - speed) / TILE_SIZE; }
+            case "right" -> { row = centerY / TILE_SIZE; col = (playerRightWorldX + speed) / TILE_SIZE; }
+            default      -> { return null; }
+        }
+
+        // Search all layers, top priority first
+        for (TileManager tm : gp.world.getDecorationLayer()) {
+            Tile t = getTileAt(tm, row, col);
+            if (t != null) return t;
+        }
+        for (TileManager tm : gp.getWorldBuildingLayer()) {
+            Tile t = getTileAt(tm, row, col);
+            if (t != null) return t;
+        }
+        for (TileManager tm : gp.getWorldBackgroundLayer()) {
+            Tile t = getTileAt(tm, row, col);
+            if (t != null) return t;
+        }
+
+        return null;
+    }
+
+    public static TileTeleporter getTeleporterTileInCurrentPosition(GamePanel gp, Player player) {
+        int centerX = player.worldX + player.solidArea.x + player.solidArea.width / 2;
+        int centerY = player.worldY + player.solidArea.y + player.solidArea.height / 2;
+
+        int row = centerY / TILE_SIZE;
+        int col = centerX / TILE_SIZE;
+
+        for (TileTeleporter tt : gp.getWorldInteractiveLayer().getTeleporters()) {
+            System.out.println("ROW : " + row + "\tCOL : " + col);
+            if (tt.getCoordinates()[1] == row && tt.getCoordinates()[0] == col) {
+                return tt;
+            }
+        }
+        return null;
+    }
+
+    public static Tile getTileInCurrentPosition(GamePanel gp, Player player) {
+        int centerX = player.worldX + player.solidArea.x + player.solidArea.width / 2;
+        int centerY = player.worldY + player.solidArea.y + player.solidArea.height / 2;
+
+        int row = centerY / TILE_SIZE;
+        int col = centerX / TILE_SIZE;
+
+        // Search all layers, top priority first
+        for (TileManager tm : gp.world.getDecorationLayer()) {
+            Tile t = getTileAt(tm, row, col);
+            if (t != null) return t;
+        }
+        for (TileManager tm : gp.getWorldBuildingLayer()) {
+            Tile t = getTileAt(tm, row, col);
+            if (t != null) return t;
+        }
+        for (TileManager tm : gp.getWorldBackgroundLayer()) {
+            Tile t = getTileAt(tm, row, col);
+            if (t != null) return t;
+        }
+
+        return null;
+    }
+
+    // Private helper — reuse across both methods
+    private static Tile getTileAt(TileManager tm, int row, int col) {
+        if (row < 0 || row >= MAX_WORLD_ROW || col < 0 || col >= MAX_WORLD_COL) return null;
+
+        int tileNum = tm.getMap()[row][col];
+        if (tileNum == 0) return null;
+
+        int actualIndex = tileNum - 1;
+        if (actualIndex >= 0 && actualIndex < tm.getTiles().size()) {
+            return tm.getTiles().get(actualIndex);
+        }
+        return null;
+    }
 }

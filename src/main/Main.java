@@ -27,8 +27,6 @@ public class Main {
         windows.setLocationRelativeTo(null);
         windows.setVisible(true);
 
-        DataManager.loadLatestData(gamePanel);
-
         new GameLoop(gamePanel).startGameThread();
     }
 }

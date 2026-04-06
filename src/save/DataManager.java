@@ -145,6 +145,9 @@ public class DataManager {
             gp.player.worldY = Integer.parseInt(parts[2]);
             gp.player.setRotCoins(Integer.parseInt(parts[3]));
             gp.player.setDirection(parts[4]);
+            System.out.println(line);
+            gp.world.loadMap(parts[5], true);
+            System.out.println("LOADED WORLD 4: " + parts[5]);
 
             //READ SECOND PART
             line = br.readLine();

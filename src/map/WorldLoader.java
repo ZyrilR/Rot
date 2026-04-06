@@ -1,6 +1,7 @@
 package map;
 
 import engine.GamePanel;
+import npc.NPC;
 import tile.Tile;
 import tile.TileManager;
 
@@ -8,8 +9,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 
-import static utils.Constants.MAX_WORLD_COL;
-import static utils.Constants.MAX_WORLD_ROW;
+import static utils.Constants.*;
 
 public class WorldLoader {
 
@@ -20,10 +20,18 @@ public class WorldLoader {
     Flexible Amount Of Building Tiles
     Only 1 Interactive Layer (Interactive Tiles should not Collide in a single Tile)
      */
+
     private ArrayList<TileManager> backgroundLayer = new ArrayList<>();
     private ArrayList<TileManager> decorationLayer = new ArrayList<>();
     private ArrayList<TileManager> buildingLayer = new ArrayList<>();
     private TileManager interactiveLayer;
+
+    private void resetLayers() {
+        backgroundLayer.clear();
+        decorationLayer.clear();
+        buildingLayer.clear();
+        interactiveLayer = null;
+    }
 
     private GamePanel gp;
 
@@ -73,7 +81,12 @@ public class WorldLoader {
             if (initWorldSettings) {
                 MAX_WORLD_ROW = tile_row;
                 MAX_WORLD_COL = tile_col;
+                resetLayers();
             }
+
+            //initialize spawn point
+            SPAWN_POINT[0] = Integer.parseInt(parts[3]) * TILE_SIZE;
+            SPAWN_POINT[1] = Integer.parseInt(parts[4]) * TILE_SIZE;
 
             int numOfLayers = Integer.parseInt(parts[0]);
 
@@ -106,6 +119,8 @@ public class WorldLoader {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        gp.player.teleport(SPAWN_POINT);
 
     }
 

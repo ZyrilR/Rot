@@ -110,22 +110,22 @@ public class Player {
     }
 
     public void loadImage() {
-        walk_down.add(AssetManager.loadImage("/res/Sprites/player/1.png"));
-        walk_down.add(AssetManager.loadImage("/res/Sprites/player/2.png"));
-        walk_down.add(AssetManager.loadImage("/res/Sprites/player/3.png"));
-        walk_up.add(AssetManager.loadImage("/res/Sprites/player/4.png"));
-        walk_up.add(AssetManager.loadImage("/res/Sprites/player/5.png"));
-        walk_up.add(AssetManager.loadImage("/res/Sprites/player/6.png"));
-        walk_right.add(AssetManager.loadImage("/res/Sprites/player/7.png"));
-        walk_right.add(AssetManager.loadImage("/res/Sprites/player/8.png"));
-        walk_right.add(AssetManager.loadImage("/res/Sprites/player/8.png"));
-        walk_right.add(AssetManager.loadImage("/res/Sprites/player/9.png"));
-        walk_right.add(AssetManager.loadImage("/res/Sprites/player/10.png"));
-        walk_left.add(AssetManager.loadImage("/res/Sprites/player/11.png"));
-        walk_left.add(AssetManager.loadImage("/res/Sprites/player/12.png"));
-        walk_left.add(AssetManager.loadImage("/res/Sprites/player/12.png"));
-        walk_left.add(AssetManager.loadImage("/res/Sprites/player/13.png"));
-        walk_left.add(AssetManager.loadImage("/res/Sprites/player/14.png"));
+        walk_down.add(AssetManager.loadImage("/res/InteractiveTiles/player/1.png"));
+        walk_down.add(AssetManager.loadImage("/res/InteractiveTiles/player/2.png"));
+        walk_down.add(AssetManager.loadImage("/res/InteractiveTiles/player/3.png"));
+        walk_up.add(AssetManager.loadImage("/res/InteractiveTiles/player/4.png"));
+        walk_up.add(AssetManager.loadImage("/res/InteractiveTiles/player/5.png"));
+        walk_up.add(AssetManager.loadImage("/res/InteractiveTiles/player/6.png"));
+        walk_right.add(AssetManager.loadImage("/res/InteractiveTiles/player/7.png"));
+        walk_right.add(AssetManager.loadImage("/res/InteractiveTiles/player/8.png"));
+        walk_right.add(AssetManager.loadImage("/res/InteractiveTiles/player/8.png"));
+        walk_right.add(AssetManager.loadImage("/res/InteractiveTiles/player/9.png"));
+        walk_right.add(AssetManager.loadImage("/res/InteractiveTiles/player/10.png"));
+        walk_left.add(AssetManager.loadImage("/res/InteractiveTiles/player/11.png"));
+        walk_left.add(AssetManager.loadImage("/res/InteractiveTiles/player/12.png"));
+        walk_left.add(AssetManager.loadImage("/res/InteractiveTiles/player/12.png"));
+        walk_left.add(AssetManager.loadImage("/res/InteractiveTiles/player/13.png"));
+        walk_left.add(AssetManager.loadImage("/res/InteractiveTiles/player/14.png"));
     }
 
     public void resetSpriteCounter() {
@@ -225,7 +225,7 @@ public class Player {
         }
 
         // Loop through all NPCs
-        for (npc.NPC npc : gp.npcs) {
+        for (npc.NPC npc : gp.getWorldInteractiveLayer().getNPCs()) {
             if (npc != null) {
                 // Find which grid tile the NPC is standing on
                 int npcGridX = npc.worldX / TILE_SIZE;
@@ -267,5 +267,9 @@ public class Player {
     }
     public void setRotCoins(int rotCoins) {
         this.rotCoins = rotCoins;
+    }
+    public void teleport(int[] coordinates) {
+        worldX = coordinates[0];
+        worldY = coordinates[1];
     }
 }
