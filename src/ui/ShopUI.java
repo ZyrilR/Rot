@@ -60,7 +60,7 @@ public class ShopUI {
                 // Stews
                 "MILD STEW", "MODERATE STEW", "SUPER STEW",
                 // Antidotes
-                "CONFUSION CURE", "PARALYZE CURE", "BURN CURE", "DEBUFF TONIC",
+                "CONFUSION CURE", "PARALYZE CURE", "BURN CURE", "SLEEP CURE", "DEBUFF TONIC",
                 // Capsules
                 "NORMAL CAPSULE", "RED CAPSULE", "BLUE CAPSULE", "SPEED CAPSULE", "HEAVY CAPSULE"
         };

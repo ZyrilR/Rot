@@ -49,6 +49,11 @@ public class ItemRegistry {
                 "/res/Templates/Items/4.png", "BURN", 600));
 
         registerItem(new Antidote(
+                "SLEEP CURE",
+                "A sharp-smelling remedy that jolts a sleeping BrainRot awake. Clears the SLEEP status.",
+                "/res/Items/Antidote/SLEEP.png", "SLEEP", 600));
+
+        registerItem(new Antidote(
                 "DEBUFF TONIC",
                 "A restorative brew that resets all lowered stats back to normal.",
                 "/res/Items/Antidote/DEBUFF.png", "DEBUFF", 700));

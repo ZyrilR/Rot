@@ -835,13 +835,13 @@ public class PCUI {
                 hpFrac, hpColor(detailRot));
 
         drawStatPlain(g2, base, statContentX, firstStatY + statRowH - 8,
-                "Atk", String.valueOf(detailRot.getAttack()));
+                "Atk", String.valueOf(detailRot.getBaseAtk()));
 
         drawStatPlain(g2, base, statContentX, (firstStatY + statRowH * 2) - 10,
-                "Def", String.valueOf(detailRot.getDefense()));
+                "Def", String.valueOf(detailRot.getBaseDef()));
 
         drawStatPlain(g2, base, statContentX, (firstStatY + statRowH * 3) - 12,
-                "Spd", String.valueOf(detailRot.getSpeed()));
+                "Spd", String.valueOf(detailRot.getBaseSpeed()));
 
         // ── Description card ──────────────────────────────────────────────────────
         int descCardY = statsCardY + statsCardH + cardGap;

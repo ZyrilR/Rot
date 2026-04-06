@@ -5,7 +5,7 @@ public class Skill {
     private SkillType type;
     private int power;       // Base damage power
     private int spCost;      // Skill Point cost
-    private String effect;   // Description of effect (Example: "BURN", "CONFUSE", "PARALYZE", "NONE")
+    private String effect;   // Description of effect (Example: "BURN", "CONFUSE", "PARALYZE", "SLEEP", "NONE")
     private String description;
 
     public Skill(String name, SkillType type, int power, int spCost, String effect, String description) {
