@@ -40,6 +40,13 @@ public class SkillEffect {
                 }
                 break;
 
+            case "SLEEP":
+                if (!target.hasStatus("SLEEP")) {
+                    target.setStatus("SLEEP");
+                    System.out.println(target.getName() + " is Asleep!");
+                }
+                break;
+
             case "LOWER_DEF":
                 target.modifyDefense(-0.20);
                 System.out.println(target.getName() + "'s Defense fell!");
