@@ -16,16 +16,12 @@ public class CaptureManager {
      * Base capture rate is higher when target HP is lower.
      * Capsule type modifies the rate:
      *   - MASTER CAPSULE: 100%
-     *   - SPEED CAPSULE : +20% if target speed > 30
-     *   - HEAVY CAPSULE : +20% if target defense > 40
+     *   - SPEED CAPSULE : +20% if player speed > target speed
+     *   - HEAVY CAPSULE : +20% if player defense > target defense
+     *   - Type Capsules : +20% if target type matches capsule type
      *   - Others        : base rate only
-     *
-     * @param capsule     The capsule being used (by name stored in item)
-     * @param target      The wild BrainRot being targeted
-     * @param playerTeam  The player's current team list (max 6)
-     * @return true if capture succeeds.
      */
-    public static boolean attempt(Capsule capsule, BrainRot target, List<BrainRot> playerTeam) {
+    public static boolean attempt(Capsule capsule, BrainRot target, BrainRot playerRot, List<BrainRot> playerTeam) {
 
         String capsuleName = capsule.getName().toUpperCase();
 
@@ -36,15 +32,15 @@ public class CaptureManager {
 
         // Base capture rate scales with missing HP (0–60%)
         double hpRatio  = (double) target.getCurrentHp() / target.getMaxHp();
-        double baseRate = (1.0 - hpRatio) * 60.0; // 0% at full HP → 60% at 0 HP
+        double baseRate = (1.0 - hpRatio) * 60.0;
 
         // Capsule bonus
         double bonus = 0;
-        if (capsuleName.equals("BLUE CAPSULE")) bonus = 10;
-        if (capsuleName.equals("SPEED CAPSULE") && target.getBaseSpeed() > 30) bonus = 20;
-        if (capsuleName.equals("HEAVY CAPSULE") && target.getDefense() > 40) bonus = 20;
+        if (capsuleName.equals("SPEED CAPSULE") && playerRot.getSpeed() > target.getSpeed()) bonus = 20;
+        if (capsuleName.equals("HEAVY CAPSULE") && playerRot.getDefense() > target.getDefense()) bonus = 20;
+        if (hasTypeBonus(capsuleName, target)) bonus = 20;
 
-        double totalRate = Math.min(95, baseRate + bonus); // cap at 95%
+        double totalRate = Math.min(95, baseRate + bonus);
 
         System.out.printf("Capture rate: %.1f%%%n", totalRate);
 
@@ -56,15 +52,32 @@ public class CaptureManager {
         }
     }
 
-    /** Updated capture helper without inventory */
+    /** Returns true if the capsule's type prefix matches the target's primary or secondary type. */
+    private static boolean hasTypeBonus(String capsuleName, BrainRot target) {
+        if (!capsuleName.endsWith(" CAPSULE")) return false;
+
+        String typePrefix = capsuleName.replace(" CAPSULE", "").trim();
+
+        // Exclude non-type capsules
+        switch (typePrefix) {
+            case "NORMAL": case "RED":    case "BLUE":
+            case "SPEED":  case "HEAVY":  case "MASTER":
+                return false;
+        }
+
+        if (target.getPrimaryType().name().equalsIgnoreCase(typePrefix)) return true;
+        return target.getSecondaryType() != null &&
+                target.getSecondaryType().name().equalsIgnoreCase(typePrefix);
+    }
+
+    /** Adds captured BrainRot to player team if space allows. */
     private static boolean capture(BrainRot target, List<BrainRot> playerTeam) {
         if (playerTeam.size() >= 6) {
             System.out.println("Your team is full! " + target.getName() + " could not be added.");
-            return true; // still counts as caught
+            return true;
         }
         playerTeam.add(target);
         System.out.println(target.getName() + " was caught and added to your team!");
         return true;
     }
-
 }
