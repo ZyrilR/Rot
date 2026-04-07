@@ -173,7 +173,7 @@ public class TileManager {
                         case "GYMLEADER" -> npc1 = new GymLeader(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
                         case "GYMMASTER" -> npc1 = new GymMaster(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
                         case "TELEPORTER" -> {
-                            teleporters.add(new TileTeleporter(parts[5], Integer.parseInt(parts[3]), Integer.parseInt(parts[4])));
+                            teleporters.add(new TileTeleporter(parts[5], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), parts[6].split(";")));
                         }
                         default -> npc1 = null;
                     };

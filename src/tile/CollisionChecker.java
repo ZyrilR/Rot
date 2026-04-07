@@ -288,7 +288,6 @@ public class CollisionChecker {
         int col = centerX / TILE_SIZE;
 
         for (TileTeleporter tt : gp.getWorldInteractiveLayer().getTeleporters()) {
-            System.out.println("ROW : " + row + "\tCOL : " + col);
             if (tt.getCoordinates()[1] == row && tt.getCoordinates()[0] == col) {
                 return tt;
             }

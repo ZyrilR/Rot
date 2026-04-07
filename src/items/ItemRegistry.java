@@ -7,8 +7,8 @@ import java.util.ArrayList;
  *
  * Scroll asset paths map to /assets/Items/Scroll/scroll_<type>.png
  * Stew  asset paths map to /assets/Items/Stew/stew*.png
- * Antidote asset paths use /assets/Templates/Items/4.png (temp)
- * Capsule  asset paths use /assets/Templates/Items/9.png (temp)
+ * Antidote asset paths use /assets/Templates/Items/HEAVY.png (temp)
+ * Capsule  asset paths use /assets/Templates/Items/SAND.png (temp)
  */
 public class ItemRegistry {
 
@@ -36,48 +36,48 @@ public class ItemRegistry {
         registerItem(new Antidote(
                 "CONFUSION CURE",
                 "Snaps a confused BrainRot back to its senses. Clears the CONFUSE status.",
-                "/res/Templates/Items/4.png", "CONFUSE", 600));
+                "/res/Items/Antidote/CONFUSION.png", "CONFUSE", 600));
 
         registerItem(new Antidote(
                 "PARALYZE CURE",
                 "A fast-acting tonic that restores full mobility. Clears the PARALYZE status.",
-                "/res/Templates/Items/4.png", "PARALYZE", 600));
+                "/res/Items/Antidote/PARALYZE.png", "PARALYZE", 600));
 
         registerItem(new Antidote(
                 "BURN CURE",
                 "A cooling salve that soothes searing burns. Clears the BURN status.",
-                "/res/Templates/Items/4.png", "BURN", 600));
+                "/res/Items/Antidote/BURN.png", "BURN", 600));
 
         registerItem(new Antidote(
                 "DEBUFF TONIC",
                 "A restorative brew that resets all lowered stats back to normal.",
-                "/res/Templates/Items/4.png", "DEBUFF", 700));
+                "/res/Items/Antidote/DEBUFF.png", "DEBUFF", 700));
 
         // ── Capsules ──────────────────────────────────────────────────────────
         registerItem(new Capsule(
                 "RED CAPSULE",
                 "A standard capture capsule. Capture rate scales with the target's missing HP.",
-                "/res/Templates/Items/9.png", 500));
+                "/res/Items/Capsule/RED.png", 500));
 
         registerItem(new Capsule(
                 "BLUE CAPSULE",
                 "An improved capsule with a +10 percent capture bonus over the standard red.",
-                "/res/Templates/Items/9.png", 700));
+                "/res/Items/Capsule/BLUE.png", 700));
 
         registerItem(new Capsule(
                 "SPEED CAPSULE",
                 "Engineered for fast targets. Grants +20 percent capture bonus against BrainRots with Speed above 30.",
-                "/res/Templates/Items/9.png", 900));
+                "/res/Items/Capsule/SPEED.png", 900));
 
         registerItem(new Capsule(
                 "HEAVY CAPSULE",
                 "Built for tough targets. Grants +20 percent capture bonus against BrainRots with Defense above 40.",
-                "/res/Templates/Items/9.png", 1200));
+                "/res/Items/Capsule/HEAVY.png", 1200));
 
         registerItem(new Capsule(
                 "MASTER CAPSULE",
                 "A legendary capsule forged from pure Rot energy. Guarantees capture, no questions asked.",
-                "/res/Templates/Items/9.png", 1500));
+                "/res/Items/Capsule/PSYCHIC.png", 1500));
 
         registerItem(new Scroll(
                 "GUARD UP SCROLL",

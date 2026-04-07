@@ -12,6 +12,7 @@ public class DialogueBox {
     GamePanel gp;
     private ArrayList<String> currentDialogues;
     private int dialogueIndex = 0;
+    public boolean isPlaying = false;
 
     // Typewriter state
     private String displayedText = "";
@@ -39,6 +40,7 @@ public class DialogueBox {
         this.dialogueIndex = 0;
         resetTypewriter();
         gp.GAMESTATE = "dialogue";
+        isPlaying = true;
     }
 
     private void resetTypewriter() {
@@ -57,11 +59,13 @@ public class DialogueBox {
         // Guard: dialogue index out of bounds — dialogue is finished
         if (dialogueIndex >= currentDialogues.size()) {
             finishDialogue();
+            isPlaying = false;
             return;
         }
 
         String targetText = currentDialogues.get(dialogueIndex);
         if (targetText == null) {
+            isPlaying = false;
             finishDialogue();
             return;
         }
@@ -109,6 +113,7 @@ public class DialogueBox {
             System.out.println("[DialogueBox] Dialogue finished — opening shop.");
         } else {
             gp.GAMESTATE = "play";
+            isPlaying = false;
         }
     }
 

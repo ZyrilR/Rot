@@ -197,7 +197,15 @@ public class GamePanel extends JPanel {
 
                 TileTeleporter tr = CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
                 if (tr != null) {
-                    world.loadMap(tr.getLink(), true);
+                    if (!tr.isInteracted)
+                        tr.interact(this);
+
+                    if (!DIALOGUEBOX.isPlaying) {
+                        System.out.println("YESSSS");
+                        world.loadMap(tr.getLink(), true);
+                        update();
+                    }
+                    System.out.println(DIALOGUEBOX.isPlaying);
                 }
 
                 // E key: interact with the NPC or object the player is facing
