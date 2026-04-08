@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 import static storage.PCSystem.*;
 import static utils.Constants.*;
+import static utils.Directories.*;
 
 public class DataManager {
 
@@ -43,7 +44,7 @@ public class DataManager {
     }
 
     public static void saveNewData(GamePanel gp) {
-        File currentFolder = new File(SAVES);
+        File currentFolder = new File(SAVES.getPath());
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(currentFolder, "saves_config.txt")))) {
             int folders = Integer.parseInt(br.readLine());
@@ -58,7 +59,7 @@ public class DataManager {
     }
 
     private static void saveData(GamePanel gp, int folderID, boolean newFolder) {
-        File currentFolder = new File(SAVES, "/" + folderID);
+        File currentFolder = new File(SAVES.getPath(), "/" + folderID);
         gp.GAMESTATE = "play";
 
         try {

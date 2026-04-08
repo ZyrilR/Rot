@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import items.ItemRegistry;
 
 import static utils.Constants.*;
+import static utils.Directories.WORLD;
 
 
 public class GamePanel extends JPanel {
@@ -54,7 +55,7 @@ public class GamePanel extends JPanel {
         this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(KEYBOARDHANDLER);
 
-        world.loadMap(WORLD, true);
+        world.loadMap(WORLD.getPath(), true);
 
         // ── Seed the PC party with the player's starting team ────────────────
         // In a full game these would be loaded from save data.
@@ -197,15 +198,29 @@ public class GamePanel extends JPanel {
 
                 TileTeleporter tr = CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
                 if (tr != null) {
-                    if (!tr.isInteracted)
+                    if (!tr.isInteracted) {
+                        if (tr.getRole().equalsIgnoreCase("Teleporter")) {
+                            int[] coordinates = CollisionChecker.getPreviousTileCoordinates(player);
+                            player.addTeleports(coordinates[0], coordinates[1], tr.getLinkFrom());
+                        }
                         tr.interact(this);
+                    }
 
                     if (!DIALOGUEBOX.isPlaying) {
-                        System.out.println("YESSSS");
-                        world.loadMap(tr.getLink(), true);
-                        update();
+                        if (tr.isExit && !player.teleports.isEmpty()) {
+                            String link = player.teleports.removeLast();
+                            String[] parts = link.split(";");
+                            String[] coordinates = parts[0].split(",");
+                            world.loadMap(parts[1], true);
+                            int[] coordinatesInt = new int[]{
+                                    Integer.parseInt(coordinates[0]),
+                                    Integer.parseInt(coordinates[1])
+                            };
+                            player.teleport(coordinatesInt);
+                        } else {
+                            world.loadMap(tr.getLinkTo(), true);
+                        }
                     }
-                    System.out.println(DIALOGUEBOX.isPlaying);
                 }
 
                 // E key: interact with the NPC or object the player is facing
@@ -261,8 +276,11 @@ public class GamePanel extends JPanel {
         world.draw(g2);
 
         // NPCs
-        for (NPC npc : world.getInteractiveLayer().getNPCs()) {
-            if (npc != null) npc.draw(g2, this);
+        TileManager tm = world.getInteractiveLayer();
+        if (tm != null) {
+            for (NPC npc : tm.getNPCs()) {
+                if (npc != null) npc.draw(g2, this);
+            }
         }
 
         // Player

@@ -49,44 +49,38 @@ public class TileManager {
     }
 
     public void draw(Graphics2D g2, GamePanel gp) {
-        for (int worldRow = 0; worldRow < MAX_WORLD_ROW; worldRow++) {
-            for (int worldCol = 0; worldCol < MAX_WORLD_COL; worldCol++) {
+        synchronized (this) {
+            for (int worldRow = 0; worldRow < map.length; worldRow++) {
+                for (int worldCol = 0; worldCol < map[0].length; worldCol++) {
 
-                // Access the 2D array: [Row][Col]
-                int tileNum = map[worldRow][worldCol];
+                    // Access the 2D array: [Row][Col]
+                    int tileNum = map[worldRow][worldCol];
 
-                if (tileNum == 0 && (
-                        layerType.equalsIgnoreCase("Interactive") ||
-                        layerType.equalsIgnoreCase("Building") ||
-                        layerType.equalsIgnoreCase("Background")
-                ))
-                    continue;
+                    if (tileNum == 0 && (
+                            layerType.equalsIgnoreCase("Interactive") ||
+                                    layerType.equalsIgnoreCase("Building") ||
+                                    layerType.equalsIgnoreCase("Background")
+                    ))
+                        continue;
 
-                if (tileNum != 0)
-                    tileNum--;
+                    if (tileNum != 0)
+                        tileNum--;
 
-//                if (layerType.equalsIgnoreCase("Background")) {
-//                    tileNum = 0;wasdd
-//                }
+                    // Map indices to coordinates
+                    int worldX = worldCol * TILE_SIZE; // Columns move along X
+                    int worldY = worldRow * TILE_SIZE; // Rows move along Y
 
+                    // Screen position calculation
+                    int screenX = worldX - gp.player.worldX + gp.player.screenX;
+                    int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-//                if (layerType.equalsIgnoreCase("Background"))
-//                    tileNum--;
+                    // Culling and Drawing...
+                    if (worldX + TILE_SIZE > gp.player.worldX - gp.player.screenX &&
+                            worldX - TILE_SIZE < gp.player.worldX + (SCREEN_WIDTH - gp.player.screenX) &&
+                            worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
+                            worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT  - gp.player.screenY)) {
 
-                // Map indices to coordinates
-                int worldX = worldCol * TILE_SIZE; // Columns move along X
-                int worldY = worldRow * TILE_SIZE; // Rows move along Y
-
-                // Screen position calculation
-                int screenX = worldX - gp.player.worldX + gp.player.screenX;
-                int screenY = worldY - gp.player.worldY + gp.player.screenY;
-
-                // Culling and Drawing...
-                if (worldX + TILE_SIZE > gp.player.worldX - gp.player.screenX &&
-                        worldX - TILE_SIZE < gp.player.worldX + (SCREEN_WIDTH - gp.player.screenX) &&
-                        worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
-                        worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT  - gp.player.screenY)) {
-
+//                    =========USED FOR DEBUGGING=========
 //                    if (layerType.equalsIgnoreCase("Background")) {
 //                        if (tileNum >= 0) {
 //                            System.out.println("TILE NUM: " + tileNum);
@@ -101,12 +95,11 @@ public class TileManager {
 //                        }
 //                    } else
 
-                    if (tileNum >= 0) {
-                        if (tileNum < tiles.size()) {
-//                            if (layerType.equalsIgnoreCase("BACKGROUND"))
-//                                tileNum--;
-                            g2.drawImage(tiles.get(tileNum).image, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
-//                            g2.drawImage(tiles.get(3).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                        if (tileNum >= 0) {
+                            int currentSize = tiles.size();
+                            if (tileNum < currentSize) {
+                                g2.drawImage(tiles.get(tileNum).image, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                            }
                         }
                     }
                 }
@@ -135,7 +128,7 @@ public class TileManager {
             int row = 0;
 
             // Continue until we've filled all rows
-            while (row < MAX_WORLD_ROW) {
+            while (row < tile_row) {
                 String line = br.readLine();
 
                 // Safety check: if the file ends early, stop
@@ -146,7 +139,7 @@ public class TileManager {
                 String[] numbers = line.split(",");
 
                 // Fill columns for this specific row
-                for (int col = 0; col < MAX_WORLD_COL; col++) {
+                for (int col = 0; col < tile_col; col++) {
                     // Ensure we don't exceed the number of elements in the text line
                     if (col < numbers.length) {
                         map[row][col] = Integer.parseInt(numbers[col]);
@@ -154,7 +147,7 @@ public class TileManager {
                 }
                 row++;
             }
-            displayMapValues();
+//            displayMapValues();
 
             if (layerType.equalsIgnoreCase("interactive")) {
                 br.readLine();
@@ -172,13 +165,14 @@ public class TileManager {
                         case "NPC" -> npc1 = new NPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
                         case "GYMLEADER" -> npc1 = new GymLeader(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
                         case "GYMMASTER" -> npc1 = new GymMaster(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
-                        case "TELEPORTER" -> {
-                            teleporters.add(new TileTeleporter(parts[5], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), parts[6].split(";")));
+                        case "TELEPORTER", "EXIT" -> {
+                            teleporters.add(new TileTeleporter(parts[5], parts[1], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), parts[6].split(";")));
                         }
                         default -> npc1 = null;
                     };
-
-                    String[] dialogues = parts[5].split(";");
+                    String[] dialogues = new String[]{};
+                    if (parts.length <= 4)
+                        dialogues = parts[4].split(";");
                     if (npc1 != null)
                         npc1.setDialogue(dialogues);
 
@@ -191,8 +185,6 @@ public class TileManager {
             // This will tell you exactly what went wrong (e.g., File Not Found or NullPointer)
             e.printStackTrace();
         }
-//        displayMapValues();
-        System.out.println();
     }
 
     public void loadRoom(int roomNo) {
@@ -279,9 +271,9 @@ public class TileManager {
             System.out.println("ADDED: Decorations " + i + DECORATION_TILES.size());
         }
 
-        int[] NON_COLLIDABLE = new int[]{92, 94, 2};
+        int[] NON_COLLIDABLE = new int[]{92, 94, 2, 107, 64};
 
-        for (int i = 1; i <= 94; i++) {
+        for (int i = 1; i <= 127; i++) {
             if (contains(NON_COLLIDABLE, i))
                 BUILDING_TILES.add(new Tile(loadImage("/res/Buildings/" + i + ".png"), false));
             else
@@ -300,10 +292,6 @@ public class TileManager {
             INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/Interactives/" + i + ".png"), false));
         }
 
-    }
-
-    public void setMap(int[][] map) {
-        this.map = map;
     }
 
     public ArrayList<TileTeleporter> getTeleporters() {

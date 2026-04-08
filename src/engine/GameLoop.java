@@ -47,6 +47,7 @@ public class GameLoop implements Runnable {
                 timer = 0;
             }
         }
+
     }
 
     public void update() {

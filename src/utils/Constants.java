@@ -26,7 +26,7 @@ public class Constants {
     public static final int FPS = 30;
 
     //Player Settings
-    public static final int SPRINT_SPEED = 32;
+    public static final int SPRINT_SPEED = 16;
 
     //Dialogue Settings
     public static final int TEXT_SPEED = 1;
@@ -50,16 +50,12 @@ public class Constants {
     public static final int NAME_LINE_H  = 15;  // line height for wrapped name in desc card
     public static final int DESC_LINE_H  = 13;  // line height for description body text
 
-    //Directories
-    public static final String SAVES = "src/res/Saves";
-    public static final String WORLD = "/res/Worlds/5/";
-    public static final String MARKET = "/res/Rooms/Market/";
-
     //Asset Constants
     public static int[] BUSH_INDEXES = new int[]{2, 16};
 
     //Load Handler
     public static int CURRENT_LOAD = 2;
+    public static int WORLD_USED = 5;
     public static int[] SPAWN_POINT = new int[2];
 
     //Brainrot Descriptions

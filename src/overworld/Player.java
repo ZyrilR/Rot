@@ -4,6 +4,7 @@ import engine.GamePanel;
 import input.KeyboardHandler;
 import items.Inventory;
 import storage.PCSystem;
+import tile.TileTeleporter;
 import utils.AssetManager;
 
 import java.awt.*;
@@ -24,15 +25,8 @@ public class Player {
     public final int screenX, screenY; // where we draw player on screen
     public int speed;
 
-    public void reset() {
-        name = "";
-        worldX = 0;
-        worldY = 0;
-        setRotCoins(0);
-        setDirection("Down");
-        inventory.reset();
-        PCSYSTEM.reset();
-    }
+    //FORMAT: x,y;folder
+    public ArrayList<String> teleports = new ArrayList<>();
 
     private String direction;
     private boolean isMoving;
@@ -62,7 +56,7 @@ public class Player {
         worldY = TILE_SIZE * 24;
         screenX = (SCREEN_WIDTH / 2) - (TILE_SIZE / 2);
         screenY = (SCREEN_HEIGHT / 2) - (TILE_SIZE / 2);
-        speed = 8;
+        speed = 16;
 
         direction = "down";
         walk_up = new ArrayList<>();
@@ -269,7 +263,19 @@ public class Player {
         this.rotCoins = rotCoins;
     }
     public void teleport(int[] coordinates) {
-        worldX = coordinates[0];
-        worldY = coordinates[1];
+        worldX = coordinates[0] * TILE_SIZE;
+        worldY = coordinates[1] * TILE_SIZE;
+    }
+    public void reset() {
+        name = "";
+        worldX = 0;
+        worldY = 0;
+        setRotCoins(0);
+        setDirection("Down");
+        inventory.reset();
+        PCSYSTEM.reset();
+    }
+    public void addTeleports(int x, int y, String link) {
+        teleports.add(x + "," + y + ";" + link);
     }
 }

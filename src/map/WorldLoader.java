@@ -40,23 +40,30 @@ public class WorldLoader {
     }
     public void draw(Graphics2D graphics2D) {
 
+        ArrayList<TileManager> tileManagers = new ArrayList<>(backgroundLayer);
         //Load Background
-        for (TileManager tm : backgroundLayer) {
-            tm.draw(graphics2D, gp);
+        for (TileManager tm : tileManagers) {
+            if (tm != null)
+                tm.draw(graphics2D, gp);
         }
 
+        tileManagers = new ArrayList<>(decorationLayer);
         //Load Decorations
-        for (TileManager tm : decorationLayer) {
-            tm.draw(graphics2D, gp);
+        for (TileManager tm : tileManagers) {
+            if (tm != null)
+                tm.draw(graphics2D, gp);
         }
 
+        tileManagers = new ArrayList<>(buildingLayer);
         //Load Buildings
-        for (TileManager tm : buildingLayer) {
-            tm.draw(graphics2D, gp);
+        for (TileManager tm : tileManagers) {
+            if (tm != null)
+                tm.draw(graphics2D, gp);
         }
 
         //Load Interactive
-        interactiveLayer.draw(graphics2D, gp);
+        if (interactiveLayer != null)
+            interactiveLayer.draw(graphics2D, gp);
 
     }
 
@@ -64,7 +71,7 @@ public class WorldLoader {
 
         // Get Layers (Naming Convention: background_#)
         try {
-            InputStream is = getClass().getResourceAsStream(folderPath + "project_config.txt");
+            InputStream is = getClass().getResourceAsStream(folderPath + "/project_config.txt");
             if (is == null) {
                 System.out.println("Project Configuration: '" + folderPath + "project_config.txt' missing!" );
             }
@@ -85,8 +92,8 @@ public class WorldLoader {
             }
 
             //initialize spawn point
-            SPAWN_POINT[0] = Integer.parseInt(parts[3]) * TILE_SIZE;
-            SPAWN_POINT[1] = Integer.parseInt(parts[4]) * TILE_SIZE;
+            SPAWN_POINT[0] = Integer.parseInt(parts[3]);
+            SPAWN_POINT[1] = Integer.parseInt(parts[4]);
 
             int numOfLayers = Integer.parseInt(parts[0]);
 
@@ -121,7 +128,6 @@ public class WorldLoader {
         }
 
         gp.player.teleport(SPAWN_POINT);
-
     }
 
     public TileManager getInteractiveLayer() {

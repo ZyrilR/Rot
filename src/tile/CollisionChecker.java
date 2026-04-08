@@ -82,6 +82,9 @@ public class CollisionChecker {
                 return;
             }
         }
+
+        if (isTileSolid(gp.getWorldInteractiveLayer(), r1, c1))
+            player.collisionOn = true;
     }
 
     private boolean isTileSolid(TileManager tm, int row, int col) {
@@ -331,5 +334,29 @@ public class CollisionChecker {
             return tm.getTiles().get(actualIndex);
         }
         return null;
+    }
+    public static int[] getPreviousTileCoordinates(Player player) {
+        // 1. Get the player's current center position in grid coordinates
+        int centerX = player.worldX + player.solidArea.x + player.solidArea.width / 2;
+        int centerY = player.worldY + player.solidArea.y + player.solidArea.height / 2;
+
+        int currentRow = centerY / TILE_SIZE;
+        int currentCol = centerX / TILE_SIZE;
+
+        int prevRow = currentRow;
+        int prevCol = currentCol;
+
+        // 2. Determine the tile "behind" the player based on direction
+        // If facing DOWN, the previous tile is UP (-1 row)
+        // If facing UP, the previous tile is DOWN (+1 row)
+        switch (player.getDirection()) {
+            case "up"    -> prevRow = currentRow + 1;
+            case "down"  -> prevRow = currentRow - 1;
+            case "left"  -> prevCol = currentCol + 1;
+            case "right" -> prevCol = currentCol - 1;
+        }
+
+        // Return as [col, row] to match your teleport coordinate system
+        return new int[]{prevCol, prevRow};
     }
 }
