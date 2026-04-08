@@ -14,8 +14,6 @@ public class Main {
         TileManager.loadTiles();
         Constants.InitializeBrainrotDescriptions();
 
-        Constants.CURRENT_LOAD = 1;
-
         JFrame windows = new JFrame();
         windows.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         windows.setResizable(false);

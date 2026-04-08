@@ -71,9 +71,9 @@ public class WorldLoader {
 
         // Get Layers (Naming Convention: background_#)
         try {
-            InputStream is = getClass().getResourceAsStream(folderPath + "/project_config.txt");
+            InputStream is = getClass().getResourceAsStream(folderPath + "project_config.txt");
             if (is == null) {
-                System.out.println("Project Configuration: '" + folderPath + "project_config.txt' missing!" );
+                System.out.println("Project Configuration: " + folderPath + "project_config.txt' missing!" );
             }
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 

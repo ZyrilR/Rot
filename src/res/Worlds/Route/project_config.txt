@@ -1,0 +1,5 @@
+4,75,50,6,68
+Background:BACKGROUND
+Decoration:DECORATION
+Building:BUILDING
+Interactive:INTERACTIVE

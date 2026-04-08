@@ -7,6 +7,5 @@
 0,0,0,0,0,0,0,0,0,0
 26,0,0,0,0,0,0,0,0,0
 [METADATA]
-Bob|MarketNPC|1|1|2||Hello welcome to Rot Marketplace!;Here are items that are currently on shelves!
-Exit|Exit|26|0|7||You are about to exit;Rot Marketplace
-Looping|Teleporter|27|8|0|MARKET~MARKET|This is used to loop
+Narrator|Exit|26|0|7||You are about to exit;Rot Marketplace
+Teleporter|Teleporter|27|8|0|MARKET~MARKET|You are about to enter;a Loop

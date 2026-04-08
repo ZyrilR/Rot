@@ -10,21 +10,23 @@ import static utils.Constants.*;
 import static utils.Directories.*;
 
 public class TileTeleporter extends Tile{
-    //FORMAT PATH: from~to
+    //FORMAT PATH: from~name~to~name
+    private String name;
     private String link;
-    public boolean isExit = false;
 
     private int[] coordinates = new int[2];
     public ArrayList<String> dialogues = new ArrayList<>();
     public boolean isInteracted = false;
 
+    //Name|Role|TileNumber|x|y|from~name~direction|Dialogues
+    //ToRoute132|Teleporter|28|49|13|ROUTE131~TOROUTE132~LEFT|You are about to enter;Route 132
+
     public TileTeleporter () {
         super(null, false, "Teleporter");
     }
-    public TileTeleporter(String link, String role, int x, int y, String[] dialogues) {
+    public TileTeleporter(String name, String link, String role, int x, int y, String[] dialogues) {
         super(null, false, role);
-        if (role.equalsIgnoreCase("Exit"))
-            isExit = true;
+        this.name = name;
         this.link = link;
         Collections.addAll(this.dialogues, dialogues);
         this.coordinates[0] = x;
@@ -34,21 +36,19 @@ public class TileTeleporter extends Tile{
     public String getLink() {
         return link;
     }
-    public String getLinkFrom() {
-        return switch(link.split("~")[0]) {
-            case "WORLD" -> WORLD.getPath();
-            case "MARKET" -> MARKET.getPath();
-            default -> WORLD.getPath();
-        };
-    }
     public String getLinkTo() {
-        return switch(link.split("~")[1]) {
-            case "WORLD" -> WORLD.getPath();
-            case "MARKET" -> MARKET.getPath();
-            default -> WORLD.getPath();
-        };
+        return link.split("~")[0];
+    }
+    public String getLinkToTeleporterName() {
+        return link.split("~")[1];
+    }
+    public String getDirection() {
+        return link.split("~")[2];
     }
 
+    public String getName() {
+        return name;
+    }
     public int[] getCoordinates() {
         return coordinates;
     }

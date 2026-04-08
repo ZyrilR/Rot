@@ -165,9 +165,10 @@ public class TileManager {
                         case "NPC" -> npc1 = new NPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
                         case "GYMLEADER" -> npc1 = new GymLeader(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
                         case "GYMMASTER" -> npc1 = new GymMaster(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
-                        case "TELEPORTER", "EXIT" -> {
-                            teleporters.add(new TileTeleporter(parts[5], parts[1], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), parts[6].split(";")));
-                        }
+                        //0    1     2         3 4         5            6
+                        //Name|Role|TileNumber|x|y|from~name~to~name|Dialogues
+                        //ToRoute132|Teleporter|28|49|13|ROUTE131~TOROUTE132~ROUTE132~TOROUTE131|You are about to enter;Route 132
+                        case "TELEPORTER" -> teleporters.add(new TileTeleporter(parts[0], parts[5], parts[1], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), parts[6].split(";")));
                         default -> npc1 = null;
                     };
                     String[] dialogues = new String[]{};
@@ -235,15 +236,9 @@ public class TileManager {
     }
 
     public static void loadTiles() {
-        //NonCollidable
-        for (int i = 1; i <= 43; i++) {
-            BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/NonCollidable/" + i + ".png")));
-            System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
-        }
-
-        //Collidable
-        for (int i = 44; i <= 67; i++) {
-            BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/Collidable/" + i + ".png"), true));
+        //Tiles
+        for (int i = 1; i <= 320; i++) {
+            BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/" + i + ".png")));
             System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
         }
 

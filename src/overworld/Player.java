@@ -25,9 +25,6 @@ public class Player {
     public final int screenX, screenY; // where we draw player on screen
     public int speed;
 
-    //FORMAT: x,y;folder
-    public ArrayList<String> teleports = new ArrayList<>();
-
     private String direction;
     private boolean isMoving;
     private int moveProgress = 0;
@@ -56,7 +53,7 @@ public class Player {
         worldY = TILE_SIZE * 24;
         screenX = (SCREEN_WIDTH / 2) - (TILE_SIZE / 2);
         screenY = (SCREEN_HEIGHT / 2) - (TILE_SIZE / 2);
-        speed = 16;
+        speed = 32;
 
         direction = "down";
         walk_up = new ArrayList<>();
@@ -274,8 +271,5 @@ public class Player {
         setDirection("Down");
         inventory.reset();
         PCSYSTEM.reset();
-    }
-    public void addTeleports(int x, int y, String link) {
-        teleports.add(x + "," + y + ";" + link);
     }
 }

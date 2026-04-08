@@ -7,6 +7,7 @@ import items.ItemRegistry;
 import overworld.Player;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -42,7 +43,6 @@ public class DataManager {
     public static void saveCurrentLoad(GamePanel gp) {
         saveData(gp, CURRENT_LOAD, false);
     }
-
     public static void saveNewData(GamePanel gp) {
         File currentFolder = new File(SAVES.getPath());
 
@@ -62,12 +62,11 @@ public class DataManager {
         File currentFolder = new File(SAVES.getPath(), "/" + folderID);
         gp.GAMESTATE = "play";
 
-        try {
 
+        try {
             if (newFolder) {
                 currentFolder.mkdir();
             }
-
             File data = new File(currentFolder, "data.txt");
             File img = new File(currentFolder, "screenshot.png");
 
@@ -89,7 +88,7 @@ public class DataManager {
                 "[PLAYER]\n" +
                         plr.name + ";" +
                         plr.worldX + ";" + plr.worldY + ";" +
-                        plr.getRotCoins() + ";" + plr.getDirection() + "\n" + "[INVENTORY]\n";
+                        plr.getRotCoins() + ";" + plr.getDirection() + ";" + gp.CURRENT_PATH + "\n" + "[INVENTORY]\n";
 
         ArrayList<String> names = new ArrayList<>();
 
@@ -131,7 +130,8 @@ public class DataManager {
         gp.player.reset();
         String line;
         String[] parts;
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(SAVES + "/" + slotNo, "data.txt")))) {
+        System.out.println("CURRENT LOAD: " + CURRENT_LOAD);
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(SAVES.getPath() + "/" + slotNo, "data.txt")))) {
 
             //READ FIRST PART
             line = br.readLine();
@@ -142,12 +142,10 @@ public class DataManager {
             parts = line.split(";");
 
             gp.player.name = parts[0];
-            gp.player.worldX = Integer.parseInt(parts[1]);
-            gp.player.worldY = Integer.parseInt(parts[2]);
             gp.player.setRotCoins(Integer.parseInt(parts[3]));
             gp.player.setDirection(parts[4]);
-            System.out.println(line);
             gp.world.loadMap(parts[5], true);
+            gp.player.teleport(new int[]{Integer.parseInt(parts[1])/TILE_SIZE, Integer.parseInt(parts[2])/TILE_SIZE});
             System.out.println("LOADED WORLD 4: " + parts[5]);
 
             //READ SECOND PART
@@ -160,7 +158,6 @@ public class DataManager {
                 String[] item = part.split(";");
                 for (int i = 0; i < Integer.parseInt(item[0]); i++) {
                     gp.player.getInventory().addItem(ItemRegistry.getItem(item[1]));
-//                    System.out.println("LOADED ITEM " + item[1]);
                 }
             }
 

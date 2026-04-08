@@ -23,9 +23,10 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import items.ItemRegistry;
+import utils.Directories;
 
 import static utils.Constants.*;
-import static utils.Directories.WORLD;
+import static utils.Directories.*;
 
 
 public class GamePanel extends JPanel {
@@ -44,8 +45,7 @@ public class GamePanel extends JPanel {
     public final InventoryUI INVENTORYUI = new InventoryUI(this);
 
     public final WorldLoader world = new WorldLoader(this);
-
-    public String path;
+    public String CURRENT_PATH;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -55,7 +55,8 @@ public class GamePanel extends JPanel {
         this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(KEYBOARDHANDLER);
 
-        world.loadMap(WORLD.getPath(), true);
+        world.loadMap(ROUTE131.getPath(), true);
+        CURRENT_PATH = ROUTE131.getPath();
 
         // ── Seed the PC party with the player's starting team ────────────────
         // In a full game these would be loaded from save data.
@@ -196,31 +197,40 @@ public class GamePanel extends JPanel {
                 // Check trainer line-of-sight every tick
                 encounterSystem.checkTrainerLook(player, world.getInteractiveLayer().getNPCs(), this);
 
+                //Check if theres a TileTeleporter in current position
                 TileTeleporter tr = CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
                 if (tr != null) {
+
+                    //If there is, then open dialogue
                     if (!tr.isInteracted) {
-                        if (tr.getRole().equalsIgnoreCase("Teleporter")) {
-                            int[] coordinates = CollisionChecker.getPreviousTileCoordinates(player);
-                            player.addTeleports(coordinates[0], coordinates[1], tr.getLinkFrom());
-                        }
+                        TileTeleporter tile = CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
+                        System.out.println("TILE RIGHT NOW: " + tile.getCoordinates()[0] + "," + tile.getCoordinates()[1]);
+                        System.out.println("PLAYER's POSITION: " + (player.worldX/TILE_SIZE) + "," + (player.worldY/TILE_SIZE));
                         tr.interact(this);
                     }
 
+                    //If dialogue is done
                     if (!DIALOGUEBOX.isPlaying) {
-                        if (tr.isExit && !player.teleports.isEmpty()) {
-                            String link = player.teleports.removeLast();
-                            String[] parts = link.split(";");
-                            String[] coordinates = parts[0].split(",");
-                            world.loadMap(parts[1], true);
-                            int[] coordinatesInt = new int[]{
-                                    Integer.parseInt(coordinates[0]),
-                                    Integer.parseInt(coordinates[1])
-                            };
-                            player.teleport(coordinatesInt);
-                        } else {
-                            world.loadMap(tr.getLinkTo(), true);
+                        String link = tr.getLinkTo();
+                        world.loadMap(Directories.getPath(link), true);
+                        CURRENT_PATH = Directories.getPath(link);
+                        int[] coordinates = new int[2];
+                        for (TileTeleporter tile : getWorldInteractiveLayer().getTeleporters()) {
+                            if (tile != null) {
+                                if (tile.getName().equalsIgnoreCase(tr.getLinkToTeleporterName())) {
+                                    coordinates = tile.getCoordinates().clone();
+                                    switch(tile.getDirection().toUpperCase()) {
+                                        case "LEFT" -> coordinates[0] -= 1;
+                                        case "RIGHT" -> coordinates[0] += 1;
+                                        case "DOWN" -> coordinates[1] -= 1;
+                                        case "UP" -> coordinates[1] += 1;
+                                    }
+                                }
+                            }
                         }
+                        player.teleport(coordinates);
                     }
+
                 }
 
                 // E key: interact with the NPC or object the player is facing
@@ -276,12 +286,12 @@ public class GamePanel extends JPanel {
         world.draw(g2);
 
         // NPCs
-        TileManager tm = world.getInteractiveLayer();
-        if (tm != null) {
-            for (NPC npc : tm.getNPCs()) {
-                if (npc != null) npc.draw(g2, this);
-            }
-        }
+//        TileManager tm = world.getInteractiveLayer();
+//        if (tm != null) {
+//            for (NPC npc : tm.getNPCs()) {
+//                if (npc != null) npc.draw(g2, this);
+//            }
+//        }
 
         // Player
         player.draw(g2);

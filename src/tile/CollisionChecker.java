@@ -292,6 +292,7 @@ public class CollisionChecker {
 
         for (TileTeleporter tt : gp.getWorldInteractiveLayer().getTeleporters()) {
             if (tt.getCoordinates()[1] == row && tt.getCoordinates()[0] == col) {
+                System.out.println("THERE IS");
                 return tt;
             }
         }
