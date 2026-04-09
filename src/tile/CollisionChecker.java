@@ -60,7 +60,20 @@ public class CollisionChecker {
     private void checkCollisionAt(Player player, int r1, int c1, int r2, int c2) {
         // 1. Check Background Layer
         for (TileManager tm : gp.getWorldBackgroundLayer()) {
+            if (isTileSolid(tm, r1, c1)) {
+                System.out.println("Hit ID: " + tm.getMap()[r1][c1] + " at [" + r1 + "][" + c1 + "] in layer: ");
+                player.collisionOn = true;
+                return;
+            }
             if (isTileSolid(tm, r1, c1) || isTileSolid(tm, r2, c2)) {
+                int centerX = player.worldX + player.solidArea.x + player.solidArea.width / 2;
+                int centerY = player.worldY + player.solidArea.y + player.solidArea.height / 2;
+
+                int row = centerY / TILE_SIZE;
+                int col = centerX / TILE_SIZE;
+                System.out.println("COLLIDED !!!");
+                System.out.println("TILE ID: " + tm.getMap()[r1][c1]);
+                System.out.println("POSITION: (" + row + "," + col + ")");
                 player.collisionOn = true;
                 return;
             }
@@ -89,8 +102,9 @@ public class CollisionChecker {
 
     private boolean isTileSolid(TileManager tm, int row, int col) {
         // Bounds check
-        if (row < 0 || row >= MAX_WORLD_ROW || col < 0 || col >= MAX_WORLD_COL) return true;
-
+        if (row < 0 || row >= tm.getMap().length || col < 0 || col >= tm.getMap()[0].length) {
+            return true; // Treat "Out of Bounds" as solid
+        }
         int tileNum = tm.getMap()[row][col];
         if (tileNum == 0) return false; // 0 is empty/transparent
 
