@@ -29,26 +29,31 @@ public class CollisionChecker {
         int col1, col2, row1, row2;
         int speed = player.getCurrentSpeed();
 
+        // Block movement at map borders
         switch (player.getDirection()) {
             case "up":
+                if (playerTopWorldY - speed < 0) { player.collisionOn = true; return; }
                 row1 = (playerTopWorldY - speed) / TILE_SIZE;
                 col1 = playerLeftWorldX / TILE_SIZE;
                 col2 = playerRightWorldX / TILE_SIZE;
                 checkCollisionAt(player, row1, col1, row1, col2);
                 break;
             case "down":
+                if (playerBottomWorldY + speed >= MAX_WORLD_ROW * TILE_SIZE) { player.collisionOn = true; return; }
                 row1 = (playerBottomWorldY + speed) / TILE_SIZE;
                 col1 = playerLeftWorldX / TILE_SIZE;
                 col2 = playerRightWorldX / TILE_SIZE;
                 checkCollisionAt(player, row1, col1, row1, col2);
                 break;
             case "left":
+                if (playerLeftWorldX - speed < 0) { player.collisionOn = true; return; }
                 col1 = (playerLeftWorldX - speed) / TILE_SIZE;
                 row1 = playerTopWorldY / TILE_SIZE;
                 row2 = playerBottomWorldY / TILE_SIZE;
                 checkCollisionAt(player, row1, col1, row2, col1);
                 break;
             case "right":
+                if (playerRightWorldX + speed >= MAX_WORLD_COL * TILE_SIZE) { player.collisionOn = true; return; }
                 col1 = (playerRightWorldX + speed) / TILE_SIZE;
                 row1 = playerTopWorldY / TILE_SIZE;
                 row2 = playerBottomWorldY / TILE_SIZE;
@@ -224,24 +229,28 @@ public class CollisionChecker {
 
         switch (npc.direction) {
             case "up":
+                if (npcTopWorldY - npc.speed < 0) { npc.collisionOn = true; return; }
                 row1 = (npcTopWorldY - npc.speed) / TILE_SIZE;
                 col1 = npcLeftWorldX / TILE_SIZE;
                 col2 = npcRightWorldX / TILE_SIZE;
                 checkNPCCollisionAt(npc, row1, col1, row1, col2);
                 break;
             case "down":
+                if (npcBottomWorldY + npc.speed >= MAX_WORLD_ROW * TILE_SIZE) { npc.collisionOn = true; return; }
                 row1 = (npcBottomWorldY + npc.speed) / TILE_SIZE;
                 col1 = npcLeftWorldX / TILE_SIZE;
                 col2 = npcRightWorldX / TILE_SIZE;
                 checkNPCCollisionAt(npc, row1, col1, row1, col2);
                 break;
             case "left":
+                if (npcLeftWorldX - npc.speed < 0) { npc.collisionOn = true; return; }
                 col1 = (npcLeftWorldX - npc.speed) / TILE_SIZE;
                 row1 = npcTopWorldY / TILE_SIZE;
                 row2 = npcBottomWorldY / TILE_SIZE;
                 checkNPCCollisionAt(npc, row1, col1, row2, col1);
                 break;
             case "right":
+                if (npcRightWorldX + npc.speed >= MAX_WORLD_COL * TILE_SIZE) { npc.collisionOn = true; return; }
                 col1 = (npcRightWorldX + npc.speed) / TILE_SIZE;
                 row1 = npcTopWorldY / TILE_SIZE;
                 row2 = npcBottomWorldY / TILE_SIZE;
