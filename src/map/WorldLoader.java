@@ -1,6 +1,7 @@
 package map;
 
 import engine.GamePanel;
+import npc.NPC;
 import tile.Tile;
 import tile.TileManager;
 
@@ -8,8 +9,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 
-import static utils.Constants.MAX_WORLD_COL;
-import static utils.Constants.MAX_WORLD_ROW;
+import static utils.Constants.*;
 
 public class WorldLoader {
 
@@ -20,10 +20,18 @@ public class WorldLoader {
     Flexible Amount Of Building Tiles
     Only 1 Interactive Layer (Interactive Tiles should not Collide in a single Tile)
      */
+
     private ArrayList<TileManager> backgroundLayer = new ArrayList<>();
     private ArrayList<TileManager> decorationLayer = new ArrayList<>();
     private ArrayList<TileManager> buildingLayer = new ArrayList<>();
     private TileManager interactiveLayer;
+
+    private void resetLayers() {
+        backgroundLayer.clear();
+        decorationLayer.clear();
+        buildingLayer.clear();
+        interactiveLayer = null;
+    }
 
     private GamePanel gp;
 
@@ -32,23 +40,30 @@ public class WorldLoader {
     }
     public void draw(Graphics2D graphics2D) {
 
+        ArrayList<TileManager> tileManagers = new ArrayList<>(backgroundLayer);
         //Load Background
-        for (TileManager tm : backgroundLayer) {
-            tm.draw(graphics2D, gp);
+        for (TileManager tm : tileManagers) {
+            if (tm != null)
+                tm.draw(graphics2D, gp);
         }
 
+        tileManagers = new ArrayList<>(decorationLayer);
         //Load Decorations
-        for (TileManager tm : decorationLayer) {
-            tm.draw(graphics2D, gp);
+        for (TileManager tm : tileManagers) {
+            if (tm != null)
+                tm.draw(graphics2D, gp);
         }
 
+        tileManagers = new ArrayList<>(buildingLayer);
         //Load Buildings
-        for (TileManager tm : buildingLayer) {
-            tm.draw(graphics2D, gp);
+        for (TileManager tm : tileManagers) {
+            if (tm != null)
+                tm.draw(graphics2D, gp);
         }
 
         //Load Interactive
-        interactiveLayer.draw(graphics2D, gp);
+        if (interactiveLayer != null)
+            interactiveLayer.draw(graphics2D, gp);
 
     }
 
@@ -58,7 +73,7 @@ public class WorldLoader {
         try {
             InputStream is = getClass().getResourceAsStream(folderPath + "project_config.txt");
             if (is == null) {
-                System.out.println("Project Configuration: '" + folderPath + "project_config.txt' missing!" );
+                System.out.println("Project Configuration: " + folderPath + "project_config.txt' missing!" );
             }
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
@@ -73,7 +88,12 @@ public class WorldLoader {
             if (initWorldSettings) {
                 MAX_WORLD_ROW = tile_row;
                 MAX_WORLD_COL = tile_col;
+                resetLayers();
             }
+
+            //initialize spawn point
+            SPAWN_POINT[0] = Integer.parseInt(parts[3]);
+            SPAWN_POINT[1] = Integer.parseInt(parts[4]);
 
             int numOfLayers = Integer.parseInt(parts[0]);
 
@@ -107,6 +127,7 @@ public class WorldLoader {
             e.printStackTrace();
         }
 
+        gp.player.teleport(SPAWN_POINT);
     }
 
     public TileManager getInteractiveLayer() {

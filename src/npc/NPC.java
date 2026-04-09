@@ -31,12 +31,12 @@ public class NPC {
         this.name = name;
         worldX = x * TILE_SIZE;
         worldY = y * TILE_SIZE;
-        loadSprites(folderId);
+        loadSprites(folderId + 1);
     }
 
     public void loadSprites(int folderId) {
         for (int i = 1; i <= 5; i++) {
-            sprites.add(AssetManager.loadImage("/res/Sprites/" + folderId + "/" + i + ".png"));
+            sprites.add(AssetManager.loadImage("/res/InteractiveTiles/" + folderId + "/" + i + ".png"));
         }
     }
 

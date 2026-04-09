@@ -7,8 +7,8 @@ import java.util.ArrayList;
  *
  * Scroll asset paths map to /assets/Items/Scroll/scroll_<type>.png
  * Stew  asset paths map to /assets/Items/Stew/stew*.png
- * Antidote asset paths use /assets/Templates/Items/4.png (temp)
- * Capsule  asset paths use /assets/Templates/Items/9.png (temp)
+ * Antidote asset paths use /assets/Templates/Items/HEAVY.png (temp)
+ * Capsule  asset paths use /assets/Templates/Items/SAND.png (temp)
  */
 public class ItemRegistry {
 
@@ -46,7 +46,7 @@ public class ItemRegistry {
         registerItem(new Antidote(
                 "BURN CURE",
                 "A cooling salve that soothes searing burns. Clears the BURN status.",
-                "/res/Templates/Items/4.png", "BURN", 600));
+                "/res/Items/Antidote/BURN.png", "BURN", 600));
 
         registerItem(new Antidote(
                 "SLEEP CURE",

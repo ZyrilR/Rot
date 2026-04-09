@@ -14,8 +14,6 @@ public class Main {
         TileManager.loadTiles();
         Constants.InitializeBrainrotDescriptions();
 
-        Constants.CURRENT_LOAD = 1;
-
         JFrame windows = new JFrame();
         windows.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         windows.setResizable(false);
@@ -26,8 +24,6 @@ public class Main {
         windows.pack();
         windows.setLocationRelativeTo(null);
         windows.setVisible(true);
-
-        DataManager.loadLatestData(gamePanel);
 
         new GameLoop(gamePanel).startGameThread();
     }

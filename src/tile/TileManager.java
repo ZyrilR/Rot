@@ -16,6 +16,7 @@ public class TileManager {
     private String layerType;
     private int map[][];
     private ArrayList<NPC> NPCs = new ArrayList<>();
+    private ArrayList<TileTeleporter> teleporters = new ArrayList<>();
 
     //TileSets
     public static ArrayList<Tile> BACKGROUND_TILES = new ArrayList<>();
@@ -48,43 +49,38 @@ public class TileManager {
     }
 
     public void draw(Graphics2D g2, GamePanel gp) {
-        for (int worldRow = 0; worldRow < MAX_WORLD_ROW; worldRow++) {
-            for (int worldCol = 0; worldCol < MAX_WORLD_COL; worldCol++) {
+        synchronized (this) {
+            for (int worldRow = 0; worldRow < map.length; worldRow++) {
+                for (int worldCol = 0; worldCol < map[0].length; worldCol++) {
 
-                // Access the 2D array: [Row][Col]
-                int tileNum = map[worldRow][worldCol];
+                    // Access the 2D array: [Row][Col]
+                    int tileNum = map[worldRow][worldCol];
 
-                if (tileNum == 0 && (
-                        layerType.equalsIgnoreCase("Interactive") ||
-                        layerType.equalsIgnoreCase("Background")
-                ))
-                    continue;
+                    if (tileNum == 0 && (
+                            layerType.equalsIgnoreCase("Interactive") ||
+                                    layerType.equalsIgnoreCase("Building") ||
+                                    layerType.equalsIgnoreCase("Background")
+                    ))
+                        continue;
 
-                if (tileNum != 0)
-                    tileNum--;
+                    if (tileNum != 0)
+                        tileNum--;
 
-//                if (layerType.equalsIgnoreCase("Background")) {
-//                    tileNum = 0;wasdd
-//                }
+                    // Map indices to coordinates
+                    int worldX = worldCol * TILE_SIZE; // Columns move along X
+                    int worldY = worldRow * TILE_SIZE; // Rows move along Y
 
+                    // Screen position calculation
+                    int screenX = worldX - gp.player.worldX + gp.player.screenX;
+                    int screenY = worldY - gp.player.worldY + gp.player.screenY;
 
-//                if (layerType.equalsIgnoreCase("Background"))
-//                    tileNum--;
+                    // Culling and Drawing...
+                    if (worldX + TILE_SIZE > gp.player.worldX - gp.player.screenX &&
+                            worldX - TILE_SIZE < gp.player.worldX + (SCREEN_WIDTH - gp.player.screenX) &&
+                            worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
+                            worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT  - gp.player.screenY)) {
 
-                // Map indices to coordinates
-                int worldX = worldCol * TILE_SIZE; // Columns move along X
-                int worldY = worldRow * TILE_SIZE; // Rows move along Y
-
-                // Screen position calculation
-                int screenX = worldX - gp.player.worldX + gp.player.screenX;
-                int screenY = worldY - gp.player.worldY + gp.player.screenY;
-
-                // Culling and Drawing...
-                if (worldX + TILE_SIZE > gp.player.worldX - gp.player.screenX &&
-                        worldX - TILE_SIZE < gp.player.worldX + (SCREEN_WIDTH - gp.player.screenX) &&
-                        worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
-                        worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT  - gp.player.screenY)) {
-
+//                    =========USED FOR DEBUGGING=========
 //                    if (layerType.equalsIgnoreCase("Background")) {
 //                        if (tileNum >= 0) {
 //                            System.out.println("TILE NUM: " + tileNum);
@@ -99,12 +95,11 @@ public class TileManager {
 //                        }
 //                    } else
 
-                    if (tileNum >= 0) {
-                        if (tileNum < tiles.size()) {
-//                            if (layerType.equalsIgnoreCase("BACKGROUND"))
-//                                tileNum--;
-                            g2.drawImage(tiles.get(tileNum).image, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
-//                            g2.drawImage(tiles.get(3).img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                        if (tileNum >= 0) {
+                            int currentSize = tiles.size();
+                            if (tileNum < currentSize) {
+                                g2.drawImage(tiles.get(tileNum).image, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+                            }
                         }
                     }
                 }
@@ -133,7 +128,7 @@ public class TileManager {
             int row = 0;
 
             // Continue until we've filled all rows
-            while (row < MAX_WORLD_ROW) {
+            while (row < tile_row) {
                 String line = br.readLine();
 
                 // Safety check: if the file ends early, stop
@@ -144,7 +139,7 @@ public class TileManager {
                 String[] numbers = line.split(",");
 
                 // Fill columns for this specific row
-                for (int col = 0; col < MAX_WORLD_COL; col++) {
+                for (int col = 0; col < tile_col; col++) {
                     // Ensure we don't exceed the number of elements in the text line
                     if (col < numbers.length) {
                         map[row][col] = Integer.parseInt(numbers[col]);
@@ -152,7 +147,7 @@ public class TileManager {
                 }
                 row++;
             }
-            displayMapValues();
+//            displayMapValues();
 
             if (layerType.equalsIgnoreCase("interactive")) {
                 br.readLine();
@@ -160,20 +155,27 @@ public class TileManager {
                 while((line = br.readLine()) != null) {
                     System.out.println(line);
 
-                    String[] npc = line.split("\\|");
+                    String[] parts = line.split("\\|");
 
-                    NPC npc1 = switch (npc[1].toUpperCase()) {
-                        case "TRAINERNPC" -> new TrainerNPC(npc[0], Integer.parseInt(npc[2]), Integer.parseInt(npc[3]), Integer.parseInt(npc[4]));
-                        case "MARKETNPC" -> new MarketNPC(npc[0], Integer.parseInt(npc[2]), Integer.parseInt(npc[3]), Integer.parseInt(npc[4]));
-                        case "NPC" -> new NPC(npc[0], Integer.parseInt(npc[2]), Integer.parseInt(npc[3]), Integer.parseInt(npc[4]));
-                        case "GYMLEADER" -> new GymLeader(npc[0], Integer.parseInt(npc[2]), Integer.parseInt(npc[3]), Integer.parseInt(npc[4]));
-                        case "GYMMASTER" -> new GymMaster(npc[0], Integer.parseInt(npc[2]), Integer.parseInt(npc[3]), Integer.parseInt(npc[4]));
-                        default -> null;
+                    NPC npc1 = null;
+
+                    switch (parts[1].toUpperCase()) {
+                        case "TRAINERNPC" -> npc1 = new TrainerNPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                        case "MARKETNPC" -> npc1 = new MarketNPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                        case "NPC" -> npc1 = new NPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                        case "GYMLEADER" -> npc1 = new GymLeader(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                        case "GYMMASTER" -> npc1 = new GymMaster(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                        //0    1     2         3 4         5            6
+                        //Name|Role|TileNumber|x|y|from~name~to~name|Dialogues
+                        //ToRoute132|Teleporter|28|49|13|ROUTE131~TOROUTE132~ROUTE132~TOROUTE131|You are about to enter;Route 132
+                        case "TELEPORTER" -> teleporters.add(new TileTeleporter(parts[0], parts[5], parts[1], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), parts[6].split(";")));
+                        default -> npc1 = null;
                     };
-
-                    String[] dialogues = npc[5].split(";");
-                    assert npc1 != null;
-                    npc1.setDialogue(dialogues);
+                    String[] dialogues = new String[]{};
+                    if (parts.length <= 4)
+                        dialogues = parts[4].split(";");
+                    if (npc1 != null)
+                        npc1.setDialogue(dialogues);
 
                     NPCs.add(npc1);
                 }
@@ -184,8 +186,6 @@ public class TileManager {
             // This will tell you exactly what went wrong (e.g., File Not Found or NullPointer)
             e.printStackTrace();
         }
-//        displayMapValues();
-        System.out.println();
     }
 
     public void loadRoom(int roomNo) {
@@ -236,20 +236,14 @@ public class TileManager {
     }
 
     public static void loadTiles() {
-        //NonCollidable
-        for (int i = 1; i <= 43; i++) {
-            BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/NonCollidable/" + i + ".png")));
-            System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
-        }
-
-        //Collidable
-        for (int i = 44; i <= 67; i++) {
-            BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/Collidable/" + i + ".png"), true));
+        //Tiles
+        for (int i = 1; i <= 320; i++) {
+            BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/" + i + ".png")));
             System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
         }
 
         //Decorations
-        for (int i = 1; i <= 50; i++) {
+        for (int i = 1; i <= 82; i++) {
             Tile tile = null;
             //if first img = transparent : background : false
             if (i == 1 || i == 3 || (i >= 33 && i <= 38))
@@ -272,23 +266,30 @@ public class TileManager {
             System.out.println("ADDED: Decorations " + i + DECORATION_TILES.size());
         }
 
-        for (int i = 1; i <= 17; i++) {
-            BUILDING_TILES.add(new Tile(loadImage("/res/Buildings/1/" + i + ".png"), true));
+        int[] NON_COLLIDABLE = new int[]{92, 94, 2, 107, 64};
+
+        for (int i = 1; i <= 127; i++) {
+            if (contains(NON_COLLIDABLE, i))
+                BUILDING_TILES.add(new Tile(loadImage("/res/Buildings/" + i + ".png"), false));
+            else
+                BUILDING_TILES.add(new Tile(loadImage("/res/Buildings/" + i + ".png"), true));
             System.out.println("ADDED: Building 1 " + i + BACKGROUND_TILES.size());
         }
 
-        //Market NPC
         for (int i = 1; i <= 5; i++) {
-            INTERACTIVE_TILES.add(new Tile(loadImage("/res/Sprites/1/" + i + ".png"), true));
-            System.out.println("ADDED: Sprite 1 " + i + INTERACTIVE_TILES.size());
+            for (int j = 1; j <= 5; j++) {
+                INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/" + i + "/" + j + ".png"), true));
+                System.out.println("ADDED: Sprite " + i + " " + j + INTERACTIVE_TILES.size());
+            }
         }
 
-        //TrainerNPC
-        for (int i = 1; i <= 5; i++) {
-            INTERACTIVE_TILES.add(new Tile(loadImage("/res/Sprites/2/" + i + ".png"), true));
-            System.out.println("ADDED: Sprite 1 " + i + INTERACTIVE_TILES.size());
+        for (int i = 26; i <= 29; i++) {
+            INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/Interactives/" + i + ".png"), false));
         }
 
     }
 
+    public ArrayList<TileTeleporter> getTeleporters() {
+        return teleporters;
+    }
 }

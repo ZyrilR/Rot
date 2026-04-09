@@ -1,5 +1,7 @@
 package engine;
 
+import brainrots.BrainRotFactory;
+import brainrots.Tier;
 import input.KeyboardHandler;
 import map.WorldLoader;
 import npc.NPC;
@@ -8,7 +10,9 @@ import overworld.EncounterSystem;
 import overworld.Player;
 import storage.PCSystem;
 import tile.CollisionChecker;
+import tile.Tile;
 import tile.TileManager;
+import tile.TileTeleporter;
 import ui.*;
 
 import javax.swing.JPanel;
@@ -21,9 +25,11 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import items.ItemRegistry;
+import utils.Directories;
 import utils.RandomUtil;
 
 import static utils.Constants.*;
+import static utils.Directories.*;
 
 
 public class GamePanel extends JPanel {
@@ -41,10 +47,8 @@ public class GamePanel extends JPanel {
     public final MenuUI MENUUI            = new MenuUI(this);
     public final InventoryUI INVENTORYUI  = new InventoryUI(this);
 
-    public final WorldLoader world        = new WorldLoader(this);
-    public ArrayList<NPC> npcs            = new ArrayList<>();
-
-    public String path;
+    public final WorldLoader world = new WorldLoader(this);
+    public String CURRENT_PATH;
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -54,12 +58,13 @@ public class GamePanel extends JPanel {
         this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(KEYBOARDHANDLER);
 
-        world.loadMap(WORLD, true);
+        world.loadMap(ROUTE131.getPath(), true);
+        CURRENT_PATH = ROUTE131.getPath();
 
         // ── Seed the PC party with the player's starting team ────────────────
         // In a full game these would be loaded from save data.
         // For now we add test members so the PC UI has data to display.
-        seedTestParty();
+//        seedTestParty();
     }
 
 
@@ -71,44 +76,44 @@ public class GamePanel extends JPanel {
      */
     private void seedTestParty() {
         PCSystem PCSYSTEM = player.getPCSYSTEM();
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TUNG TUNG TUNG SAHUR", brainrots.Tier.NORMAL));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TRALALERO TRALALA",    brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BOMBARDINO CROCODILO", brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("CAPUCCINO ASSASSINO",    brainrots.Tier.NORMAL));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.NORMAL));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("UDIN DIN DIN DIN DUN", brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TUNG TUNG TUNG SAHUR", brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.NORMAL));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("UDIN DIN DIN DIN DUN", brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("CAPUCCINO ASSASSINO",    brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TUNG TUNG TUNG SAHUR", brainrots.Tier.NORMAL));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TRALALERO TRALALA",    brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.NORMAL));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TUNG TUNG TUNG SAHUR", brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TRALALERO TRALALA",    brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BOMBARDINO CROCODILO", brainrots.Tier.NORMAL));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BOMBARDINO CROCODILO", brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("UDIN DIN DIN DIN DUN", brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("CAPUCCINO ASSASSINO",    brainrots.Tier.NORMAL));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.NORMAL));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("UDIN DIN DIN DIN DUN", brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("TRALALERO TRALALA",    brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BOMBARDINO CROCODILO", brainrots.Tier.NORMAL));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("CAPUCCINO ASSASSINO",    brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.NORMAL));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("LIRILI LARILA",    brainrots.Tier.DIAMOND));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BRR BRR PATAPIM", brainrots.Tier.GOLD));
-        PCSYSTEM.addBrainRot(brainrots.BrainRotFactory.create("BONECA AMBALABU",    brainrots.Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("CAPUCCINO ASSASSINO",    Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA",    Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BRR BRR PATAPIM", Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BONECA AMBALABU",    Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("UDIN DIN DIN DIN DUN", Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BRR BRR PATAPIM", Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BONECA AMBALABU",    Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("UDIN DIN DIN DIN DUN", Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("CAPUCCINO ASSASSINO",    Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA",    Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BRR BRR PATAPIM", Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BONECA AMBALABU",    Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("UDIN DIN DIN DIN DUN", Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("CAPUCCINO ASSASSINO",    Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA",    Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BRR BRR PATAPIM", Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BONECA AMBALABU",    Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("UDIN DIN DIN DIN DUN", Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA",    Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("CAPUCCINO ASSASSINO",    Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA",    Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BRR BRR PATAPIM", Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BONECA AMBALABU",    Tier.NORMAL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA",    Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BRR BRR PATAPIM", Tier.GOLD));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BONECA AMBALABU",    Tier.NORMAL));
         player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
         player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
         player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
@@ -179,13 +184,44 @@ public class GamePanel extends JPanel {
                 // Update player movement
                 player.update();
 
-                // Update NPCs
-                for (NPC npc : npcs) {
-                    if (npc != null) npc.update(this);
-                }
-
                 // Check trainer line-of-sight every tick
-                encounterSystem.checkTrainerLook(player, npcs, this);
+                encounterSystem.checkTrainerLook(player, world.getInteractiveLayer().getNPCs(), this);
+
+                //Check if theres a TileTeleporter in current position
+                TileTeleporter tr = CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
+                if (tr != null) {
+
+                    //If there is, then open dialogue
+                    if (!tr.isInteracted) {
+                        TileTeleporter tile = CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
+                        System.out.println("TILE RIGHT NOW: " + tile.getCoordinates()[0] + "," + tile.getCoordinates()[1]);
+                        System.out.println("PLAYER's POSITION: " + (player.worldX/TILE_SIZE) + "," + (player.worldY/TILE_SIZE));
+                        tr.interact(this);
+                    }
+
+                    //If dialogue is done
+                    if (!DIALOGUEBOX.isPlaying) {
+                        String link = tr.getLinkTo();
+                        world.loadMap(Directories.getPath(link), true);
+                        CURRENT_PATH = Directories.getPath(link);
+                        int[] coordinates = new int[2];
+                        for (TileTeleporter tile : getWorldInteractiveLayer().getTeleporters()) {
+                            if (tile != null) {
+                                if (tile.getName().equalsIgnoreCase(tr.getLinkToTeleporterName())) {
+                                    coordinates = tile.getCoordinates().clone();
+                                    switch(tile.getDirection().toUpperCase()) {
+                                        case "LEFT" -> coordinates[0] -= 1;
+                                        case "RIGHT" -> coordinates[0] += 1;
+                                        case "DOWN" -> coordinates[1] -= 1;
+                                        case "UP" -> coordinates[1] += 1;
+                                    }
+                                }
+                            }
+                        }
+                        player.teleport(coordinates);
+                    }
+
+                }
 
                 // E key: interact with the NPC or object the player is facing
                 if (KEYBOARDHANDLER.ePressed) {
@@ -242,9 +278,12 @@ public class GamePanel extends JPanel {
         world.draw(g2);
 
         // NPCs
-        for (NPC npc : npcs) {
-            if (npc != null) npc.draw(g2, this);
-        }
+//        TileManager tm = world.getInteractiveLayer();
+//        if (tm != null) {
+//            for (NPC npc : tm.getNPCs()) {
+//                if (npc != null) npc.draw(g2, this);
+//            }
+//        }
 
         // Player
         player.draw(g2);

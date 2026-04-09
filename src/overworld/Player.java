@@ -4,6 +4,7 @@ import engine.GamePanel;
 import input.KeyboardHandler;
 import items.Inventory;
 import storage.PCSystem;
+import tile.TileTeleporter;
 import utils.AssetManager;
 
 import java.awt.*;
@@ -23,16 +24,6 @@ public class Player {
     public int worldX, worldY; // map position
     public final int screenX, screenY; // where we draw player on screen
     public int speed;
-
-    public void reset() {
-        name = "";
-        worldX = 0;
-        worldY = 0;
-        setRotCoins(0);
-        setDirection("Down");
-        inventory.reset();
-        PCSYSTEM.reset();
-    }
 
     private String direction;
     private boolean isMoving;
@@ -62,7 +53,7 @@ public class Player {
         worldY = TILE_SIZE * 24;
         screenX = (SCREEN_WIDTH / 2) - (TILE_SIZE / 2);
         screenY = (SCREEN_HEIGHT / 2) - (TILE_SIZE / 2);
-        speed = 8;
+        speed = 32;
 
         direction = "down";
         walk_up = new ArrayList<>();
@@ -110,22 +101,22 @@ public class Player {
     }
 
     public void loadImage() {
-        walk_down.add(AssetManager.loadImage("/res/Sprites/player/1.png"));
-        walk_down.add(AssetManager.loadImage("/res/Sprites/player/2.png"));
-        walk_down.add(AssetManager.loadImage("/res/Sprites/player/3.png"));
-        walk_up.add(AssetManager.loadImage("/res/Sprites/player/4.png"));
-        walk_up.add(AssetManager.loadImage("/res/Sprites/player/5.png"));
-        walk_up.add(AssetManager.loadImage("/res/Sprites/player/6.png"));
-        walk_right.add(AssetManager.loadImage("/res/Sprites/player/7.png"));
-        walk_right.add(AssetManager.loadImage("/res/Sprites/player/8.png"));
-        walk_right.add(AssetManager.loadImage("/res/Sprites/player/8.png"));
-        walk_right.add(AssetManager.loadImage("/res/Sprites/player/9.png"));
-        walk_right.add(AssetManager.loadImage("/res/Sprites/player/10.png"));
-        walk_left.add(AssetManager.loadImage("/res/Sprites/player/11.png"));
-        walk_left.add(AssetManager.loadImage("/res/Sprites/player/12.png"));
-        walk_left.add(AssetManager.loadImage("/res/Sprites/player/12.png"));
-        walk_left.add(AssetManager.loadImage("/res/Sprites/player/13.png"));
-        walk_left.add(AssetManager.loadImage("/res/Sprites/player/14.png"));
+        walk_down.add(AssetManager.loadImage("/res/InteractiveTiles/player/1.png"));
+        walk_down.add(AssetManager.loadImage("/res/InteractiveTiles/player/2.png"));
+        walk_down.add(AssetManager.loadImage("/res/InteractiveTiles/player/3.png"));
+        walk_up.add(AssetManager.loadImage("/res/InteractiveTiles/player/4.png"));
+        walk_up.add(AssetManager.loadImage("/res/InteractiveTiles/player/5.png"));
+        walk_up.add(AssetManager.loadImage("/res/InteractiveTiles/player/6.png"));
+        walk_right.add(AssetManager.loadImage("/res/InteractiveTiles/player/7.png"));
+        walk_right.add(AssetManager.loadImage("/res/InteractiveTiles/player/8.png"));
+        walk_right.add(AssetManager.loadImage("/res/InteractiveTiles/player/8.png"));
+        walk_right.add(AssetManager.loadImage("/res/InteractiveTiles/player/9.png"));
+        walk_right.add(AssetManager.loadImage("/res/InteractiveTiles/player/10.png"));
+        walk_left.add(AssetManager.loadImage("/res/InteractiveTiles/player/11.png"));
+        walk_left.add(AssetManager.loadImage("/res/InteractiveTiles/player/12.png"));
+        walk_left.add(AssetManager.loadImage("/res/InteractiveTiles/player/12.png"));
+        walk_left.add(AssetManager.loadImage("/res/InteractiveTiles/player/13.png"));
+        walk_left.add(AssetManager.loadImage("/res/InteractiveTiles/player/14.png"));
     }
 
     public void resetSpriteCounter() {
@@ -225,7 +216,7 @@ public class Player {
         }
 
         // Loop through all NPCs
-        for (npc.NPC npc : gp.npcs) {
+        for (npc.NPC npc : gp.getWorldInteractiveLayer().getNPCs()) {
             if (npc != null) {
                 // Find which grid tile the NPC is standing on
                 int npcGridX = npc.worldX / TILE_SIZE;
@@ -267,5 +258,18 @@ public class Player {
     }
     public void setRotCoins(int rotCoins) {
         this.rotCoins = rotCoins;
+    }
+    public void teleport(int[] coordinates) {
+        worldX = coordinates[0] * TILE_SIZE;
+        worldY = coordinates[1] * TILE_SIZE;
+    }
+    public void reset() {
+        name = "";
+        worldX = 0;
+        worldY = 0;
+        setRotCoins(0);
+        setDirection("Down");
+        inventory.reset();
+        PCSYSTEM.reset();
     }
 }
