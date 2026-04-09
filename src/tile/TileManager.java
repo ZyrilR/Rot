@@ -15,6 +15,7 @@ public class TileManager {
     //layerType : {BACKGROUND, DECORATION, BUILDING, INTERACTIVE}
     private String layerType;
     private int map[][];
+    private boolean[][] collisionMap;
     private ArrayList<NPC> NPCs = new ArrayList<>();
     private ArrayList<TileTeleporter> teleporters = new ArrayList<>();
 
@@ -29,6 +30,9 @@ public class TileManager {
 
     public int[][] getMap() {
         return map;
+    }
+    public boolean[][] getCollisionMap() {
+        return collisionMap;
     }
     public ArrayList<Tile> getTiles() {
         return tiles;
@@ -117,6 +121,7 @@ public class TileManager {
     //path : "assets/Worlds/1/decoration.txt"
     public void loadTiles(String path, int tile_row, int tile_col, boolean isCollidable, String layerType) {
         map = new int[tile_row][tile_col];
+        collisionMap = new boolean[tile_row][tile_col];
         try {
             InputStream is = getClass().getResourceAsStream(path);
             if (is == null) {
@@ -145,16 +150,7 @@ public class TileManager {
                         int number = Integer.parseInt(numbers[col]);
                         map[row][col] = number;
                         if (isCollidable && number != 0) {
-                            switch(layerType.toUpperCase()) {
-                                case "BACKGROUND":
-                                    System.out.println("ID NUMBER: " + number);
-                                    System.out.println("COLLISION ON AT " + layerType + ": (" + row + "," + col + ")");
-                                    BACKGROUND_TILES.get(number).setCollision(true);
-                                    break;
-                                case "DECORATION":
-                                    DECORATION_TILES.get(number).setCollision(true);
-                                    break;
-                            }
+                            collisionMap[row][col] = true;
                         }
                     }
                 }

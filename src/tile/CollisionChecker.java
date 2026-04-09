@@ -108,7 +108,13 @@ public class CollisionChecker {
         int tileNum = tm.getMap()[row][col];
         if (tileNum == 0) return false; // 0 is empty/transparent
 
-        // Adjust tileNum (since your logic uses tileNum-- later)
+        // Check per-position collision map
+        boolean[][] collisionMap = tm.getCollisionMap();
+        if (collisionMap != null && collisionMap[row][col]) {
+            return true;
+        }
+
+        // Fall back to tile-level collision (set during tile asset loading)
         int actualIndex = tileNum - 1;
         if (actualIndex >= 0 && actualIndex < tm.getTiles().size()) {
             return tm.getTiles().get(actualIndex).isCollision();
