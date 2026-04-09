@@ -60,6 +60,12 @@ public class Constants {
 
     //Brainrot Handlers
     public static HashMap<String, String> BRAINROT_DESCRIPTIONS = new HashMap<>();
+    public static int[][] SPAWNER_INDEXES = new int[][] {
+            //GRASS_TYPE
+            {2,},
+            //ROCK_TYPE
+            {}
+    };
 
     //Brainrot Attributes
     public static final int MAX_SPEED = 100;
