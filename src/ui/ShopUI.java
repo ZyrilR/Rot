@@ -154,6 +154,7 @@ public class ShopUI {
         }
 
         gp.player.spendRotCoins(price);
+        progression.QuestSystem.getInstance().onCoinsSpent(price);
         statusMessage = "Bought " + item.getName() + " for " + price + "!";
         statusTimer   = STATUS_TICKS;
         System.out.println("[ShopUI] Purchased: " + item.getName()

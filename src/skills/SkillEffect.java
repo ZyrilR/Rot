@@ -1,6 +1,7 @@
 package skills;
 
 import brainrots.BrainRot;
+import progression.QuestSystem;
 import utils.RandomUtil;
 
 /**
@@ -37,6 +38,8 @@ public class SkillEffect {
                 if (!target.hasStatus("CONFUSE")) {
                     target.setStatus("CONFUSE");
                     System.out.println(target.getName() + " became Confused!");
+                    // Din Overload achievement
+                    QuestSystem.getInstance().onConfusionInflicted();
                 }
                 break;
 

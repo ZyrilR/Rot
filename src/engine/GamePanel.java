@@ -46,6 +46,8 @@ public class GamePanel extends JPanel {
     public final PCUI     PCUI            = new PCUI(this, player.getPCSYSTEM());
     public final MenuUI MENUUI            = new MenuUI(this);
     public final InventoryUI INVENTORYUI  = new InventoryUI(this);
+    public final QuestUI    QUESTUI    = new QuestUI(this);
+    public final QuestToast QUESTTOAST = new QuestToast();
 
     public final WorldLoader world = new WorldLoader(this);
     public String CURRENT_PATH;
@@ -65,6 +67,7 @@ public class GamePanel extends JPanel {
         // In a full game these would be loaded from save data.
         // For now we add test members so the PC UI has data to display.
 //        seedTestParty();
+        testQuests();
     }
 
 
@@ -165,6 +168,35 @@ public class GamePanel extends JPanel {
 
     }
 
+    private void testQuests() {
+        progression.QuestSystem qs = progression.QuestSystem.getInstance();
+
+        // Boolean completions
+        qs.complete("SPEED_DEMON");
+        qs.complete("FLAWLESS_VICTORY");
+        qs.complete("CLUTCH_KING");
+        qs.complete("LEVEL_GRINDER");
+        qs.complete("MAX_POTENTIAL");
+        qs.complete("SKILL_COLLECTOR");
+        qs.complete("SNEAKER_WAVE");
+        qs.complete("TIRE_FIRE");
+        qs.complete("PAYLOAD_DELIVERED");
+        qs.complete("STOMPING_GROUNDS");
+        qs.complete("TIME_BREAKER");
+
+        // Counter-based
+        for (int i = 0; i < 10; i++) qs.increment("ITEM_ADDICT");
+        for (int i = 0; i < 2;  i++) qs.increment("DIN_OVERLOAD");
+        for (int i = 0; i < 19; i++) qs.increment("DRUM_NEVER_STOPS");
+        qs.increment("BIG_SPENDER", 9035);
+
+        // Hidden
+        qs.complete("WHATS_IN_THE_BOX");
+        qs.complete("BRAIN_FULLY_ROT");
+
+        System.out.println("[DEV] All quests force-completed for testing.");
+    }
+
     // ── Layer accessors ───────────────────────────────────────────────────────
     public ArrayList<TileManager> getWorldBackgroundLayer() {
         return world.getBackgroundLayer();
@@ -260,6 +292,10 @@ public class GamePanel extends JPanel {
                INVENTORYUI.update();
                break;
 
+            case "QUESTS":
+                QUESTUI.update();
+                break;
+
             default:
                 break;
         }
@@ -305,9 +341,13 @@ public class GamePanel extends JPanel {
             case "inventory":
                 INVENTORYUI.draw(g2);
                 break;
-
+            case "quests":
+                QUESTUI.draw(g2);
+                break;
         }
 
+        QUESTTOAST.update();
+        QUESTTOAST.draw(g2);
         g2.dispose();
     }
 

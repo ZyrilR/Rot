@@ -24,6 +24,7 @@ public class MenuUI {
     private enum MenuItem {
         BACKPACK  ("BACKPACK"),
         BRAINROTS ("BRAINROTS"),
+        QUESTS    ("QUESTS"),
         SAVE      ("SAVE"),
         SAVENEWSLOT      ("SAVENEW"),
         LOAD      ("LOAD"),
@@ -102,6 +103,11 @@ public class MenuUI {
                 gp.PCUI.open();
                 System.out.println("[MenuUI] Opening BrainRots (PC).");
             }
+            case QUESTS -> {
+                gp.QUESTUI.open();
+                gp.GAMESTATE = "quests";
+                System.out.println("[MenuUI] Opening Quests.");
+            }
             case SAVE -> {
                 DataManager.saveCurrentLoad(gp);
                 gp.GAMESTATE = "play";
@@ -121,6 +127,7 @@ public class MenuUI {
                 System.out.println("[MenuUI] Exiting.");
                 System.exit(0);
             }
+
         }
     }
 
