@@ -1,6 +1,6 @@
 6,30,70,3,26
-Background2:BACKGROUND
 Background:BACKGROUND
+Background2:BACKGROUND
 Wall_Collision:BACKGROUND
 Decoration:DECORATION
 Building:BUILDING
