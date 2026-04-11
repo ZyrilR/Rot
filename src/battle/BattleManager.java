@@ -31,17 +31,15 @@ public class BattleManager {
     private List<LevelUpResult> levelUpResults = new java.util.ArrayList<>();
 
     // ── Per-battle achievement flags ──────────────────────────────────────────
-    private boolean enemyActedThisBattle       = false;
-    private boolean playerTookDamageThisBattle  = false;
-    private boolean timelineRotUsedThisBattle   = false;
-    private boolean usedOnlyGrassRockMoves      = true;  // flipped false if other move used
-    private int     playerMinHP;                          // tracks lowest HP reached
-    private int     itemsUsedThisBattle         = 0;
-    private Skill   lastPlayerSkillUsed         = null;  // skill that landed killing blow
+    private boolean enemyActedThisBattle      = false;
+    private boolean playerTookDamageThisBattle = false;
+    private boolean noItemsUsedThisBattle      = true;
+    private int     playerMinHP;
+    private int     itemsUsedThisBattle        = 0;
 
-    // Trainer battle context for Imposter achievement
-    private boolean isTrainerBattle   = false;
-    private String  trainerLeadType   = null;
+    // Trainer context for Imposter quest
+    private boolean isTrainerBattle  = false;
+    private String  trainerLeadType  = null;
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
@@ -91,21 +89,6 @@ public class BattleManager {
 
         System.out.println(playerRot.getName() + " used " + skill.getName() + "!");
 
-        // Track for Stomping Grounds — Patapim must only use GRASS or ROCK
-        if (playerRot.getName().equalsIgnoreCase("BRR BRR PATAPIM")) {
-            SkillType t = skill.getType();
-            if (t != SkillType.GRASS && t != SkillType.ROCK) {
-                usedOnlyGrassRockMoves = false;
-            }
-        }
-
-        // Track Timeline Rot for Time Breaker
-        if (skill.getName().equalsIgnoreCase("Timeline Rot")) {
-            timelineRotUsedThisBattle = true;
-        }
-
-        lastPlayerSkillUsed = skill;
-
         if (skill.getPower() > 0) {
             int dmg = DamageCalculator.calculate(skill, playerRot, enemyRot);
             enemyRot.takeDamage(dmg);
@@ -142,6 +125,7 @@ public class BattleManager {
      * Register an item used during battle for Potion Hoarder tracking.
      */
     public void registerItemUsed() {
+        noItemsUsedThisBattle = false;
         itemsUsedThisBattle++;
         if (itemsUsedThisBattle >= 5) {
             QuestSystem.getInstance().onBattleItemThreshold();
@@ -205,7 +189,7 @@ public class BattleManager {
             System.out.println(enemyRot.getName() + " fainted! Player wins!");
             result = BattleResult.PLAYER_WIN;
             awardXp();
-            fireWinAchievements();
+            fireWinQuests();
         } else if (playerRot.isFainted()) {
             System.out.println(playerRot.getName() + " fainted! Enemy wins!");
             result = BattleResult.ENEMY_WIN;
@@ -213,18 +197,16 @@ public class BattleManager {
         }
     }
 
-    private void fireWinAchievements() {
+    private void fireWinQuests() {
         QuestSystem.getInstance().onBattleWon(
                 playerRot,
                 enemyRot,
                 enemyActedThisBattle,
                 playerTookDamageThisBattle,
                 playerMinHP,
-                lastPlayerSkillUsed,
-                usedOnlyGrassRockMoves,
+                noItemsUsedThisBattle,
                 isTrainerBattle,
-                trainerLeadType,
-                timelineRotUsedThisBattle
+                trainerLeadType
         );
     }
 

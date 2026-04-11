@@ -17,13 +17,14 @@ import static utils.Constants.*;
  * Full-screen quest browser overlay.
  *
  * Layout:
- *   Left panel  — selected quest image + name + description + progress
- *   Right panel — scrollable list of all 30 quests (sorted by difficulty)
+ *   Left panel  — selected quest image + name + description + progress + reward
+ *   Right panel — scrollable list of all 30 quests sorted by difficulty
  *   Status bar  — nav hints
  *
  * Controls:
  *   W / S   — move cursor
- *   ESC     — close (back to menu)
+ *   ENTER   — claim reward (if completed and unclaimed)
+ *   ESC     — close
  */
 public class QuestUI {
 
@@ -31,6 +32,8 @@ public class QuestUI {
     private int  cursor        = 0;
     private int  scrollOffset  = 0;
     private int  inputCooldown = 0;
+
+    private String statusMessage = "";
 
     private final Map<String, BufferedImage> imgCache = new HashMap<>();
 
@@ -45,6 +48,7 @@ public class QuestUI {
     public void open() {
         cursor        = 0;
         scrollOffset  = 0;
+        statusMessage = "";
         inputCooldown = INPUT_DELAY * 2;
         System.out.println("[QuestUI] Opened.");
     }
@@ -60,11 +64,33 @@ public class QuestUI {
         if (gp.KEYBOARDHANDLER.upPressed && cursor > 0) {
             cursor--;
             clampScroll(computeVisibleCount());
+            statusMessage = "";
             inputCooldown = INPUT_DELAY;
-        } else if (gp.KEYBOARDHANDLER.downPressed && cursor < size - 1) {
+            return;
+        }
+        if (gp.KEYBOARDHANDLER.downPressed && cursor < size - 1) {
             cursor++;
             clampScroll(computeVisibleCount());
+            statusMessage = "";
             inputCooldown = INPUT_DELAY;
+            return;
+        }
+
+        if (gp.KEYBOARDHANDLER.enterPressed) {
+            gp.KEYBOARDHANDLER.enterPressed = false;
+            if (!all.isEmpty()) {
+                Quest sel = all.get(cursor);
+                if (sel.isCompleted() && !sel.isRewardClaimed()) {
+                    QuestSystem.getInstance().claimReward(sel.getId(), gp);
+                    statusMessage = "[ Reward claimed! ]";
+                } else if (sel.isCompleted() && sel.isRewardClaimed()) {
+                    statusMessage = "[ Already claimed ]";
+                } else {
+                    statusMessage = "[ Quest not completed yet ]";
+                }
+            }
+            inputCooldown = INPUT_DELAY;
+            return;
         }
 
         if (gp.KEYBOARDHANDLER.escPressed) {
@@ -142,7 +168,7 @@ public class QuestUI {
 
         // Image card
         int imgCardY = bodyY + 8;
-        int imgCardH = 160;
+        int imgCardH = 150;
         drawCard(g2, panelX, imgCardY, panelW, imgCardH, 8);
 
         if (sel != null) {
@@ -155,7 +181,7 @@ public class QuestUI {
                 drawCentred(g2, base, panelX, imgCardY, panelW, imgCardH, "[img]");
         }
 
-        // Detail card
+        // Detail card — fills remaining space
         int detCardY = imgCardY + imgCardH + 6;
         int detCardH = panelBottom - detCardY;
         if (detCardH < 24) return;
@@ -168,7 +194,7 @@ public class QuestUI {
 
         int tx = panelX + 14;
         int tw = panelW - 20;
-        int ty = detCardY + 25;
+        int ty = detCardY + 24;
 
         // Name
         g2.setFont(base.deriveFont(Font.BOLD, 13f));
@@ -180,15 +206,11 @@ public class QuestUI {
         g2.setFont(base.deriveFont(10f));
         ty = drawWordWrapped(g2, g2.getFontMetrics(),
                 sel.getDisplayDescription(), tx, ty, tw, 13, new Color(88, 84, 76));
-        ty += 4;
+        ty += 2;
 
         // Progress
-        if (sel.isCompleted()) {
-            g2.setFont(base.deriveFont(Font.BOLD, 10f));
-            g2.setColor(new Color(60, 180, 80));
-            g2.drawString("COMPLETE", tx, ty + 10);
-        } else if (sel.isCounterBased()) {
-            int barW = tw - 8, barH = 10;
+        if (sel.isCounterBased() && !sel.isCompleted()) {
+            int barW = tw - 8, barH = 8;
             g2.setColor(new Color(200, 196, 186));
             g2.fillRoundRect(tx, ty, barW, barH, 3, 3);
             int fillW = (int)(barW * sel.getProgressFraction());
@@ -198,11 +220,35 @@ public class QuestUI {
             }
             g2.setColor(new Color(160, 155, 145));
             g2.drawRoundRect(tx, ty, barW, barH, 3, 3);
-            ty += barH + 16;
-
+            ty += barH + 14;
             g2.setFont(base.deriveFont(9f));
             g2.setColor(new Color(100, 96, 90));
             g2.drawString(sel.getProgressText(), tx, ty);
+            ty += 14;
+        }
+
+        // Divider before reward
+        g2.setColor(new Color(200, 195, 180));
+        g2.drawLine(tx, ty, tx + tw, ty);
+        ty += 18;
+
+        // Reward label
+        g2.setFont(base.deriveFont(Font.BOLD, 10f));
+        g2.setColor(new Color(120, 116, 108));
+        g2.drawString("REWARD", tx, ty);
+        ty += 16;
+
+        // Reward value
+        g2.setFont(base.deriveFont(Font.BOLD, 11f));
+        ty = drawWordWrapped(g2, g2.getFontMetrics(),
+                sel.getRewardText(), tx, ty, tw, 14, new Color(216, 184, 88));
+        ty += 2;
+
+        // Claim hint
+        if (sel.isCompleted() && !sel.isRewardClaimed()) {
+            g2.setFont(base.deriveFont(9f));
+            g2.setColor(new Color(60, 180, 80));
+            g2.drawString("Press ENTER to claim", tx, ty);
         }
 
         g2.setClip(prev);
@@ -263,13 +309,19 @@ public class QuestUI {
                         RenderingHints.VALUE_ANTIALIAS_DEFAULT);
             }
 
-            // Completion dot
+            // Status dot
             int dotX = listX + 14;
             int dotY = rowTop + ROW_H / 2 - 4;
-            if (q.isCompleted()) {
+            if (q.isCompleted() && q.isRewardClaimed()) {
+                // Green — fully done
                 g2.setColor(new Color(60, 180, 80));
                 g2.fillOval(dotX, dotY, 8, 8);
+            } else if (q.isCompleted()) {
+                // Gold — completed, reward not claimed
+                g2.setColor(new Color(216, 184, 88));
+                g2.fillOval(dotX, dotY, 8, 8);
             } else {
+                // Empty — not done
                 g2.setColor(new Color(180, 175, 165));
                 g2.drawOval(dotX, dotY, 8, 8);
             }
@@ -283,18 +335,24 @@ public class QuestUI {
             g2.drawString(truncate(q.getDisplayName(), g2.getFontMetrics(), nameMaxW),
                     listX + 28, textY);
 
-            // Progress / Done label right-aligned
-            if (q.isCounterBased() && !q.isCompleted()) {
+            // Right-side label
+            g2.setFont(base.deriveFont(Font.BOLD, 9f));
+            FontMetrics fm = g2.getFontMetrics();
+            if (q.isCompleted() && !q.isRewardClaimed()) {
+                // Gold CLAIM
+                g2.setColor(new Color(216, 184, 88));
+                g2.drawString("CLAIM", listX + listW - fm.stringWidth("CLAIM") - 6, textY);
+            } else if (q.isCompleted()) {
+                // Green Done
+                g2.setColor(new Color(60, 180, 80));
+                g2.drawString("DONE", listX + listW - fm.stringWidth("DONE") - 6, textY);
+            } else if (q.isCounterBased()) {
+                // Progress counter
                 g2.setFont(base.deriveFont(9f));
-                FontMetrics fm = g2.getFontMetrics();
+                fm = g2.getFontMetrics();
                 String prog = q.getProgressText();
                 g2.setColor(new Color(100, 96, 90));
                 g2.drawString(prog, listX + listW - fm.stringWidth(prog) - 6, textY);
-            } else if (q.isCompleted()) {
-                g2.setFont(base.deriveFont(9f));
-                FontMetrics fm = g2.getFontMetrics();
-                g2.setColor(new Color(60, 180, 80));
-                g2.drawString("Complete", listX + listW - fm.stringWidth("Complete") - 6, textY);
             }
 
             if (i < endIdx - 1) {
@@ -306,6 +364,7 @@ public class QuestUI {
 
         g2.setClip(prev);
 
+        // Scroll hints
         g2.setFont(base.deriveFont(9f));
         g2.setColor(new Color(140, 136, 128));
         int arrowX = listX + listW / 2;
@@ -326,13 +385,19 @@ public class QuestUI {
         g2.setColor(new Color(215, 210, 200));
         g2.fillRoundRect(barX, statusBarY, barW, STATUS_BAR_H, 5, 5);
 
-        String hint = "WS Move   ESC Close";
+        // Nav hints right
+        String hint = "WS Move  ENT Claim  ESC Close";
         g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(120, 116, 108));
         FontMetrics fm = g2.getFontMetrics();
-        g2.drawString(hint,
-                barX + barW - 12 - fm.stringWidth(hint),
-                statusBarY + 25);
+        g2.drawString(hint, barX + barW - 12 - fm.stringWidth(hint), statusBarY + 25);
+
+        // Status message left
+        if (!statusMessage.isEmpty()) {
+            g2.setFont(base.deriveFont(10f));
+            g2.setColor(new Color(44, 44, 42));
+            g2.drawString(statusMessage, barX + 14, statusBarY + 25);
+        }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

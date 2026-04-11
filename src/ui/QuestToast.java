@@ -81,14 +81,14 @@ public class QuestToast {
         // Header label
         g2.setFont(base.deriveFont(Font.BOLD, 8f));
         g2.setColor(new Color(216, 184, 88));
-        g2.drawString("Quest Completed!", toastX + IMG_SIZE + 16, toastY + 16);
+        g2.drawString("Quest Completed!", toastX + IMG_SIZE + 18, toastY + 22);
 
         // Quest name
         g2.setFont(base.deriveFont(Font.BOLD, 11f));
         g2.setColor(new Color(241, 239, 232));
         FontMetrics fm = g2.getFontMetrics();
         String name = truncate(current.getName(), fm, TOAST_W - IMG_SIZE - 24);
-        g2.drawString(name, toastX + IMG_SIZE + 16, toastY + 34);
+        g2.drawString(name, toastX + IMG_SIZE + 18, toastY + 38);
 
         // Quest image
         if (cachedImg == null) {

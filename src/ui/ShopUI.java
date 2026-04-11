@@ -142,20 +142,20 @@ public class ShopUI {
         int price = item.getPrice();
 
         if (gp.player.getRotCoins() < price) {
-            statusMessage = "Not enough coins! Need " + price;
+            setStatus("Not enough coins! Need " + price);
             statusTimer   = STATUS_TICKS;
             return;
         }
 
         if (!gp.player.getInventory().addItem(item)) {
-            statusMessage = "Inventory is full!";
+            setStatus("Inventory is full!");
             statusTimer   = STATUS_TICKS;
             return;
         }
 
         gp.player.spendRotCoins(price);
         progression.QuestSystem.getInstance().onCoinsSpent(price);
-        statusMessage = "Bought " + item.getName() + " for " + price + "!";
+        setStatus("Bought " + item.getName() + " for " + price + "!");
         statusTimer   = STATUS_TICKS;
         System.out.println("[ShopUI] Purchased: " + item.getName()
                 + " | Remaining: " + gp.player.getRotCoins());
@@ -445,7 +445,7 @@ public class ShopUI {
             g2.setFont(base.deriveFont(10f));
             FontMetrics mfm = g2.getFontMetrics();
             g2.setColor(new Color(44, 44, 42));
-            g2.drawString(truncate(statusMessage, mfm, barW / 2 - 12),
+            g2.drawString(truncate(statusMessage, mfm, barW),
                     barX + 14,
                     statusBarY + (statusBarH - mfm.getHeight()) / 2 + mfm.getAscent());
         }
@@ -514,5 +514,11 @@ public class ShopUI {
         if (path == null || path.isEmpty()) return null;
         String key = path.startsWith("/") ? path : "/" + path;
         return imgCache.computeIfAbsent(key, AssetManager::loadImage);
+    }
+
+    private void setStatus(String msg) {
+        statusMessage = "[ " + msg + " ]";
+        statusTimer   = STATUS_TICKS;
+        System.out.println("[InventoryUI] " + msg);
     }
 }

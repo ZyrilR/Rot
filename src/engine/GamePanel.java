@@ -171,30 +171,53 @@ public class GamePanel extends JPanel {
     private void testQuests() {
         progression.QuestSystem qs = progression.QuestSystem.getInstance();
 
-        // Boolean completions
+        // Boolean completions (valid)
         qs.complete("SPEED_DEMON");
         qs.complete("FLAWLESS_VICTORY");
-        qs.complete("CLUTCH_KING");
-        qs.complete("LEVEL_GRINDER");
-        qs.complete("MAX_POTENTIAL");
+        qs.complete("NO_HEALS");
+        qs.complete("OVERKILL");
+
+        qs.complete("FIRST_CATCH");
+        qs.complete("DIAMOND_MIND");
+        qs.complete("FULL_ROSTER");
+        qs.complete("ORGANIZED");
+
         qs.complete("SKILL_COLLECTOR");
-        qs.complete("SNEAKER_WAVE");
-        qs.complete("TIRE_FIRE");
-        qs.complete("PAYLOAD_DELIVERED");
-        qs.complete("STOMPING_GROUNDS");
-        qs.complete("TIME_BREAKER");
 
-        // Counter-based
+        qs.complete("VARIETY_PACK");
+
+        // Counter-based (valid)
         for (int i = 0; i < 10; i++) qs.increment("ITEM_ADDICT");
-        for (int i = 0; i < 2;  i++) qs.increment("DIN_OVERLOAD");
-        for (int i = 0; i < 19; i++) qs.increment("DRUM_NEVER_STOPS");
-        qs.increment("BIG_SPENDER", 9035);
+        qs.increment("BIG_SPENDER", 9000);
 
-        // Hidden
-        qs.complete("WHATS_IN_THE_BOX");
+        for (int i = 0; i < 4; i++) qs.increment("GROWING_COLLECTION");
+
+        for (int i = 0; i < 10; i++) {
+            qs.increment("THE_ETERNAL_DRUM");
+            qs.increment("FRESH_KICKS");
+            qs.increment("KING_OF_THE_JUNGLE");
+            qs.increment("BURNOUT");
+            qs.increment("LAST_DROP");
+        }
+        for (int i = 0; i < 5; i++) {
+            qs.increment("AGAINST_THE_CLOCK");
+            qs.increment("KING_OF_THE_JUNGLE");
+            qs.increment("BURNOUT");
+            qs.increment("FREQUENCY_DETECTED");
+            qs.increment("LAST_DROP");
+        }
+        for (int i = 0; i < 4; i++) {
+            qs.increment("THE_ETERNAL_DRUM");
+            qs.increment("AGAINST_THE_CLOCK");
+            qs.increment("KING_OF_THE_JUNGLE");
+            qs.increment("BURNOUT");
+        }
+
+        // Hidden (valid)
+        qs.complete("ITEM_HOARDER");
         qs.complete("BRAIN_FULLY_ROT");
 
-        System.out.println("[DEV] All quests force-completed for testing.");
+        System.out.println("[DEV] Quests force-completed for testing.");
     }
 
     // ── Layer accessors ───────────────────────────────────────────────────────

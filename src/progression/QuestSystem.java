@@ -1,25 +1,27 @@
 package progression;
 
 import brainrots.BrainRot;
+import brainrots.BrainRotFactory;
+import brainrots.BrainRotRegistry;
+import brainrots.Tier;
+import engine.GamePanel;
+import items.ItemRegistry;
+import progression.Quest.RewardType;
 import skills.Skill;
-import skills.SkillType;
+import utils.RandomUtil;
 
 import java.util.*;
 
 /**
  * Central manager for all 30 quests.
  *
- * Usage:
- *   QuestSystem.getInstance().complete("SPEED_DEMON");
- *   QuestSystem.getInstance().increment("ITEM_ADDICT");
- *
  * Hook points:
- *   BattleManager   → battle flags
- *   CaptureManager  → capture events
- *   PCSystem        → party/box events
- *   ShopUI          → spend events
- *   InventoryUI     → item use events
- *   BrainRot        → level up events
+ *   BattleManager  → onBattleWon(), onBattleLost(), onDamageDealt(), onBrainRotWin()
+ *   CaptureManager → onCapture()
+ *   PCSystem       → onPartySizeChanged(), onBoxSlotSet()
+ *   ShopUI         → onCoinsSpent()
+ *   InventoryUI    → onItemUsed(), onBattleItemThreshold()
+ *   BrainRot       → onLevelUp()
  */
 public class QuestSystem {
 
@@ -34,202 +36,249 @@ public class QuestSystem {
 
     // ── Storage ───────────────────────────────────────────────────────────────
 
-    private final List<Quest>         ordered   = new ArrayList<>();
-    private final Map<String, Quest>  registry  = new LinkedHashMap<>();
-    private final Queue<Quest>        toastQueue = new LinkedList<>();
+    private final List<Quest>        ordered    = new ArrayList<>();
+    private final Map<String, Quest> registry   = new LinkedHashMap<>();
+    private final Queue<Quest>       toastQueue = new LinkedList<>();
 
     // ── Persistent counters ───────────────────────────────────────────────────
 
-    private int            totalCoinsSpent    = 0;
-    private int            totalItemsUsed     = 0;
-    private int            tungTungWins       = 0;
-    private int            consecutiveLosses  = 0;
-    private int            totalConfusionHits = 0;
-    private int            timelineRotBattles = 0;
-    private int            captureCount       = 0;
-    private final Set<String> capturedNames   = new HashSet<>();
-    private final Set<String> categoriesUsed  = new HashSet<>();
+    private int               totalCoinsSpent   = 0;
+    private int               totalItemsUsed    = 0;
+    private int               captureCount      = 0;
+    private int               consecutiveLosses = 0;
+    private final Set<String> capturedNames     = new HashSet<>();
+    private final Set<String> categoriesUsed    = new HashSet<>();
+
+    // Per-BrainRot win counters — key = BrainRot name uppercase
+    private final Map<String, Integer> rotWins = new HashMap<>();
+
+    // ── BrainRot name → quest ID map ─────────────────────────────────────────
+    private static final Map<String, String> ROT_QUEST_ID = new LinkedHashMap<>();
+    static {
+        ROT_QUEST_ID.put("TUNG TUNG TUNG SAHUR",  "THE_ETERNAL_DRUM");
+        ROT_QUEST_ID.put("TRALALERO TRALALA",      "FRESH_KICKS");
+        ROT_QUEST_ID.put("BOMBARDINO CROCODILO",   "SORTIE");
+        ROT_QUEST_ID.put("LIRILI LARILA",          "AGAINST_THE_CLOCK");
+        ROT_QUEST_ID.put("BRR BRR PATAPIM",        "KING_OF_THE_JUNGLE");
+        ROT_QUEST_ID.put("BONECA AMBALABU",        "BURNOUT");
+        ROT_QUEST_ID.put("UDIN DIN DIN DIN DUN",   "FREQUENCY_DETECTED");
+        ROT_QUEST_ID.put("CAPUCCINO ASSASSINO",    "LAST_DROP");
+    }
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
-    private QuestSystem() { registerAll(); }
+    private QuestSystem() {
+        // Initialize per-rot win counters
+        for (String name : ROT_QUEST_ID.keySet()) rotWins.put(name, 0);
+        registerAll();
+    }
 
     // ── Registration ─────────────────────────────────────────────────────────
 
     private void reg(String id, String name, String desc,
-                     int difficulty, boolean hidden, int goal) {
-        String asset = "/res/Achievements/PROGRESSION_BADGES/ASCENSION.png"; //test for now
-        Quest q = new Quest(id, name, desc, asset, difficulty, hidden, goal);
+                     int difficulty, boolean hidden, int goal,
+                     RewardType rewardType, int rewardCoins, String rewardItemName) {
+        String asset = "/res/Achievements/PROGRESSION_BADGES/ASCENSION.png";
+        Quest q = new Quest(id, name, desc, asset, difficulty, hidden, goal,
+                rewardType, rewardCoins, rewardItemName);
         registry.put(id, q);
     }
 
     private void registerAll() {
 
-        // ── Non-hidden (difficulty 1–26) ──────────────────────────────────────
-
-        reg("FIRST_CATCH",
-                "First Catch",
-                "Catch your first BrainRot.",
-                1, false, 1);
-
-        reg("ORGANIZED",
-                "Organized",
-                "Fill your party with 6 BrainRots.",
-                2, false, 6);
-
-        reg("VARIETY_PACK",
-                "Variety Pack",
-                "Use all 4 item categories: Stew, Antidote, Scroll, and Capsule.",
-                3, false, 4);
-
-        reg("BULLY",
-                "Bully",
-                "Win a battle against a higher level BrainRot.",
-                4, false, 1);
-
-        reg("CLEAN_CATCH",
-                "Clean Catch",
-                "Capture a BrainRot at full HP.",
-                5, false, 1);
-
-        reg("GROWING_COLLECTION",
-                "Growing Collection",
-                "Catch 5 BrainRots.",
-                6, false, 5);
-
-        reg("ITEM_ADDICT",
-                "Item Addict",
-                "Use 50 items total.",
-                7, false, 50);
-
+        // ── Battle (6) ────────────────────────────────────────────────────────
         reg("SPEED_DEMON",
-                "Speed Demon",
+                "SPEED DEMON",
                 "Win a battle without the enemy ever acting.",
-                8, false, 1);
+                1, false, 1,
+                RewardType.ITEM, 0, "BLUE CAPSULE");
 
         reg("FLAWLESS_VICTORY",
-                "Flawless Victory",
+                "FLAWLESS VICTORY",
                 "Win a battle without taking any damage.",
-                9, false, 1);
+                2, false, 1,
+                RewardType.COINS, 1000, null);
 
-        reg("CLUTCH_KING",
-                "Clutch King",
-                "Win a battle with exactly 1 HP remaining.",
-                10, false, 1);
+        reg("NO_HEALS",
+                "NO HEALS",
+                "Win a battle without using any items.",
+                3, false, 1,
+                RewardType.ITEM, 0, "SUPER STEW");
 
         reg("COMEBACK_KID",
-                "Comeback Kid",
-                "Win a battle after your BrainRot dropped below 10 percent HP.",
-                11, false, 1);
+                "COMEBACK KID",
+                "Win a battle after dropping below 10 percent HP.",
+                4, false, 1,
+                RewardType.ITEM, 0, "MODERATE STEW");
 
-        reg("BIG_SPENDER",
-                "Big Spender",
-                "Spend 10,000 coins total.",
-                12, false, 10000);
-
-        reg("DIAMOND_MIND",
-                "Diamond Mind",
-                "Obtain a Diamond tier BrainRot.",
-                13, false, 1);
-
-        reg("LEVEL_GRINDER",
-                "Level Grinder",
-                "Raise any BrainRot to Level 50.",
-                14, false, 1);
-
-        reg("SKILL_COLLECTOR",
-                "Skill Collector",
-                "Have at least one skill of every type across your party.",
-                15, false, 1);
+        reg("BULLY",
+                "BULLY",
+                "Win a battle against a higher level BrainRot.",
+                5, false, 1,
+                RewardType.COINS, 800, null);
 
         reg("OVERKILL",
-                "Overkill",
-                "Deal damage exceeding the enemy's max HP in a single hit.",
-                16, false, 1);
+                "OVERKILL",
+                "Deal damage exceeding the enemy max HP in one hit.",
+                6, false, 1,
+                RewardType.COINS, 1500, null);
 
-        reg("SNEAKER_WAVE",
-                "Sneaker Wave",
-                "KO an enemy using Sneaker Dash move.",
-                17, false, 1);
+        // Collection
+        reg("FIRST_CATCH",
+                "FIRST CATCH",
+                "Catch your first BrainRot.",
+                7, false, 1,
+                RewardType.COINS, 500, null);
 
-        reg("TIRE_FIRE",
-                "Tire Fire",
-                "KO an enemy using Tire Burnout move.",
-                18, false, 1);
+        reg("CLEAN_CATCH",
+                "CLEAN CATCH",
+                "Capture a BrainRot at full HP.",
+                8, false, 1,
+                RewardType.ITEM, 0, "RED CAPSULE");
 
-        reg("DOUBLE_TAP",
-                "Double Tap",
-                "KO an enemy using Double Shot move.",
-                19, false, 1);
+        reg("GROWING_COLLECTION",
+                "GROWING COLLECTION",
+                "Catch 5 BrainRots.",
+                9, false, 5,
+                RewardType.ITEM, 0, "SPEED CAPSULE");
 
-        reg("PAYLOAD_DELIVERED",
-                "Payload Delivered",
-                "KO an enemy using Ristretto Nuke move.",
-                20, false, 1);
-
-        reg("DIN_OVERLOAD",
-                "Din Overload",
-                "Inflict confusion 5 times total.",
-                21, false, 5);
-
-        reg("STOMPING_GROUNDS",
-                "Stomping Grounds",
-                "Win a battle using only Grass or Rock type moves with Brr Brr Patapim.",
-                22, false, 1);
-
-        reg("TIME_BREAKER",
-                "Time Breaker",
-                "Use Timeline Rot move in 5 different battles.",
-                23, false, 5);
-
-        reg("DRUM_NEVER_STOPS",
-                "Drum Never Stops",
-                "Win 10 battles with Tung Tung Tung Sahur in your party.",
-                24, false, 10);
+        reg("DIAMOND_MIND",
+                "DIAMOND MIND",
+                "Obtain a Diamond tier BrainRot.",
+                10, false, 1,
+                RewardType.ITEM, 0, "HEAVY CAPSULE");
 
         reg("FULL_ROSTER",
-                "Full Roster",
+                "FULL ROSTER",
                 "Own all 8 unique BrainRots.",
-                25, false, 8);
+                11, false, 8,
+                RewardType.BRAINROT, 0, null);
+
+        reg("ORGANIZED",
+                "ORGANIZED",
+                "Fill your party with 6 BrainRots.",
+                12, false, 6,
+                RewardType.ITEM, 0, "NORMAL CAPSULE");
+
+        // Progression
+        reg("LEVEL_GRINDER",
+                "LEVEL GRINDER",
+                "Raise any BrainRot to Level 50.",
+                13, false, 1,
+                RewardType.COINS, 2000, null);
+
+        reg("SKILL_COLLECTOR",
+                "SKILL COLLECTOR",
+                "Have one skill of every type across your party.",
+                14, false, 1,
+                RewardType.ITEM, 0, "FOCUS STANCE SCROLL");
 
         reg("MAX_POTENTIAL",
-                "Max Potential",
+                "MAX POTENTIAL",
                 "Raise any BrainRot to Level 100.",
-                26, false, 1);
+                15, false, 1,
+                RewardType.COINS, 5000, null);
 
-        // ── Hidden (difficulty 27–30) ─────────────────────────────────────────
+        // Economy
+        reg("VARIETY_PACK",
+                "VARIETY PACK",
+                "Use all 4 item categories: Stew, Antidote, Scroll, and Capsule.",
+                16, false, 4,
+                RewardType.ITEM, 0, "SUPER STEW");
 
-        reg("POTION_HOARDER",
-                "Potion Hoarder",
+        reg("ITEM_ADDICT",
+                "ITEM ADDICT",
+                "Use 50 items total.",
+                17, false, 50,
+                RewardType.COINS, 1000, null);
+
+        reg("BIG_SPENDER",
+                "BIG SPENDER",
+                "Spend 10,000 coins total.",
+                18, false, 10000,
+                RewardType.COINS, 3000, null);
+
+        // BrainRot-specific
+        reg("THE_ETERNAL_DRUM",
+                "THE ETERNAL DRUM",
+                "Win 10 battles with Tung Tung Tung Sahur.",
+                19, false, 10,
+                RewardType.ITEM, 0, "INFINITE SAHUR SCROLL");
+
+        reg("FRESH_KICKS",
+                "FRESH KICKS",
+                "Win 10 battles with Tralalero Tralala.",
+                20, false, 10,
+                RewardType.ITEM, 0, "NEON RAVE SCROLL");
+
+        reg("SORTIE",
+                "SORTIE",
+                "Win 10 battles with Bombardino Crocodilo.",
+                21, false, 10,
+                RewardType.ITEM, 0, "RISTRETTO NUKE SCROLL");
+
+        reg("AGAINST_THE_CLOCK",
+                "AGAINST THE CLOCK",
+                "Win 10 battles with Lirili Larila.",
+                22, false, 10,
+                RewardType.ITEM, 0, "TIMELINE ROT SCROLL");
+
+        reg("KING_OF_THE_JUNGLE",
+                "KING OF THE JUNGLE",
+                "Win 10 battles with Brr Brr Patapim.",
+                23, false, 10,
+                RewardType.ITEM, 0, "FOREST GRUNT SCROLL");
+
+        reg("BURNOUT",
+                "BURNOUT",
+                "Win 10 battles with Boneca Ambalabu.",
+                24, false, 10,
+                RewardType.ITEM, 0, "LICKING LOOP SCROLL");
+
+        reg("FREQUENCY_DETECTED",
+                "FREQUENCY DETECTED",
+                "Win 10 battles with Udin Din Din Din Dun.",
+                25, false, 10,
+                RewardType.ITEM, 0, "BRAIN SCRAMBLE SCROLL");
+
+        reg("LAST_DROP",
+                "LAST DROP",
+                "Win 10 battles with Capuccino Assassino.",
+                26, false, 10,
+                RewardType.ITEM, 0, "DOUBLE SHOT SCROLL");
+
+        // Secret
+        reg("ITEM_HOARDER",
+                "ITEM HOARDER",
                 "Use 5 items in a single battle.",
-                27, true, 1);
+                27, true, 1,
+                RewardType.ITEM, 0, "MILD STEW");
 
         reg("IMPOSTER",
-                "Imposter",
+                "IMPOSTER",
                 "Beat a trainer whose lead BrainRot shares your lead's type.",
-                28, true, 1);
+                28, true, 1,
+                RewardType.COINS, 2000, null);
 
         reg("WHATS_IN_THE_BOX",
-                "What's In The Box",
+                "WHAT'S IN THE BOX",
                 "Place a BrainRot in Box 10, Slot 25.",
-                29, true, 1);
+                29, true, 1,
+                RewardType.ITEM, 0, "MASTER CAPSULE");
 
         reg("BRAIN_FULLY_ROT",
-                "Brain Fully Rot",
+                "BRAIN FULLY ROT",
                 "Lose 10 battles in a row.",
-                30, true, 1);
+                30, true, 1,
+                RewardType.COINS, 100, null);
 
-        // Build sorted list by difficulty
+        // Build sorted list
         ordered.addAll(registry.values());
         ordered.sort(Comparator.comparingInt(Quest::getDifficulty));
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
 
-    /**
-     * Completes a quest by ID.
-     * Adds to toast queue if newly completed.
-     */
     public void complete(String id) {
         Quest q = registry.get(id);
         if (q == null) { System.err.println("[QuestSystem] Unknown id: " + id); return; }
@@ -239,10 +288,6 @@ public class QuestSystem {
         }
     }
 
-    /**
-     * Increments a counter quest by 1.
-     * Auto-completes and toasts when goal is reached.
-     */
     public void increment(String id) {
         Quest q = registry.get(id);
         if (q == null) { System.err.println("[QuestSystem] Unknown id: " + id); return; }
@@ -252,9 +297,6 @@ public class QuestSystem {
         }
     }
 
-    /**
-     * Increments a counter quest by a specific amount.
-     */
     public void increment(String id, int amount) {
         Quest q = registry.get(id);
         if (q == null) { System.err.println("[QuestSystem] Unknown id: " + id); return; }
@@ -269,29 +311,65 @@ public class QuestSystem {
         return q != null && q.isCompleted();
     }
 
-    public Quest get(String id) { return registry.get(id); }
+    public Quest           get(String id) { return registry.get(id); }
+    public List<Quest>     getAll()       { return Collections.unmodifiableList(ordered); }
+    public Quest           pollToast()    { return toastQueue.poll(); }
+    public boolean         hasToast()     { return !toastQueue.isEmpty(); }
 
-    public List<Quest> getAll() { return Collections.unmodifiableList(ordered); }
+    // ── Reward claiming ───────────────────────────────────────────────────────
 
-    public Quest pollToast()  { return toastQueue.poll(); }
-    public boolean hasToast() { return !toastQueue.isEmpty(); }
+    /**
+     * Claims the reward for a completed quest.
+     * Called from QuestUI when player presses ENTER on a completed unclaimed quest.
+     */
+    public void claimReward(String id, GamePanel gp) {
+        Quest q = registry.get(id);
+        if (q == null || !q.isCompleted() || q.isRewardClaimed()) return;
+
+        switch (q.getRewardType()) {
+            case COINS -> {
+                gp.player.earnRotCoins(q.getRewardCoins());
+                System.out.println("[Quest] Reward claimed: +" + q.getRewardCoins() + " coins");
+            }
+            case ITEM -> {
+                items.Item item = ItemRegistry.getItem(q.getRewardItemName());
+                if (item != null) {
+                    gp.player.getInventory().addItem(item);
+                    System.out.println("[Quest] Reward claimed: " + q.getRewardItemName());
+                } else {
+                    System.err.println("[Quest] Reward item not found: " + q.getRewardItemName());
+                }
+            }
+            case BRAINROT -> {
+                String[] names = BrainRotRegistry.ALL.toArray(new String[0]);
+                String name = names[RandomUtil.range(0, names.length - 1)];
+                BrainRot rot = BrainRotFactory.create(name, Tier.DIAMOND);
+                gp.player.getPCSYSTEM().addBrainRot(rot);
+                System.out.println("[Quest] Reward claimed: " + rot.getName() + " DIAMOND");
+            }
+            case NONE -> {}
+        }
+
+        q.markRewardClaimed();
+    }
 
     // ── Hook Methods ──────────────────────────────────────────────────────────
 
     // ── Battle hooks ──────────────────────────────────────────────────────────
 
+    /**
+     * Call at end of a won battle.
+     */
     public void onBattleWon(BrainRot playerRot, BrainRot enemyRot,
                             boolean enemyActed, boolean playerTookDamage,
-                            int playerMinHP, Skill killingSkill,
-                            boolean usedOnlyGrassRockMoves,
-                            boolean isTrainerBattle, String trainerLeadType,
-                            boolean timelineRotUsed) {
+                            int playerMinHP, boolean noItemsUsed,
+                            boolean isTrainerBattle, String trainerLeadType) {
 
         consecutiveLosses = 0;
 
         if (!enemyActed)       complete("SPEED_DEMON");
         if (!playerTookDamage) complete("FLAWLESS_VICTORY");
-        if (playerRot.getCurrentHp() == 1) complete("CLUTCH_KING");
+        if (noItemsUsed)       complete("NO_HEALS");
 
         int maxHp = playerRot.getMaxHp();
         if (playerMinHP > 0 && playerMinHP <= (int)(maxHp * 0.10))
@@ -299,48 +377,49 @@ public class QuestSystem {
 
         if (playerRot.getLevel() < enemyRot.getLevel()) complete("BULLY");
 
-        if (killingSkill != null) {
-            switch (killingSkill.getName().toUpperCase()) {
-                case "SNEAKER DASH"   -> complete("SNEAKER_WAVE");
-                case "TIRE BURNOUT"   -> complete("TIRE_FIRE");
-                case "DOUBLE SHOT"    -> complete("DOUBLE_TAP");
-                case "RISTRETTO NUKE" -> complete("PAYLOAD_DELIVERED");
-            }
-        }
-
-        if (playerRot.getName().equalsIgnoreCase("BRR BRR PATAPIM")
-                && usedOnlyGrassRockMoves) {
-            complete("STOMPING_GROUNDS");
-        }
-
-        if (playerRot.getName().equalsIgnoreCase("TUNG TUNG TUNG SAHUR")) {
-            tungTungWins++;
-            if (tungTungWins >= 10) complete("DRUM_NEVER_STOPS");
-        }
-
-        if (timelineRotUsed) {
-            timelineRotBattles++;
-            if (timelineRotBattles >= 5) complete("TIME_BREAKER");
-        }
-
         if (isTrainerBattle && trainerLeadType != null) {
             String playerType = playerRot.getPrimaryType().name();
             if (playerType.equalsIgnoreCase(trainerLeadType)) complete("IMPOSTER");
         }
+
+        // BrainRot-specific win counter
+        onBrainRotWin(playerRot.getName());
     }
 
+    /**
+     * Call when a single damaging hit is resolved.
+     */
     public void onDamageDealt(int damage, int enemyMaxHp) {
         if (damage >= enemyMaxHp) complete("OVERKILL");
     }
 
+    /**
+     * Call when the player loses a battle.
+     */
     public void onBattleLost() {
         consecutiveLosses++;
         if (consecutiveLosses >= 10) complete("BRAIN_FULLY_ROT");
     }
 
-    public void onConfusionInflicted() {
-        totalConfusionHits++;
-        if (totalConfusionHits >= 5) complete("DIN_OVERLOAD");
+    /**
+     * Call when the active BrainRot wins a battle.
+     * Increments that BrainRot's personal win counter.
+     */
+    public void onBrainRotWin(String rotName) {
+        String key = rotName.toUpperCase();
+        if (!rotWins.containsKey(key)) return;
+
+        int wins = rotWins.get(key) + 1;
+        rotWins.put(key, wins);
+
+        String questId = ROT_QUEST_ID.get(key);
+        if (questId == null) return;
+
+        Quest q = registry.get(questId);
+        if (q != null && !q.isCompleted()) {
+            q.loadState(false, wins);
+            if (wins >= 10) complete(questId);
+        }
     }
 
     // ── Capture hooks ─────────────────────────────────────────────────────────
@@ -350,20 +429,15 @@ public class QuestSystem {
         capturedNames.add(rot.getName().toUpperCase());
 
         complete("FIRST_CATCH");
-
-        get("GROWING_COLLECTION").increment();
-        if (get("GROWING_COLLECTION").isCompleted()) complete("GROWING_COLLECTION");
+        increment("GROWING_COLLECTION");
 
         if (rot.getTier() == brainrots.Tier.DIAMOND) complete("DIAMOND_MIND");
-
         if (atFullHp) complete("CLEAN_CATCH");
 
-        String[] all = {
-                "TUNG TUNG TUNG SAHUR", "TRALALERO TRALALA", "BOMBARDINO CROCODILO",
-                "LIRILI LARILA", "BRR BRR PATAPIM", "BONECA AMBALABU",
-                "UDIN DIN DIN DIN DUN", "CAPUCCINO ASSASSINO"
-        };
-        boolean hasAll = Arrays.stream(all).allMatch(capturedNames::contains);
+        // Full Roster — all 8 unique names
+        boolean hasAll = BrainRotRegistry.ALL.stream()
+                .map(String::toUpperCase)
+                .allMatch(capturedNames::contains);
         if (hasAll) complete("FULL_ROSTER");
     }
 
@@ -372,12 +446,10 @@ public class QuestSystem {
     public void onPartySizeChanged(int partySize) {
         Quest q = get("ORGANIZED");
         if (q != null && !q.isCompleted()) {
-            // Set progress to current party size directly
             q.loadState(false, partySize);
             if (partySize >= 6) complete("ORGANIZED");
         }
     }
-
 
     public void onBoxSlotSet(int boxIndex, int slotIndex) {
         if (boxIndex == 9 && slotIndex == 24) complete("WHATS_IN_THE_BOX");
@@ -412,7 +484,7 @@ public class QuestSystem {
     }
 
     public void onBattleItemThreshold() {
-        complete("POTION_HOARDER");
+        complete("ITEM_HOARDER");
     }
 
     // ── Skill Collector check ─────────────────────────────────────────────────
@@ -420,7 +492,7 @@ public class QuestSystem {
     public void checkSkillCollector(java.util.List<BrainRot> party) {
         Set<String> types = new HashSet<>();
         for (BrainRot rot : party)
-            for (Skill s : rot.getMoves())
+            for (skills.Skill s : rot.getMoves())
                 types.add(s.getType().name());
         if (types.size() >= 11) complete("SKILL_COLLECTOR");
     }
@@ -430,47 +502,71 @@ public class QuestSystem {
     public String toFileFormat() {
         StringBuilder sb = new StringBuilder();
         sb.append("[QUESTS]\n");
+
+        // Counters line
         sb.append("counters:")
                 .append(totalCoinsSpent).append(";")
                 .append(totalItemsUsed).append(";")
-                .append(tungTungWins).append(";")
                 .append(consecutiveLosses).append(";")
-                .append(totalConfusionHits).append(";")
-                .append(timelineRotBattles).append(";")
                 .append(captureCount).append(";")
                 .append(String.join(",", capturedNames)).append(";")
                 .append(String.join(",", categoriesUsed)).append("\n");
+
+        // Per-rot wins line
+        sb.append("rotwins:");
+        rotWins.forEach((k, v) -> sb.append(k).append("=").append(v).append(","));
+        sb.append("\n");
+
+        // Quest states
         for (Quest q : ordered)
             sb.append(q.toFileFormat()).append("\n");
+
         return sb.toString();
     }
 
     public void loadFromLines(List<String> lines) {
         if (lines.isEmpty()) return;
 
-        String[] counters = lines.get(0).replace("counters:", "").split(";");
-        if (counters.length >= 9) {
-            totalCoinsSpent    = parseInt(counters[0]);
-            totalItemsUsed     = parseInt(counters[1]);
-            tungTungWins       = parseInt(counters[2]);
-            consecutiveLosses  = parseInt(counters[3]);
-            totalConfusionHits = parseInt(counters[4]);
-            timelineRotBattles = parseInt(counters[5]);
-            captureCount       = parseInt(counters[6]);
-            if (!counters[7].isEmpty())
-                Arrays.stream(counters[7].split(",")).forEach(capturedNames::add);
-            if (!counters[8].isEmpty())
-                Arrays.stream(counters[8].split(",")).forEach(categoriesUsed::add);
+        int lineIdx = 0;
+
+        // Counters
+        if (lineIdx < lines.size() && lines.get(lineIdx).startsWith("counters:")) {
+            String[] c = lines.get(lineIdx).replace("counters:", "").split(";");
+            if (c.length >= 6) {
+                totalCoinsSpent   = parseInt(c[0]);
+                totalItemsUsed    = parseInt(c[1]);
+                consecutiveLosses = parseInt(c[2]);
+                captureCount      = parseInt(c[3]);
+                if (!c[4].isEmpty())
+                    Arrays.stream(c[4].split(",")).forEach(capturedNames::add);
+                if (!c[5].isEmpty())
+                    Arrays.stream(c[5].split(",")).forEach(categoriesUsed::add);
+            }
+            lineIdx++;
         }
 
-        for (int i = 1; i < lines.size(); i++) {
+        // Per-rot wins
+        if (lineIdx < lines.size() && lines.get(lineIdx).startsWith("rotwins:")) {
+            String raw = lines.get(lineIdx).replace("rotwins:", "");
+            if (!raw.isEmpty()) {
+                for (String entry : raw.split(",")) {
+                    String[] kv = entry.split("=");
+                    if (kv.length == 2) rotWins.put(kv[0], parseInt(kv[1]));
+                }
+            }
+            lineIdx++;
+        }
+
+        // Quest states
+        for (int i = lineIdx; i < lines.size(); i++) {
             String[] parts = lines.get(i).split(";");
             if (parts.length < 3) continue;
-            String  id        = parts[0];
-            boolean completed = Boolean.parseBoolean(parts[1]);
-            int     progress  = parseInt(parts[2]);
-            Quest   q         = registry.get(id);
-            if (q != null) q.loadState(completed, progress);
+            String  id            = parts[0];
+            boolean completed     = Boolean.parseBoolean(parts[1]);
+            int     progress      = parseInt(parts[2]);
+            boolean rewardClaimed = parts.length >= 4 && Boolean.parseBoolean(parts[3]);
+            Quest   q             = registry.get(id);
+            if (q != null) q.loadState(completed, progress, rewardClaimed);
         }
     }
 

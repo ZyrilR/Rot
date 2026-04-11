@@ -38,8 +38,6 @@ public class SkillEffect {
                 if (!target.hasStatus("CONFUSE")) {
                     target.setStatus("CONFUSE");
                     System.out.println(target.getName() + " became Confused!");
-                    // Din Overload achievement
-                    QuestSystem.getInstance().onConfusionInflicted();
                 }
                 break;
 
