@@ -156,7 +156,7 @@ public class TileManager {
                 }
                 row++;
             }
-            displayMapValues();
+//            displayMapValues();
 
             if (layerType.equalsIgnoreCase("interactive")) {
                 br.readLine();
@@ -222,7 +222,7 @@ public class TileManager {
                 }
             }
             else
-                tile = new Tile(loadImage("/res/Decorations/" + i + ".png"), true, "Background");
+                tile = new Tile(loadImage("/res/Decorations/" + i + ".png"), false, "Background");
 
             DECORATION_TILES.add(tile);
             System.out.println("ADDED: Decorations " + i + DECORATION_TILES.size());

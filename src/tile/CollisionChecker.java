@@ -66,7 +66,6 @@ public class CollisionChecker {
         // 1. Check Background Layer
         for (TileManager tm : gp.getWorldBackgroundLayer()) {
             if (isTileSolid(tm, r1, c1)) {
-                System.out.println("Hit ID: " + tm.getMap()[r1][c1] + " at [" + r1 + "][" + c1 + "] in layer: ");
                 player.collisionOn = true;
                 return;
             }
@@ -76,9 +75,6 @@ public class CollisionChecker {
 
                 int row = centerY / TILE_SIZE;
                 int col = centerX / TILE_SIZE;
-                System.out.println("COLLIDED !!!");
-                System.out.println("TILE ID: " + tm.getMap()[r1][c1]);
-                System.out.println("POSITION: (" + row + "," + col + ")");
                 player.collisionOn = true;
                 return;
             }
@@ -187,37 +183,6 @@ public class CollisionChecker {
         }
     }
 
-//    public void checkObject(Player player, Building building) {
-//        // Get player's predicted position
-//        Rectangle pRect = new Rectangle(
-//                player.worldX + player.solidArea.x,
-//                player.worldY + player.solidArea.y,
-//                player.solidArea.width,
-//                player.solidArea.height
-//        );
-//
-//        // Predict next step
-//        int speed = player.getCurrentSpeed();
-//        switch(player.getDirection()) {
-//            case "up" -> pRect.y -= speed;
-//            case "down" -> pRect.y += speed;
-//            case "left" -> pRect.x -= speed;
-//            case "right" -> pRect.x += speed;
-//        }
-//
-//        // Building's world hitbox
-//        Rectangle bRect = new Rectangle(
-//                building.worldX + building.solidArea.x,
-//                building.worldY + building.solidArea.y,
-//                building.solidArea.width,
-//                building.solidArea.height
-//        );
-//
-//        if (pRect.intersects(bRect)) {
-//            player.collisionOn = true;
-//        }
-//    }
-
     // ADD THIS TO CollisionChecker.java
     public void checkTileForNPC(NPC npc) {
         int npcLeftWorldX = npc.worldX + npc.solidArea.x;
@@ -320,10 +285,8 @@ public class CollisionChecker {
         int col = centerX / TILE_SIZE;
 
         for (TileTeleporter tt : gp.getWorldInteractiveLayer().getTeleporters()) {
-            if (tt.getCoordinates()[1] == row && tt.getCoordinates()[0] == col) {
-                System.out.println("THERE IS");
+            if (tt.getCoordinates()[1] == row && tt.getCoordinates()[0] == col)
                 return tt;
-            }
         }
         return null;
     }
