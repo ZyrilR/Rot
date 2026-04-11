@@ -26,6 +26,7 @@ public class WorldLoader {
     private ArrayList<TileManager> backgroundLayer = new ArrayList<>();
     private ArrayList<TileManager> decorationLayer = new ArrayList<>();
     private ArrayList<TileManager> buildingLayer = new ArrayList<>();
+    private ArrayList<TileManager> overlayLayer = new ArrayList<>();
     private ArrayList<TileManager> rampLayers = new ArrayList<>();
     private TileManager interactiveLayer;
 
@@ -33,6 +34,7 @@ public class WorldLoader {
         backgroundLayer.clear();
         decorationLayer.clear();
         buildingLayer.clear();
+        overlayLayer.clear();
         rampLayers.clear();
         interactiveLayer = null;
     }
@@ -69,6 +71,13 @@ public class WorldLoader {
         if (interactiveLayer != null)
             interactiveLayer.draw(graphics2D, gp);
 
+    }
+
+    public void drawOverlay(Graphics2D graphics2D) {
+        for (TileManager tm : overlayLayer) {
+            if (tm != null)
+                tm.draw(graphics2D, gp);
+        }
     }
 
     public void loadMap(String folderPath, boolean initWorldSettings) {
@@ -125,22 +134,30 @@ public class WorldLoader {
                 }
 
                 //check what kind of layer
-                switch (layer[1].toUpperCase()) {
-                    case "BACKGROUND":
-                        backgroundLayer.add(tm);
-                        break;
-                    case "DECORATION":
-                        decorationLayer.add(tm);
-                        break;
-                    case "BUILDING":
-                        buildingLayer.add(tm);
-                        break;
-                    case "INTERACTIVE":
-                        interactiveLayer = tm;
-                        break;
-                    default:
-                        System.out.println("NOT A LAYER!");
-                        break;
+                String nameLower = layer[0].toLowerCase();
+                boolean isOverlay = nameLower.contains("overlay") && !nameLower.contains("collision");
+
+                if (isOverlay) {
+                    // Overlay layers draw on top of the player
+                    overlayLayer.add(tm);
+                } else {
+                    switch (layer[1].toUpperCase()) {
+                        case "BACKGROUND":
+                            backgroundLayer.add(tm);
+                            break;
+                        case "DECORATION":
+                            decorationLayer.add(tm);
+                            break;
+                        case "BUILDING":
+                            buildingLayer.add(tm);
+                            break;
+                        case "INTERACTIVE":
+                            interactiveLayer = tm;
+                            break;
+                        default:
+                            System.out.println("NOT A LAYER!");
+                            break;
+                    }
                 }
             }
         } catch (IOException e) {
@@ -164,6 +181,10 @@ public class WorldLoader {
 
     public ArrayList<TileManager> getBackgroundLayer() {
         return backgroundLayer;
+    }
+
+    public ArrayList<TileManager> getOverlayLayer() {
+        return overlayLayer;
     }
 
     public ArrayList<TileManager> getRampLayers() {
