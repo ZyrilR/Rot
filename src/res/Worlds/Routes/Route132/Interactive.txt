@@ -75,5 +75,5 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 [METADATA]
 ToRoute131_1|Teleporter|29|0|59|ROUTE131~TOROUTE132_1~RIGHT|You are about to enter;Route 131
-ToRoute131|Teleporter|29|0|13|WORLD~TOROUTE132~UP|You are about to enter;Route 131
-ToCave131|Teleporter|27|0|3|CAVE131~TOROUTE132_2~DOWN|You are about to enter;Cave 131
+ToRoute131|Teleporter|29|0|13|WORLD~TOROUTE132~RIGHT|You are about to enter;Route 131
+ToCave131|Teleporter|27|0|3|CAVE131~TOROUTE132~DOWN|You are about to enter;Cave 131
