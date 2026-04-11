@@ -1,6 +1,7 @@
 package skills;
 
 import brainrots.BrainRot;
+import progression.QuestSystem;
 import utils.RandomUtil;
 
 /**

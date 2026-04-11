@@ -4,35 +4,48 @@ import brainrots.BrainRot;
 import brainrots.ExperienceSystem;
 import brainrots.LevelUpResult;
 import items.Inventory;
+import progression.QuestSystem;
+import progression.QuestSystem;
 import skills.Skill;
 import skills.SkillEffect;
+import skills.SkillType;
 
 import java.util.List;
 
 /**
  * Orchestrates a single battle between a player BrainRot and an enemy BrainRot.
- * Handles turn resolution, skill use, status effects, and capture attempts.
- *
- * Usage:
- *   BattleManager battle = new BattleManager(playerRot, enemyRot, playerTeam, playerInventory);
- *   battle.executePlayerTurn(chosenSkillIndex);   // player acts
- *   battle.executeEnemyTurn(chosenSkillIndex);    // AI/enemy acts
- *   battle.endTurn();                             // process end-of-turn effects
+ * Handles turn resolution, skill use, status effects, capture attempts,
+ * and achievement tracking.
  */
 public class BattleManager {
 
     public enum BattleResult { ONGOING, PLAYER_WIN, ENEMY_WIN, CAPTURED, FLED }
 
-    private final BrainRot playerRot;
-    private final BrainRot enemyRot;
+    private final BrainRot   playerRot;
+    private final BrainRot   enemyRot;
     private final List<BrainRot> playerTeam;
-    private final Inventory playerInventory;
+    private final Inventory  playerInventory;
 
-    private BattleResult result = BattleResult.ONGOING;
-    private boolean wildBattle; // true = wild BrainRot, can attempt capture
+    private BattleResult result     = BattleResult.ONGOING;
+    private boolean      wildBattle;
     private List<LevelUpResult> levelUpResults = new java.util.ArrayList<>();
 
-    public BattleManager(BrainRot playerRot, BrainRot enemyRot, List<BrainRot> playerTeam, Inventory playerInventory, boolean wildBattle) {
+    // ── Per-battle achievement flags ──────────────────────────────────────────
+    private boolean enemyActedThisBattle      = false;
+    private boolean playerTookDamageThisBattle = false;
+    private boolean noItemsUsedThisBattle      = true;
+    private int     playerMinHP;
+    private int     itemsUsedThisBattle        = 0;
+
+    // Trainer context for Imposter quest
+    private boolean isTrainerBattle  = false;
+    private String  trainerLeadType  = null;
+
+    // ── Constructor ───────────────────────────────────────────────────────────
+
+    public BattleManager(BrainRot playerRot, BrainRot enemyRot,
+                         List<BrainRot> playerTeam, Inventory playerInventory,
+                         boolean wildBattle) {
         this.playerRot       = playerRot;
         this.enemyRot        = enemyRot;
         this.playerTeam      = playerTeam;
@@ -41,7 +54,24 @@ public class BattleManager {
 
         playerRot.restoreForBattle();
         enemyRot.restoreForBattle();
+
+        playerMinHP = playerRot.getMaxHp();
     }
+
+    /**
+     * Extended constructor for trainer battles — passes trainer lead type
+     * so the Imposter achievement can be checked on win.
+     */
+    public BattleManager(BrainRot playerRot, BrainRot enemyRot,
+                         List<BrainRot> playerTeam, Inventory playerInventory,
+                         boolean wildBattle, boolean isTrainerBattle,
+                         String trainerLeadType) {
+        this(playerRot, enemyRot, playerTeam, playerInventory, wildBattle);
+        this.isTrainerBattle = isTrainerBattle;
+        this.trainerLeadType = trainerLeadType;
+    }
+
+    // ── Player Action ─────────────────────────────────────────────────────────
 
     /**
      * Player uses a skill by index from their moveset.
@@ -55,7 +85,7 @@ public class BattleManager {
         }
 
         Skill skill = playerRot.getMoves().get(skillIndex);
-        if (!playerRot.useSkill(skill)) return; // not enough SP / ultimate restriction
+        if (!playerRot.useSkill(skill)) return;
 
         System.out.println(playerRot.getName() + " used " + skill.getName() + "!");
 
@@ -64,27 +94,43 @@ public class BattleManager {
             enemyRot.takeDamage(dmg);
             System.out.println(enemyRot.getName() + " took " + dmg + " damage! ("
                     + enemyRot.getCurrentHp() + "/" + enemyRot.getMaxHp() + " HP)");
+
+            // Overkill check
+            QuestSystem.getInstance().onDamageDealt(dmg, enemyRot.getMaxHp());
         }
 
         SkillEffect.apply(skill, playerRot, enemyRot);
         checkFainted();
     }
 
-    /** Player attempts to capture a wild BrainRot using a capsule from inventory */
+    // ── Capture ───────────────────────────────────────────────────────────────
+
+    /**
+     * Player attempts to capture a wild BrainRot using a capsule from inventory.
+     */
     public void executeCapture(int capsuleIndex) {
         if (!wildBattle) {
             System.out.println("You can't capture a trainer's BrainRot!");
             return;
         }
-
-        // Pass playerTeam and active playerRot to the Capsule
         playerInventory.useItem(capsuleIndex, enemyRot, playerTeam, playerRot);
-
         if (playerTeam.contains(enemyRot)) {
             result = BattleResult.CAPTURED;
         }
     }
 
+    // ── Item use (called from BattleUI when player uses item mid-battle) ──────
+
+    /**
+     * Register an item used during battle for Potion Hoarder tracking.
+     */
+    public void registerItemUsed() {
+        noItemsUsedThisBattle = false;
+        itemsUsedThisBattle++;
+        if (itemsUsedThisBattle >= 5) {
+            QuestSystem.getInstance().onBattleItemThreshold();
+        }
+    }
 
     // ── Enemy Action ──────────────────────────────────────────────────────────
 
@@ -93,6 +139,8 @@ public class BattleManager {
      */
     public void executeEnemyTurn(int skillIndex) {
         if (result != BattleResult.ONGOING) return;
+
+        enemyActedThisBattle = true;
 
         if (!StatusEffectManager.canAct(enemyRot)) {
             endTurnCleanup();
@@ -107,6 +155,12 @@ public class BattleManager {
         if (skill.getPower() > 0) {
             int dmg = DamageCalculator.calculate(skill, enemyRot, playerRot);
             playerRot.takeDamage(dmg);
+
+            // Track damage taken
+            playerTookDamageThisBattle = true;
+            int currentHp = playerRot.getCurrentHp();
+            if (currentHp < playerMinHP) playerMinHP = currentHp;
+
             System.out.println(playerRot.getName() + " took " + dmg + " damage! ("
                     + playerRot.getCurrentHp() + "/" + playerRot.getMaxHp() + " HP)");
         }
@@ -117,10 +171,6 @@ public class BattleManager {
 
     // ── End of Turn ───────────────────────────────────────────────────────────
 
-    /**
-     * Processes end-of-turn effects (burn ticks, status countdowns).
-     * Call once after both combatants have acted.
-     */
     public void endTurn() {
         if (result != BattleResult.ONGOING) return;
         endTurnCleanup();
@@ -132,15 +182,32 @@ public class BattleManager {
         checkFainted();
     }
 
+    // ── Win / Loss ────────────────────────────────────────────────────────────
+
     private void checkFainted() {
         if (enemyRot.isFainted()) {
             System.out.println(enemyRot.getName() + " fainted! Player wins!");
             result = BattleResult.PLAYER_WIN;
             awardXp();
+            fireWinQuests();
         } else if (playerRot.isFainted()) {
             System.out.println(playerRot.getName() + " fainted! Enemy wins!");
             result = BattleResult.ENEMY_WIN;
+            QuestSystem.getInstance().onBattleLost();
         }
+    }
+
+    private void fireWinQuests() {
+        QuestSystem.getInstance().onBattleWon(
+                playerRot,
+                enemyRot,
+                enemyActedThisBattle,
+                playerTookDamageThisBattle,
+                playerMinHP,
+                noItemsUsedThisBattle,
+                isTrainerBattle,
+                trainerLeadType
+        );
     }
 
     private void awardXp() {
@@ -151,18 +218,20 @@ public class BattleManager {
             System.out.println(playerRot.getName() + " grew to level " + lvl.newLevel + "!");
             System.out.println("  HP +" + lvl.hpGain + "  ATK +" + lvl.atkGain
                     + "  DEF +" + lvl.defGain + "  SPD +" + lvl.spdGain);
-            if (lvl.skillUnlocked != null) {
+
+            // Level up achievements
+            QuestSystem.getInstance().onLevelUp(lvl.newLevel);
+
+            if (lvl.skillUnlocked != null)
                 System.out.println(playerRot.getName() + " can learn " + lvl.skillUnlocked.getName() + "!");
-            }
         }
     }
 
     // ── Getters ───────────────────────────────────────────────────────────────
 
-    public BattleResult getResult()              { return result; }
-    public boolean isOver()                      { return result != BattleResult.ONGOING; }
-    public BrainRot getPlayerRot()               { return playerRot; }
-    public BrainRot getEnemyRot()                { return enemyRot; }
-    /** Level-up events from the last battle win (empty if no level-up occurred). */
-    public List<LevelUpResult> getLevelUpResults() { return levelUpResults; }
+    public BattleResult          getResult()           { return result; }
+    public boolean               isOver()              { return result != BattleResult.ONGOING; }
+    public BrainRot              getPlayerRot()        { return playerRot; }
+    public BrainRot              getEnemyRot()         { return enemyRot; }
+    public List<LevelUpResult>   getLevelUpResults()   { return levelUpResults; }
 }

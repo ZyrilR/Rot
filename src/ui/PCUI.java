@@ -156,7 +156,7 @@ public class PCUI {
             int idx = boxCursorRow * GRID_COLS + boxCursorCol;
             BrainRot hov = pc.getBoxMember(currentBox, idx);
             if (hov != null) openDetail(hov, Layout.BOX);
-            else setStatus("No BrainRot here.", false);
+            else setStatus("No BrainRot here", false);
             inputCooldown = INPUT_DELAY;
         }
 
@@ -167,7 +167,7 @@ public class PCUI {
 
         if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
-            if (selectedSlot != null) { selectedSlot = null; heldRot = null; setStatus("Deselected.", false); }
+            if (selectedSlot != null) { selectedSlot = null; heldRot = null; setStatus("Deselected", false); }
             else { gp.GAMESTATE = "play"; System.out.println("[PCUI] PC closed (box view)."); }
             inputCooldown = INPUT_DELAY;
         }
@@ -189,7 +189,7 @@ public class PCUI {
             gp.KEYBOARDHANDLER.ePressed = false;
             BrainRot hov = (partyCursorRow < pc.getPartySize()) ? pc.getPartyMember(partyCursorRow) : null;
             if (hov != null) openDetail(hov, Layout.PARTY);
-            else setStatus("No BrainRot here.", false);
+            else setStatus("No BrainRot here", false);
             inputCooldown = INPUT_DELAY;
         }
 
@@ -200,7 +200,7 @@ public class PCUI {
 
         if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
-            if (selectedSlot != null) { selectedSlot = null; heldRot = null; setStatus("Deselected.", false); }
+            if (selectedSlot != null) { selectedSlot = null; heldRot = null; setStatus("Deselected", false); }
             else { gp.GAMESTATE = "play"; System.out.println("[PCUI] PC closed (party view)."); }
             inputCooldown = INPUT_DELAY;
         }
@@ -245,11 +245,12 @@ public class PCUI {
         Slot targetSlot = new Slot(currentBox, slotIndex);
 
         if (selectedSlot == null) {
-            if (target == null) { setStatus("Empty slot.", false); return; }
+            if (target == null) { setStatus("Empty slot", false); return; }
             selectedSlot = targetSlot; heldRot = target;
             setStatus("Holding: " + target.getName(), true);
         } else {
             MoveResult result = pc.move(selectedSlot, targetSlot);
+            if (result == MoveResult.SAME_SLOT) return;
             boolean ok = result == MoveResult.SUCCESS || result == MoveResult.SWAPPED;
             setStatus(ok ? (result == MoveResult.SWAPPED ? "Swapped!" : heldRot.getName() + " moved!")
                     : PCSystem.resultMessage(result, null), false);
@@ -263,11 +264,12 @@ public class PCUI {
         Slot targetSlot = new Slot(partyCursorRow);
 
         if (selectedSlot == null) {
-            if (target == null) { setStatus("Empty slot.", false); return; }
+            if (target == null) { setStatus("Empty slot", false); return; }
             selectedSlot = targetSlot; heldRot = target;
             setStatus("Holding: " + target.getName(), true);
         } else {
             MoveResult result = pc.move(selectedSlot, targetSlot);
+            if (result == MoveResult.SAME_SLOT) return;
             boolean ok = result == MoveResult.SUCCESS || result == MoveResult.SWAPPED;
             setStatus(ok ? (result == MoveResult.SWAPPED ? "Swapped!" : heldRot.getName() + " moved!")
                     : PCSystem.resultMessage(result, null), false);
@@ -598,7 +600,7 @@ public class PCUI {
             g2.setFont(base.deriveFont(10f));
             g2.setColor(heldRot != null ? new Color(160, 110, 20) : new Color(44, 44, 42));
             FontMetrics fm = g2.getFontMetrics();
-            String display = truncate(statusMessage, fm, barW / 2 - padding);
+            String display = truncate(statusMessage, fm, barW);
             g2.drawString(display, barX + padding, barY + (barH - fm.getHeight()) / 2 + fm.getAscent());
         }
 
@@ -1022,7 +1024,7 @@ public class PCUI {
 
         String line1 = (detailTab == DetailTab.INFO) ? "TAB Moves" : "WS Move  TAB Info";
         String line2 = "ESC Back";
-        g2.setFont(base.deriveFont(7f));
+        g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(120, 116, 108));
         FontMetrics fm = g2.getFontMetrics();
         int rx = winX + winW - 8 - 12;
@@ -1256,7 +1258,7 @@ public class PCUI {
      *                 false = message auto-clears after STATUS_TICKS frames
      */
     private void setStatus(String msg, boolean persist) {
-        statusMessage = msg;
+        statusMessage = "[ " + msg + " ]";
         statusTimer   = persist ? -1 : STATUS_TICKS;
         System.out.println("[PCUI] Status: " + msg);
     }

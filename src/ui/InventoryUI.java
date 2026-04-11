@@ -202,6 +202,7 @@ public class InventoryUI {
         stew.use(target);
         int healed = target.getCurrentHp() - before;
         consumePendingItem();
+        progression.QuestSystem.getInstance().onItemUsed("STEW");
         setStatus(target.getName() + " +" + healed + " HP!");
         returnToItemList();
     }
@@ -221,6 +222,7 @@ public class InventoryUI {
             }
             antidote.use(target);
             consumePendingItem();
+            progression.QuestSystem.getInstance().onItemUsed("ANTIDOTE");
             setStatus(target.getName() + " debuffs cleared!");
             returnToItemList();
             return;
@@ -254,6 +256,8 @@ public class InventoryUI {
             case SUCCESS -> {
                 scroll.apply(target, null);
                 consumePendingItem();
+                progression.QuestSystem.getInstance().onItemUsed("SCROLL");
+                progression.QuestSystem.getInstance().checkSkillCollector(gp.player.getPCSYSTEM().getParty());
                 String shortName = target.getName();
                 setStatus(shortName + " learned " + scroll.getSkillName() + "!");
                 returnToItemList();
@@ -277,8 +281,8 @@ public class InventoryUI {
                 String shortName = target.getName();
                 setStatus(shortName + " already knows this!");
             }
-            case SKILL_NOT_FOUND -> setStatus("Error: skill not found.");
-            default              -> setStatus("Cannot use this scroll.");
+            case SKILL_NOT_FOUND -> setStatus("Error: skill not found");
+            default              -> setStatus("Cannot use this scroll");
         }
         inputCooldown = INPUT_DELAY;
     }
@@ -304,9 +308,11 @@ public class InventoryUI {
                 Scroll.ScrollResult result = scroll.apply(pendingScrollTarget, moveCursor);
                 if (result == Scroll.ScrollResult.SWAPPED) {
                     consumePendingItem();
+                    progression.QuestSystem.getInstance().onItemUsed("SCROLL");
+                    progression.QuestSystem.getInstance().checkSkillCollector(gp.player.getPCSYSTEM().getParty());
                     setStatus(pendingScrollTarget.getName() + " learned " + scroll.getSkillName() + "!");
                 } else {
-                    setStatus("Could not swap move.");
+                    setStatus("Could not swap move");
                 }
             }
             pendingScrollTarget = null;
@@ -1004,7 +1010,7 @@ public class InventoryUI {
     // ── Status helpers ────────────────────────────────────────────────────────
 
     private void setStatus(String msg) {
-        statusMessage = msg;
+        statusMessage = "[ " + msg + " ]";
         statusTimer   = STATUS_TICKS;
         System.out.println("[InventoryUI] " + msg);
     }

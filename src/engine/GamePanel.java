@@ -46,6 +46,8 @@ public class GamePanel extends JPanel {
     public final PCUI     PCUI            = new PCUI(this, player.getPCSYSTEM());
     public final MenuUI MENUUI            = new MenuUI(this);
     public final InventoryUI INVENTORYUI  = new InventoryUI(this);
+    public final QuestUI    QUESTUI    = new QuestUI(this);
+    public final QuestToast QUESTTOAST = new QuestToast();
 
     public final WorldLoader world = new WorldLoader(this);
     public String CURRENT_PATH;
@@ -65,6 +67,7 @@ public class GamePanel extends JPanel {
         // In a full game these would be loaded from save data.
         // For now we add test members so the PC UI has data to display.
 //        seedTestParty();
+        testQuests();
     }
 
 
@@ -165,6 +168,58 @@ public class GamePanel extends JPanel {
 
     }
 
+    private void testQuests() {
+        progression.QuestSystem qs = progression.QuestSystem.getInstance();
+
+        // Boolean completions (valid)
+        qs.complete("SPEED_DEMON");
+        qs.complete("FLAWLESS_VICTORY");
+        qs.complete("NO_HEALS");
+        qs.complete("OVERKILL");
+
+        qs.complete("FIRST_CATCH");
+        qs.complete("DIAMOND_MIND");
+        qs.complete("FULL_ROSTER");
+        qs.complete("ORGANIZED");
+
+        qs.complete("SKILL_COLLECTOR");
+
+        qs.complete("VARIETY_PACK");
+
+        // Counter-based (valid)
+        for (int i = 0; i < 10; i++) qs.increment("ITEM_ADDICT");
+        qs.increment("BIG_SPENDER", 9000);
+
+        for (int i = 0; i < 4; i++) qs.increment("GROWING_COLLECTION");
+
+        for (int i = 0; i < 10; i++) {
+            qs.increment("THE_ETERNAL_DRUM");
+            qs.increment("FRESH_KICKS");
+            qs.increment("KING_OF_THE_JUNGLE");
+            qs.increment("BURNOUT");
+            qs.increment("LAST_DROP");
+        }
+        for (int i = 0; i < 5; i++) {
+            qs.increment("AGAINST_THE_CLOCK");
+            qs.increment("KING_OF_THE_JUNGLE");
+            qs.increment("BURNOUT");
+            qs.increment("FREQUENCY_DETECTED");
+            qs.increment("LAST_DROP");
+        }
+        for (int i = 0; i < 4; i++) {
+            qs.increment("THE_ETERNAL_DRUM");
+            qs.increment("AGAINST_THE_CLOCK");
+            qs.increment("KING_OF_THE_JUNGLE");
+            qs.increment("BURNOUT");
+        }
+
+        // Hidden (valid)
+        qs.complete("ITEM_HOARDER");
+        qs.complete("BRAIN_FULLY_ROT");
+
+        System.out.println("[DEV] Quests force-completed for testing.");
+    }
+
     // ── Layer accessors ───────────────────────────────────────────────────────
     public ArrayList<TileManager> getWorldBackgroundLayer() {
         return world.getBackgroundLayer();
@@ -260,6 +315,10 @@ public class GamePanel extends JPanel {
                INVENTORYUI.update();
                break;
 
+            case "QUESTS":
+                QUESTUI.update();
+                break;
+
             default:
                 break;
         }
@@ -305,9 +364,13 @@ public class GamePanel extends JPanel {
             case "inventory":
                 INVENTORYUI.draw(g2);
                 break;
-
+            case "quests":
+                QUESTUI.draw(g2);
+                break;
         }
 
+        QUESTTOAST.update();
+        QUESTTOAST.draw(g2);
         g2.dispose();
     }
 
