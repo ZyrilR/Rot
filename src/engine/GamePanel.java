@@ -4,13 +4,10 @@ import brainrots.BrainRotFactory;
 import brainrots.Tier;
 import input.KeyboardHandler;
 import map.WorldLoader;
-import npc.NPC;
-import npc.MarketNPC;
 import overworld.EncounterSystem;
 import overworld.Player;
 import storage.PCSystem;
 import tile.CollisionChecker;
-import tile.Tile;
 import tile.TileManager;
 import tile.TileTeleporter;
 import ui.*;
@@ -45,6 +42,8 @@ public class GamePanel extends JPanel {
 
     public final ShopUI SHOPUI            = new ShopUI(this);
     public final PCUI     PCUI            = new PCUI(this, player.getPCSYSTEM());
+    public final QuestUI QUESTUI          = new QuestUI(this);
+    public final QuestToast QUESTTOAST    = new QuestToast();
     public final MenuUI MENUUI            = new MenuUI(this);
     public final InventoryUI INVENTORYUI  = new InventoryUI(this);
 
@@ -219,7 +218,7 @@ public class GamePanel extends JPanel {
 
         System.out.println("[DEV] Quests force-completed for testing.");
 
-        for (brainrots.BrainRot rot : PCSYSTEM.getParty()) {
+        for (brainrots.BrainRot rot : player.getPCSYSTEM().getParty()) {
             java.util.List<brainrots.LevelUpResult> results = rot.gainXp(RandomUtil.range(100,10000));
             for (brainrots.LevelUpResult r : results) {
                 System.out.println("[DEV] " + rot.getName()
