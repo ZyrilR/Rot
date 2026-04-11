@@ -29,26 +29,31 @@ public class CollisionChecker {
         int col1, col2, row1, row2;
         int speed = player.getCurrentSpeed();
 
+        // Block movement at map borders
         switch (player.getDirection()) {
             case "up":
+                if (playerTopWorldY - speed < 0) { player.collisionOn = true; return; }
                 row1 = (playerTopWorldY - speed) / TILE_SIZE;
                 col1 = playerLeftWorldX / TILE_SIZE;
                 col2 = playerRightWorldX / TILE_SIZE;
                 checkCollisionAt(player, row1, col1, row1, col2);
                 break;
             case "down":
+                if (playerBottomWorldY + speed >= MAX_WORLD_ROW * TILE_SIZE) { player.collisionOn = true; return; }
                 row1 = (playerBottomWorldY + speed) / TILE_SIZE;
                 col1 = playerLeftWorldX / TILE_SIZE;
                 col2 = playerRightWorldX / TILE_SIZE;
                 checkCollisionAt(player, row1, col1, row1, col2);
                 break;
             case "left":
+                if (playerLeftWorldX - speed < 0) { player.collisionOn = true; return; }
                 col1 = (playerLeftWorldX - speed) / TILE_SIZE;
                 row1 = playerTopWorldY / TILE_SIZE;
                 row2 = playerBottomWorldY / TILE_SIZE;
                 checkCollisionAt(player, row1, col1, row2, col1);
                 break;
             case "right":
+                if (playerRightWorldX + speed >= MAX_WORLD_COL * TILE_SIZE) { player.collisionOn = true; return; }
                 col1 = (playerRightWorldX + speed) / TILE_SIZE;
                 row1 = playerTopWorldY / TILE_SIZE;
                 row2 = playerBottomWorldY / TILE_SIZE;
@@ -60,7 +65,16 @@ public class CollisionChecker {
     private void checkCollisionAt(Player player, int r1, int c1, int r2, int c2) {
         // 1. Check Background Layer
         for (TileManager tm : gp.getWorldBackgroundLayer()) {
+            if (isTileSolid(tm, r1, c1)) {
+                player.collisionOn = true;
+                return;
+            }
             if (isTileSolid(tm, r1, c1) || isTileSolid(tm, r2, c2)) {
+                int centerX = player.worldX + player.solidArea.x + player.solidArea.width / 2;
+                int centerY = player.worldY + player.solidArea.y + player.solidArea.height / 2;
+
+                int row = centerY / TILE_SIZE;
+                int col = centerX / TILE_SIZE;
                 player.collisionOn = true;
                 return;
             }
@@ -89,12 +103,19 @@ public class CollisionChecker {
 
     private boolean isTileSolid(TileManager tm, int row, int col) {
         // Bounds check
-        if (row < 0 || row >= MAX_WORLD_ROW || col < 0 || col >= MAX_WORLD_COL) return true;
-
+        if (row < 0 || row >= tm.getMap().length || col < 0 || col >= tm.getMap()[0].length) {
+            return true; // Treat "Out of Bounds" as solid
+        }
         int tileNum = tm.getMap()[row][col];
         if (tileNum == 0) return false; // 0 is empty/transparent
 
-        // Adjust tileNum (since your logic uses tileNum-- later)
+        // Check per-position collision map
+        boolean[][] collisionMap = tm.getCollisionMap();
+        if (collisionMap != null && collisionMap[row][col]) {
+            return true;
+        }
+
+        // Fall back to tile-level collision (set during tile asset loading)
         int actualIndex = tileNum - 1;
         if (actualIndex >= 0 && actualIndex < tm.getTiles().size()) {
             return tm.getTiles().get(actualIndex).isCollision();
@@ -162,37 +183,6 @@ public class CollisionChecker {
         }
     }
 
-//    public void checkObject(Player player, Building building) {
-//        // Get player's predicted position
-//        Rectangle pRect = new Rectangle(
-//                player.worldX + player.solidArea.x,
-//                player.worldY + player.solidArea.y,
-//                player.solidArea.width,
-//                player.solidArea.height
-//        );
-//
-//        // Predict next step
-//        int speed = player.getCurrentSpeed();
-//        switch(player.getDirection()) {
-//            case "up" -> pRect.y -= speed;
-//            case "down" -> pRect.y += speed;
-//            case "left" -> pRect.x -= speed;
-//            case "right" -> pRect.x += speed;
-//        }
-//
-//        // Building's world hitbox
-//        Rectangle bRect = new Rectangle(
-//                building.worldX + building.solidArea.x,
-//                building.worldY + building.solidArea.y,
-//                building.solidArea.width,
-//                building.solidArea.height
-//        );
-//
-//        if (pRect.intersects(bRect)) {
-//            player.collisionOn = true;
-//        }
-//    }
-
     // ADD THIS TO CollisionChecker.java
     public void checkTileForNPC(NPC npc) {
         int npcLeftWorldX = npc.worldX + npc.solidArea.x;
@@ -204,24 +194,28 @@ public class CollisionChecker {
 
         switch (npc.direction) {
             case "up":
+                if (npcTopWorldY - npc.speed < 0) { npc.collisionOn = true; return; }
                 row1 = (npcTopWorldY - npc.speed) / TILE_SIZE;
                 col1 = npcLeftWorldX / TILE_SIZE;
                 col2 = npcRightWorldX / TILE_SIZE;
                 checkNPCCollisionAt(npc, row1, col1, row1, col2);
                 break;
             case "down":
+                if (npcBottomWorldY + npc.speed >= MAX_WORLD_ROW * TILE_SIZE) { npc.collisionOn = true; return; }
                 row1 = (npcBottomWorldY + npc.speed) / TILE_SIZE;
                 col1 = npcLeftWorldX / TILE_SIZE;
                 col2 = npcRightWorldX / TILE_SIZE;
                 checkNPCCollisionAt(npc, row1, col1, row1, col2);
                 break;
             case "left":
+                if (npcLeftWorldX - npc.speed < 0) { npc.collisionOn = true; return; }
                 col1 = (npcLeftWorldX - npc.speed) / TILE_SIZE;
                 row1 = npcTopWorldY / TILE_SIZE;
                 row2 = npcBottomWorldY / TILE_SIZE;
                 checkNPCCollisionAt(npc, row1, col1, row2, col1);
                 break;
             case "right":
+                if (npcRightWorldX + npc.speed >= MAX_WORLD_COL * TILE_SIZE) { npc.collisionOn = true; return; }
                 col1 = (npcRightWorldX + npc.speed) / TILE_SIZE;
                 row1 = npcTopWorldY / TILE_SIZE;
                 row2 = npcBottomWorldY / TILE_SIZE;
@@ -291,10 +285,8 @@ public class CollisionChecker {
         int col = centerX / TILE_SIZE;
 
         for (TileTeleporter tt : gp.getWorldInteractiveLayer().getTeleporters()) {
-            if (tt.getCoordinates()[1] == row && tt.getCoordinates()[0] == col) {
-                System.out.println("THERE IS");
+            if (tt.getCoordinates()[1] == row && tt.getCoordinates()[0] == col)
                 return tt;
-            }
         }
         return null;
     }

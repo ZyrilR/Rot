@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import items.ItemRegistry;
+import utils.RandomUtil;
 import utils.Directories;
 import utils.RandomUtil;
 
@@ -46,8 +47,6 @@ public class GamePanel extends JPanel {
     public final PCUI     PCUI            = new PCUI(this, player.getPCSYSTEM());
     public final MenuUI MENUUI            = new MenuUI(this);
     public final InventoryUI INVENTORYUI  = new InventoryUI(this);
-    public final QuestUI    QUESTUI    = new QuestUI(this);
-    public final QuestToast QUESTTOAST = new QuestToast();
 
     public final WorldLoader world = new WorldLoader(this);
     public String CURRENT_PATH;
@@ -68,6 +67,7 @@ public class GamePanel extends JPanel {
         // For now we add test members so the PC UI has data to display.
 //        seedTestParty();
         testQuests();
+        seedTestParty();
     }
 
 
@@ -218,6 +218,21 @@ public class GamePanel extends JPanel {
         qs.complete("BRAIN_FULLY_ROT");
 
         System.out.println("[DEV] Quests force-completed for testing.");
+
+        for (brainrots.BrainRot rot : PCSYSTEM.getParty()) {
+            java.util.List<brainrots.LevelUpResult> results = rot.gainXp(RandomUtil.range(100,10000));
+            for (brainrots.LevelUpResult r : results) {
+                System.out.println("[DEV] " + rot.getName()
+                        + " → Lv." + r.newLevel
+                        + " | +" + r.hpGain + "HP"
+                        + " +" + r.atkGain + "ATK"
+                        + " +" + r.defGain + "DEF"
+                        + " +" + r.spdGain + "SPD"
+                        + (r.skillUnlocked != null ? " | Learned: " + r.skillUnlocked.getName() : ""));
+            }
+        }
+        System.out.println("[DEV] XP awarded.");
+
     }
 
     // ── Layer accessors ───────────────────────────────────────────────────────

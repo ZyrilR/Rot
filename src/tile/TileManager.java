@@ -15,6 +15,7 @@ public class TileManager {
     //layerType : {BACKGROUND, DECORATION, BUILDING, INTERACTIVE}
     private String layerType;
     private int map[][];
+    private boolean[][] collisionMap;
     private ArrayList<NPC> NPCs = new ArrayList<>();
     private ArrayList<TileTeleporter> teleporters = new ArrayList<>();
 
@@ -29,6 +30,9 @@ public class TileManager {
 
     public int[][] getMap() {
         return map;
+    }
+    public boolean[][] getCollisionMap() {
+        return collisionMap;
     }
     public ArrayList<Tile> getTiles() {
         return tiles;
@@ -115,8 +119,9 @@ public class TileManager {
     }
 
     //path : "assets/Worlds/1/decoration.txt"
-    public void loadTiles(String path, int tile_row, int tile_col) {
+    public void loadTiles(String path, int tile_row, int tile_col, boolean isCollidable, String layerType) {
         map = new int[tile_row][tile_col];
+        collisionMap = new boolean[tile_row][tile_col];
         try {
             InputStream is = getClass().getResourceAsStream(path);
             if (is == null) {
@@ -142,7 +147,11 @@ public class TileManager {
                 for (int col = 0; col < tile_col; col++) {
                     // Ensure we don't exceed the number of elements in the text line
                     if (col < numbers.length) {
-                        map[row][col] = Integer.parseInt(numbers[col]);
+                        int number = Integer.parseInt(numbers[col]);
+                        map[row][col] = number;
+                        if (isCollidable && number != 0) {
+                            collisionMap[row][col] = true;
+                        }
                     }
                 }
                 row++;
@@ -188,62 +197,15 @@ public class TileManager {
         }
     }
 
-    public void loadRoom(int roomNo) {
-        try {
-            InputStream is = getClass().getResourceAsStream("/res/Rooms/room_" + roomNo + ".txt");
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-
-            //Read first line of the file which contains the row and col values
-            String line = br.readLine();
-            if (line != null) {
-                String[] numbers = line.split(" ");
-
-                map = new int[Integer.parseInt(numbers[0])][Integer.parseInt(numbers[1])];
-            } else {
-                throw new RuntimeException();
-            }
-
-            int row = 0;
-            // Continue until we've filled all rows
-            while (row < MAX_SCREEN_ROW) {
-                line = br.readLine();
-
-                // Safety check: if the file ends early, stop
-                if (line == null)
-                    break;
-
-                // Split the line by spaces
-                String[] numbers = line.split(" ");
-
-                // Fill columns for this specific row
-                for (int col = 0; col < MAX_SCREEN_COL; col++) {
-                    // Ensure we don't exceed the number of elements in the text line
-                    if (col < numbers.length) {
-                        map[row][col] = Integer.parseInt(numbers[col]);
-                    }
-                }
-                row++;
-            }
-            br.close();
-
-        } catch (Exception e) {
-            // This will tell you exactly what went wrong (e.g., File Not Found or NullPointer)
-            e.printStackTrace();
-        }
-        displayMapValues();
-        System.out.println();
-    }
-
     public static void loadTiles() {
         //Tiles
-        for (int i = 1; i <= 320; i++) {
+        for (int i = 1; i <= 555; i++) {
             BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/" + i + ".png")));
             System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
         }
 
         //Decorations
-        for (int i = 1; i <= 82; i++) {
+        for (int i = 1; i <= 424; i++) {
             Tile tile = null;
             //if first img = transparent : background : false
             if (i == 1 || i == 3 || (i >= 33 && i <= 38))
@@ -260,7 +222,7 @@ public class TileManager {
                 }
             }
             else
-                tile = new Tile(loadImage("/res/Decorations/" + i + ".png"), true, "Background");
+                tile = new Tile(loadImage("/res/Decorations/" + i + ".png"), false, "Background");
 
             DECORATION_TILES.add(tile);
             System.out.println("ADDED: Decorations " + i + DECORATION_TILES.size());
