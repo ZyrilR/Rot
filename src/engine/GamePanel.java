@@ -281,8 +281,8 @@ public class GamePanel extends JPanel {
                                     switch(tile.getDirection().toUpperCase()) {
                                         case "LEFT" -> coordinates[0] -= 1;
                                         case "RIGHT" -> coordinates[0] += 1;
-                                        case "DOWN" -> coordinates[1] -= 1;
-                                        case "UP" -> coordinates[1] += 1;
+                                        case "DOWN" -> coordinates[1] +aaa= 1;
+                                        case "UP" -> coordinates[1] -= 1;
                                     }
                                 }
                             }

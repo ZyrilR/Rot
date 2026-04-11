@@ -9,6 +9,9 @@ public enum Directories {
     ROUTE131("/res/Worlds/Routes/Route131/"),
     ROUTE132("/res/Worlds/Routes/Route132/"),
 
+    //Caves
+    CAVE131("/res/Worlds/Caves/Cave131/"),
+
     //Rooms
     MARKET("/res/Rooms/Market/");
 
@@ -33,6 +36,7 @@ public enum Directories {
             case "ROUTE130" -> ROUTE130.getPath();
             case "ROUTE131" -> ROUTE131.getPath();
             case "ROUTE132" -> ROUTE132.getPath();
+            case "CAVE131" -> CAVE131.getPath();
             case "MARKET" -> MARKET.getPath();
             default -> ROUTE131.getPath();
         };
