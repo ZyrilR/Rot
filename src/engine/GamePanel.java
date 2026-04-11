@@ -64,7 +64,7 @@ public class GamePanel extends JPanel {
         // ── Seed the PC party with the player's starting team ────────────────
         // In a full game these would be loaded from save data.
         // For now we add test members so the PC UI has data to display.
-//        seedTestParty();
+        seedTestParty();
     }
 
     // ── Test seed ─────────────────────────────────────────────────────────────

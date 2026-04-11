@@ -103,8 +103,6 @@ public class WorldLoader {
                 String[] layer = line.split(":");
                 TileManager tm = new TileManager(layer[1]);
                 boolean isCollidable = layer[0].toLowerCase().contains("collision");
-                if (isCollidable)
-                    System.out.println("SETTING COLLISION ON " + layer[0]);
                 tm.loadTiles(folderPath + layer[0] + ".txt", tile_row, tile_col, isCollidable, layer[1]);
 
                 //check what kind of layer

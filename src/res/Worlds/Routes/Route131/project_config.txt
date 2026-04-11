@@ -1,6 +1,6 @@
 6,75,50,14,68
-Background:BACKGROUND
 Wall_Collision:BACKGROUND
+Background:BACKGROUND
 Decoration:DECORATION
 Decoration_Collision:DECORATION
 Building:BUILDING
