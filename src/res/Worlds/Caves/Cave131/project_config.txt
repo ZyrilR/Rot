@@ -1,8 +1,10 @@
-7,75,50,13,68
-Background2:BACKGROUND
+9,30,70,3,26
 Background:BACKGROUND
+Background2:BACKGROUND
 Wall_Collision:BACKGROUND
+overlay:BACKGROUND
 Decoration:DECORATION
-Decoration_Collision:DECORATION
 Building:BUILDING
 Interactive:INTERACTIVE
+Ramp_UP:BACKGROUND
+Ramp_DOWN:BACKGROUND

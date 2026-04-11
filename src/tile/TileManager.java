@@ -199,7 +199,7 @@ public class TileManager {
 
     public static void loadTiles() {
         //Tiles
-        for (int i = 1; i <= 555; i++) {
+        for (int i = 1; i <= 561; i++) {
             BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/" + i + ".png")));
             System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
         }
