@@ -250,6 +250,7 @@ public class PCUI {
             setStatus("Holding: " + target.getName(), true);
         } else {
             MoveResult result = pc.move(selectedSlot, targetSlot);
+            if (result == MoveResult.SAME_SLOT) return;
             boolean ok = result == MoveResult.SUCCESS || result == MoveResult.SWAPPED;
             setStatus(ok ? (result == MoveResult.SWAPPED ? "Swapped!" : heldRot.getName() + " moved!")
                     : PCSystem.resultMessage(result, null), false);
@@ -268,6 +269,7 @@ public class PCUI {
             setStatus("Holding: " + target.getName(), true);
         } else {
             MoveResult result = pc.move(selectedSlot, targetSlot);
+            if (result == MoveResult.SAME_SLOT) return;
             boolean ok = result == MoveResult.SUCCESS || result == MoveResult.SWAPPED;
             setStatus(ok ? (result == MoveResult.SWAPPED ? "Swapped!" : heldRot.getName() + " moved!")
                     : PCSystem.resultMessage(result, null), false);
@@ -609,7 +611,7 @@ public class PCUI {
                 ? "Tab Party  ENT Select  ESC Cancel/Close"
                 : "ENT Select  ESC Cancel/Close";
 
-        g2.setFont(base.deriveFont(8f));
+        g2.setFont(base.deriveFont(7f));
         g2.setColor(new Color(120, 116, 108));
         FontMetrics fm = g2.getFontMetrics();
         int rx = barX + barW - padding;
