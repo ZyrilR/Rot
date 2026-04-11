@@ -8,6 +8,8 @@ import tile.TileManager;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static utils.Constants.*;
 
@@ -24,12 +26,14 @@ public class WorldLoader {
     private ArrayList<TileManager> backgroundLayer = new ArrayList<>();
     private ArrayList<TileManager> decorationLayer = new ArrayList<>();
     private ArrayList<TileManager> buildingLayer = new ArrayList<>();
+    private ArrayList<TileManager> rampLayers = new ArrayList<>();
     private TileManager interactiveLayer;
 
     private void resetLayers() {
         backgroundLayer.clear();
         decorationLayer.clear();
         buildingLayer.clear();
+        rampLayers.clear();
         interactiveLayer = null;
     }
 
@@ -97,13 +101,28 @@ public class WorldLoader {
 
             int numOfLayers = Integer.parseInt(parts[0]);
 
+            Pattern overlayCollisionPattern = Pattern.compile("(?i)overlay.*collision_(\\d+)");
+
             for (int i = 0; i < numOfLayers; i++) {
                 line = br.readLine();
 
                 String[] layer = line.split(":");
                 TileManager tm = new TileManager(layer[1]);
+                tm.setLayerName(layer[0]);
                 boolean isCollidable = layer[0].toLowerCase().contains("collision");
                 tm.loadTiles(folderPath + layer[0] + ".txt", tile_row, tile_col, isCollidable, layer[1]);
+
+                // Detect ramp layers
+                if (layer[0].toLowerCase().contains("ramp")) {
+                    tm.setRampLayer(true);
+                    rampLayers.add(tm);
+                }
+
+                // Detect overlay-collision layers (e.g. overlay-collision_1)
+                Matcher matcher = overlayCollisionPattern.matcher(layer[0]);
+                if (matcher.find()) {
+                    tm.setOverlayCollisionLevel(Integer.parseInt(matcher.group(1)));
+                }
 
                 //check what kind of layer
                 switch (layer[1].toUpperCase()) {
@@ -145,6 +164,10 @@ public class WorldLoader {
 
     public ArrayList<TileManager> getBackgroundLayer() {
         return backgroundLayer;
+    }
+
+    public ArrayList<TileManager> getRampLayers() {
+        return rampLayers;
     }
 
 }
