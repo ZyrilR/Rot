@@ -4,6 +4,7 @@ import engine.GamePanel;
 import input.KeyboardHandler;
 import items.Inventory;
 import storage.PCSystem;
+import tile.TileManager;
 import tile.TileTeleporter;
 import utils.AssetManager;
 
@@ -41,6 +42,9 @@ public class Player {
     //Collision Handling
     public Rectangle solidArea;
     public boolean collisionOn = false;
+
+    // Ground level (ramps change this: going up = +1, going down = -1)
+    public int groundLevel = 0;
 
     public Player(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
@@ -170,10 +174,13 @@ public class Player {
                 moveProgress = 0;
                 setIsMoving(false);
 
-                // 2. CHECK FOR TALL GRASS ENCOUNTERS
+                // 2. CHECK FOR RAMP (ground level change)
+                checkRamp();
+
+                // 3. CHECK FOR TALL GRASS ENCOUNTERS
                 checkGrass();
 
-                // 3. CHECK FOR DOORS/WARPS
+                // 4. CHECK FOR DOORS/WARPS
                 checkWarps();
             }
         } else if (kh.isMoving()) {
@@ -226,6 +233,28 @@ public class Player {
                 if (npcGridX == targetGridX && npcGridY == targetGridY) {
                     System.out.println("FOUND NPC: " + npc.name); // Debug print
                     npc.interact(gp); // Triggers the Dialogue!
+                    return;
+                }
+            }
+        }
+    }
+
+    private void checkRamp() {
+        int gridX = worldX / TILE_SIZE;
+        int gridY = worldY / TILE_SIZE;
+
+        for (TileManager ramp : gp.world.getRampLayers()) {
+            if (gridY >= 0 && gridY < MAX_WORLD_ROW && gridX >= 0 && gridX < MAX_WORLD_COL) {
+                int tileNum = ramp.getMap()[gridY][gridX];
+                if (tileNum != 0) {
+                    // Player stepped on a ramp tile — determine direction
+                    // Moving down (higher Y) = going downhill = -1
+                    // Moving up (lower Y) = going uphill = +1
+                    switch (direction) {
+                        case "up"   -> groundLevel += 1;
+                        case "down" -> groundLevel -= 1;
+                    }
+                    System.out.println("[Ramp] Ground level changed to: " + groundLevel);
                     return;
                 }
             }
