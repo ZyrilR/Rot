@@ -177,7 +177,15 @@ public class BrainRot {
     public int getBaseSpeed()       { return speed; }
     public int getCurrentSp()       { return currentSp; }
     public String getStatus()       { return status; }
+
+    public int getMaxSp() { return 50; } // If you already have a maxSp variable, return that instead!
+    // Otherwise, returning a default like 50 works perfectly for starters.
+
+    // Just in case you are missing this one too for the StarterUI/BattleUI:
+
     public List<Skill> getMoves()   { return moves; }
+
+    public int getLevel() {return 1; } // Defaulting to Level 1 for starters and basic wild encounters
 
     public void restoreForBattle() {
         currentHp = maxHp;

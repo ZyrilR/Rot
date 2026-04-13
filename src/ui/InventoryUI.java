@@ -14,41 +14,18 @@ import java.util.List;
 
 import static utils.Constants.*;
 
-/**
- * InventoryUI — full-featured backpack overlay.
- *
- * Tabs:   ITEMS (Stews, Antidotes, Scrolls)  |  CAPSULES
- * Layout: left = item image + description card  |  right = scrollable item list
- *
- * State machine:
- *   ITEM_LIST    — browsing items in the selected tab
- *   PARTY_SELECT — choosing a party member to use the item on
- *   MOVE_SWAP    — scroll: choose which of 4 moves to replace (MOVESET_FULL)
- *
- * Controls:
- *   TAB          — switch tabs (ITEM_LIST only)
- *   W/S          — move cursor
- *   ENTER        — confirm
- *   ESC          — cancel / go back one level
- */
 public class InventoryUI {
-
-    // ── Enums ─────────────────────────────────────────────────────────────────
 
     private enum Tab    { ITEMS, CAPSULES }
     private enum Layout { ITEM_LIST, PARTY_SELECT, MOVE_SWAP }
 
-    // ── Injected refs ─────────────────────────────────────────────────────────
-
     private final GamePanel gp;
-
-    // ── UI state ──────────────────────────────────────────────────────────────
 
     private Tab    activeTab  = Tab.ITEMS;
     private Layout layout     = Layout.ITEM_LIST;
 
-    private int itemCursor   = 0;   // absolute index into currentList()
-    private int scrollOffset = 0;   // first visible row index
+    private int itemCursor   = 0;
+    private int scrollOffset = 0;
     private int partyCursor  = 0;
     private int moveCursor   = 0;
 
@@ -60,17 +37,39 @@ public class InventoryUI {
     private Item     pendingItem         = null;
     private BrainRot pendingScrollTarget = null;
 
-    private final Map<String, BufferedImage> imgCache = new HashMap<>();
+    // --- BATTLE HOOKS ---
+    private boolean openedInBattle = false;
+    private items.Item selectedItemForBattle = null;
 
-    // ── Constructor ───────────────────────────────────────────────────────────
+    private final Map<String, BufferedImage> imgCache = new HashMap<>();
 
     public InventoryUI(GamePanel gp) {
         this.gp = gp;
     }
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
+    public Item getSelectedItemForBattle() {
+        return selectedItemForBattle;
+    }
+
+    public void clearSelectedItemForBattle() {
+        selectedItemForBattle = null;
+        openedInBattle = false;
+    }
 
     public void open() {
+        this.openedInBattle = false;
+        resetUIState();
+        System.out.println("[InventoryUI] Opened.");
+    }
+
+    public void openInBattle() {
+        this.openedInBattle = true;
+        this.selectedItemForBattle = null;
+        resetUIState();
+        System.out.println("[InventoryUI] Opened in Battle.");
+    }
+
+    private void resetUIState() {
         activeTab           = Tab.ITEMS;
         layout              = Layout.ITEM_LIST;
         itemCursor          = 0;
@@ -82,10 +81,7 @@ public class InventoryUI {
         statusMessage       = "";
         statusTimer         = 0;
         inputCooldown       = INPUT_DELAY * 2;
-        System.out.println("[InventoryUI] Opened.");
     }
-
-    // ── Update ────────────────────────────────────────────────────────────────
 
     public void update() {
         if (inputCooldown > 0) { inputCooldown--; return; }
@@ -97,8 +93,6 @@ public class InventoryUI {
             case MOVE_SWAP    -> updateMoveSwap();
         }
     }
-
-    // ── ITEM_LIST input ───────────────────────────────────────────────────────
 
     private void updateItemList() {
         if (gp.KEYBOARDHANDLER.tabPressed) {
@@ -148,6 +142,18 @@ public class InventoryUI {
     }
 
     private void handleItemUse(Item item) {
+        if (openedInBattle) {
+            if (item instanceof Capsule) {
+                this.selectedItemForBattle = item;
+                return;
+            } else {
+                pendingItem = item;
+                partyCursor = 0;
+                layout = Layout.PARTY_SELECT;
+                return;
+            }
+        }
+
         if (item instanceof Capsule) {
             setStatus("Can't use capsules outside of battle!");
             return;
@@ -161,8 +167,6 @@ public class InventoryUI {
         layout      = Layout.PARTY_SELECT;
         clearStatus();
     }
-
-    // ── PARTY_SELECT input ────────────────────────────────────────────────────
 
     private void updatePartySelect() {
         int partySize = gp.player.getPCSYSTEM().getPartySize();
@@ -181,6 +185,12 @@ public class InventoryUI {
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
             BrainRot target = gp.player.getPCSYSTEM().getPartyMember(partyCursor);
+
+            if (openedInBattle) {
+                this.selectedItemForBattle = pendingItem;
+                return;
+            }
+
             if (target != null) applyItemToTarget(target);
             inputCooldown = INPUT_DELAY;
         }
@@ -191,8 +201,6 @@ public class InventoryUI {
         else if (pendingItem instanceof Antidote a) applyAntidote(a, target);
         else if (pendingItem instanceof Scroll   s) applyScroll(s, target);
     }
-
-    // ── Stew ──────────────────────────────────────────────────────────────────
 
     private void applyStew(Stew stew, BrainRot target) {
         if (target.getCurrentHp() >= target.getMaxHp()) {
@@ -206,15 +214,10 @@ public class InventoryUI {
         returnToItemList();
     }
 
-    // ── Antidote ──────────────────────────────────────────────────────────────
-
     private void applyAntidote(Antidote antidote, BrainRot target) {
         String cure = antidote.getStatusToCure().toUpperCase();
 
         if (cure.equals("DEBUFF")) {
-            // BUG FIX: Only consume if there are actual debuffs to clear.
-            // hasDebuffs() should ideally call BrainRot.hasActiveDebuffs() once
-            // that method is added. See the comment on hasDebuffs() below.
             if (!hasDebuffs(target)) {
                 setStatus("No stat debuffs to clear!");
                 return;
@@ -227,7 +230,6 @@ public class InventoryUI {
         }
 
         if (!target.hasStatus(cure)) {
-            // Keep the feedback short so it isn't truncated in the status bar
             String shortName = target.getName();
             setStatus(shortName + " isn't " + capitalize(cure.toLowerCase()) + "!");
             return;
@@ -239,14 +241,9 @@ public class InventoryUI {
         returnToItemList();
     }
 
-    /**
-     * Returns true if the target has any active negative stat modifier.
-     */
     private boolean hasDebuffs(BrainRot target) {
         return target.hasActiveDebuffs();
     }
-
-    // ── Scroll ────────────────────────────────────────────────────────────────
 
     private void applyScroll(Scroll scroll, BrainRot target) {
         Scroll.ScrollResult result = scroll.validate(target);
@@ -259,7 +256,6 @@ public class InventoryUI {
                 returnToItemList();
             }
             case MOVESET_FULL -> {
-                // Not an error — open move-swap picker
                 pendingScrollTarget = target;
                 moveCursor = 0;
                 layout     = Layout.MOVE_SWAP;
@@ -282,8 +278,6 @@ public class InventoryUI {
         }
         inputCooldown = INPUT_DELAY;
     }
-
-    // ── MOVE_SWAP input ───────────────────────────────────────────────────────
 
     private void updateMoveSwap() {
         if (pendingScrollTarget == null) { cancelToItemList("Cancelled."); return; }
@@ -315,8 +309,6 @@ public class InventoryUI {
         }
     }
 
-    // ── State helpers ─────────────────────────────────────────────────────────
-
     private void returnToItemList() {
         layout      = Layout.ITEM_LIST;
         pendingItem = null;
@@ -334,9 +326,14 @@ public class InventoryUI {
     }
 
     private void close() {
-        gp.GAMESTATE = "menu";
-        gp.MENUUI.open();
-        System.out.println("[InventoryUI] Closed → menu.");
+        if (openedInBattle) {
+            gp.GAMESTATE = "battle";
+            openedInBattle = false;
+        } else {
+            gp.GAMESTATE = "menu";
+            gp.MENUUI.open();
+        }
+        System.out.println("[InventoryUI] Closed.");
     }
 
     private void consumePendingItem() {
@@ -344,8 +341,6 @@ public class InventoryUI {
         gp.player.getInventory().removeItem(pendingItem);
         pendingItem = null;
     }
-
-    // ── Item list helpers ─────────────────────────────────────────────────────
 
     private List<Item> currentList() {
         List<Item> all = gp.player.getInventory().getRawItems();
@@ -359,52 +354,41 @@ public class InventoryUI {
         return out;
     }
 
-    // ── DRAW ──────────────────────────────────────────────────────────────────
-
     public void draw(Graphics2D g2) {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         Font base = (AssetManager.pokemonGb != null)
                 ? AssetManager.pokemonGb : new Font("Monospaced", Font.PLAIN, 10);
 
-        // Dim overlay
         g2.setColor(new Color(0, 0, 0, 180));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        // ── Window bounds ─────────────────────────────────────────────────────
         int winX = TILE_SIZE, winY = TILE_SIZE;
-        int winW = SCREEN_WIDTH  - TILE_SIZE * 2;   // 672 px
-        int winH = SCREEN_HEIGHT - TILE_SIZE * 2;   // 480 px
+        int winW = SCREEN_WIDTH  - TILE_SIZE * 2;
+        int winH = SCREEN_HEIGHT - TILE_SIZE * 2;
 
         drawWindow(g2, winX, winY, winW, winH);
         drawTitleBar(g2, base, winX, winY, winW);
 
-        int bodyY = winY + 52;  // below title bar + gold divider
+        int bodyY = winY + 52;
 
-        // Status bar position — computed once, both panels use it as their floor
         int statusBarH = STATUS_BAR_H;
         int statusBarY = winY + winH - statusBarH - 8;
 
-        // ── Panel split ───────────────────────────────────────────────────────
         int leftW = (int)(winW * LEFT_SPLIT / 100.0);
         int divX  = winX + leftW;
 
-        // Vertical divider line
         g2.setColor(new Color(200, 195, 180));
         g2.drawLine(divX, bodyY, divX, statusBarY - 4);
 
-        // ── Draw left and right panels ────────────────────────────────────────
         drawLeftPanel (g2, base, winX, bodyY, leftW, statusBarY);
         drawRightPanel(g2, base, winX, winW,  bodyY, divX, statusBarY);
 
-        // ── Overlays on top ───────────────────────────────────────────────────
         if (layout == Layout.PARTY_SELECT) drawPartySelectOverlay(g2, base, winX, winY, winW, winH);
         if (layout == Layout.MOVE_SWAP)    drawMoveSwapOverlay   (g2, base, winX, winY, winW, winH);
 
         drawStatusBar(g2, base, winX, winY, winW, statusBarY, statusBarH);
     }
-
-    // ── Title bar ─────────────────────────────────────────────────────────────
 
     private void drawTitleBar(Graphics2D g2, Font base, int winX, int winY, int winW) {
         g2.setColor(new Color(44, 44, 42));
@@ -414,7 +398,6 @@ public class InventoryUI {
         g2.setColor(new Color(241, 239, 232));
         g2.drawString("BACKPACK", winX + 28, winY + 32);
 
-        // Tab pills — right-aligned inside title bar
         String[] labels = { "ITEMS", "CAPSULES" };
         Tab[]    tabs   = { Tab.ITEMS, Tab.CAPSULES };
 
@@ -439,8 +422,6 @@ public class InventoryUI {
         g2.drawLine(winX + 8, winY + 46, winX + winW - 8, winY + 46);
     }
 
-    // ── Left panel — image + description ──────────────────────────────────────
-
     private void drawLeftPanel(Graphics2D g2, Font base,
                                int winX, int bodyY, int leftW, int statusBarY) {
 
@@ -451,7 +432,6 @@ public class InventoryUI {
         int panelW      = leftW - OUTER_PAD - 10;
         int panelBottom = statusBarY - 8;
 
-        // ── Image card ────────────────────────────────────────────────────────
         int imgCardY = bodyY + 8;
         int imgCardH = 170;
         if (imgCardY + imgCardH > panelBottom) imgCardH = panelBottom - imgCardY - 4;
@@ -466,7 +446,6 @@ public class InventoryUI {
             drawCentredText(g2, base, panelX, imgCardY, panelW, imgCardH, "—");
         }
 
-        // ── Description card — fills remaining vertical space ─────────────────
         int descCardY = imgCardY + imgCardH + 6;
         int descCardH = panelBottom - descCardY;
         if (descCardH < 24) return;
@@ -480,7 +459,6 @@ public class InventoryUI {
             return;
         }
 
-        // Clip to card interior — nothing bleeds outside
         Shape prevClip = g2.getClip();
         g2.setClip(panelX + 4, descCardY + 4, panelW - 8, descCardH - 8);
 
@@ -488,21 +466,17 @@ public class InventoryUI {
         int textW = panelW - 20;
         int ty    = descCardY + 24;
 
-        // Name — word-wrapped, bold 12pt
-        // Long names like "TUNG TUNG TUNG SAHUR" will wrap rather than truncate
         g2.setFont(base.deriveFont(Font.BOLD, 13f));
         FontMetrics nameFm = g2.getFontMetrics();
         ty = drawWordWrapped(g2, nameFm, sel.getName(), tx, ty, textW,
                 NAME_LINE_H, new Color(44, 44, 42));
         ty += 6;
 
-        // Description — word-wrapped, 10pt
         g2.setFont(base.deriveFont(10f));
         ty = drawWordWrapped(g2, g2.getFontMetrics(), sel.getDescription(),
                 tx, ty, textW, DESC_LINE_H, new Color(88, 84, 76));
         ty += 8;
 
-        // ── Scroll type badge — shown only for Scroll items ───────────────────
         if (sel instanceof Scroll scroll) {
             Skill scrollSkill = skills.SkillRegistry.get(scroll.getSkillName());
             if (scrollSkill != null) {
@@ -523,8 +497,6 @@ public class InventoryUI {
         g2.setClip(prevClip);
     }
 
-    // ── Right panel — scrollable item list ────────────────────────────────────
-
     private void drawRightPanel(Graphics2D g2, Font base,
                                 int winX, int winW, int bodyY,
                                 int divX, int statusBarY) {
@@ -534,19 +506,17 @@ public class InventoryUI {
 
         int listX       = divX + OUTER_PAD;
         int listW       = winX + winW - listX - OUTER_PAD;
-        int labelY      = bodyY + 16;     // baseline of tab label
-        int firstRowY   = labelY + 8;    // top of first row rect
+        int labelY      = bodyY + 16;
+        int firstRowY   = labelY + 8;
         int listAreaBot = statusBarY - 8;
         int listAreaH   = listAreaBot - firstRowY;
         int visCount    = Math.max(1, listAreaH / ROW_H);
 
-        // ── Tab label (left) + counter (right) ────────────────────────────────
         String tabLabel = activeTab == Tab.ITEMS ? "ITEMS" : "CAPSULES";
         g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(120, 116, 108));
         g2.drawString(tabLabel, listX, labelY);
 
-        // Counter "1 / N" right of label, same baseline
         if (totalCount > 0) {
             String counter = (itemCursor + 1) + " / " + totalCount;
             FontMetrics cfm = g2.getFontMetrics();
@@ -562,7 +532,6 @@ public class InventoryUI {
 
         clampScroll(visCount);
 
-        // Hard-clip the list area — partial bottom rows are cut off cleanly
         Shape prevClip = g2.getClip();
         g2.setClip(listX - 6, firstRowY, listW + 12, listAreaH);
 
@@ -571,7 +540,7 @@ public class InventoryUI {
         for (int i = scrollOffset; i < endIdx; i++) {
             Item    item    = list.get(i);
             int     rowTop  = firstRowY + (i - scrollOffset) * ROW_H;
-            int     textY   = rowTop + ROW_H - 9;  // text baseline inside row
+            int     textY   = rowTop + ROW_H - 9;
             boolean hovered = (i == itemCursor);
 
             if (hovered) {
@@ -582,7 +551,6 @@ public class InventoryUI {
                 g2.drawRoundRect(listX - 4, rowTop, listW + 4, ROW_H - 2, 5, 5);
                 g2.setStroke(new BasicStroke(1));
 
-                // Cursor triangle
                 int ts = 7, cx = listX + 2, cy = rowTop + ROW_H / 2 - 1;
                 g2.setColor(new Color(80, 76, 70));
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -590,20 +558,17 @@ public class InventoryUI {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
             }
 
-            // Item name — truncated to leave space for qty on the right
             g2.setFont(base.deriveFont(hovered ? Font.BOLD : Font.PLAIN, 11f));
             g2.setColor(new Color(44, 44, 42));
             int nameMaxW = listW - 54;
             g2.drawString(truncate(item.getName(), g2.getFontMetrics(), nameMaxW), listX + 16, textY);
 
-            // Quantity — right-aligned 
             String qty = "x " + countOf(item.getName(), gp.player.getInventory());
             g2.setFont(base.deriveFont(10f));
             FontMetrics fm = g2.getFontMetrics();
             g2.setColor(new Color(80, 78, 72));
             g2.drawString(qty, listX + listW - fm.stringWidth(qty) - 6, textY);
 
-            // Row divider (skip after the very last visible row)
             if (i < endIdx - 1) {
                 g2.setColor(new Color(205, 200, 190));
                 g2.drawLine(listX, rowTop + ROW_H - 1, listX + listW, rowTop + ROW_H - 1);
@@ -612,7 +577,6 @@ public class InventoryUI {
 
         g2.setClip(prevClip);
 
-        // ── Scroll hints outside clip region ──────────────────────────────────
         g2.setFont(base.deriveFont(9f));
         g2.setColor(new Color(140, 136, 128));
         int arrowX = listX + listW / 2;
@@ -625,7 +589,6 @@ public class InventoryUI {
         }
     }
 
-    /** Computes visible row count from screen geometry — used in update() for scroll sync. */
     private int computeVisibleCount() {
         int winY       = TILE_SIZE;
         int winH       = SCREEN_HEIGHT - TILE_SIZE * 2;
@@ -637,8 +600,6 @@ public class InventoryUI {
         return Math.max(1, listAreaH / ROW_H);
     }
 
-    // ── PARTY SELECT overlay ──────────────────────────────────────────────────
-
     private void drawPartySelectOverlay(Graphics2D g2, Font base,
                                         int winX, int winY, int winW, int winH) {
         g2.setColor(new Color(0, 0, 0, 130));
@@ -649,7 +610,6 @@ public class InventoryUI {
         int panelY = winY + (winH - panelH) / 2;
         drawCard(g2, panelX, panelY, panelW, panelH, 12);
 
-        // Title
         g2.setFont(base.deriveFont(Font.BOLD, 13f));
         g2.setColor(new Color(44, 44, 42));
         g2.drawString("Choose a BrainRot", panelX + 14, panelY + 22);
@@ -660,7 +620,6 @@ public class InventoryUI {
         int listY     = panelY + 36;
         int partySize = gp.player.getPCSYSTEM().getPartySize();
 
-        // Clip rows to panel content area
         Shape prev = g2.getClip();
         g2.setClip(panelX + 4, listY, panelW - 8, panelH - 54);
 
@@ -670,7 +629,6 @@ public class InventoryUI {
             boolean  greyed  = isGreyedOut(rot);
             int      rowY    = listY + i * rowH;
 
-            // Row background
             Color bg = hovered
                     ? (greyed ? new Color(220, 210, 210) : new Color(178, 212, 244, 220))
                     : new Color(235, 231, 223);
@@ -691,20 +649,17 @@ public class InventoryUI {
 
             int textX = panelX + 26;
 
-            // BrainRot name — truncated, greyed if applicable
             g2.setFont(base.deriveFont(Font.BOLD, 11f));
             g2.setColor(greyed ? new Color(160, 155, 148) : new Color(44, 44, 42));
             int nameMaxW = panelW - 140;
             g2.drawString(truncate(rot.getName(), g2.getFontMetrics(), nameMaxW), textX, rowY + 16);
 
-            // HP / status sub-line
             String info = "HP " + rot.getCurrentHp() + "/" + rot.getMaxHp()
                     + (rot.getStatus().equalsIgnoreCase("NONE") ? "" : "  [" + rot.getStatus() + "]");
             g2.setFont(base.deriveFont(9f));
             g2.setColor(greyed ? new Color(170, 165, 158) : new Color(88, 84, 76));
             g2.drawString(info, textX, rowY + 30);
 
-            // Grey reason — always shown on greyed rows, right-aligned
             if (greyed) {
                 String reason = greyReason(rot);
                 g2.setFont(base.deriveFont(8f));
@@ -721,8 +676,6 @@ public class InventoryUI {
         g2.drawString("WS Move   ENT Confirm   ESC Cancel", panelX + 14, panelY + panelH - 10);
     }
 
-    // ── MOVE SWAP overlay ─────────────────────────────────────────────────────
-
     private void drawMoveSwapOverlay(Graphics2D g2, Font base,
                                      int winX, int winY, int winW, int winH) {
         g2.setColor(new Color(0, 0, 0, 130));
@@ -733,7 +686,6 @@ public class InventoryUI {
         int panelY = winY + (winH - panelH) / 2;
         drawCard(g2, panelX, panelY, panelW, panelH, 12);
 
-        // Title — "Learning: [skill name]"
         g2.setFont(base.deriveFont(Font.BOLD, 13f));
         g2.setColor(new Color(44, 44, 42));
         String title = (pendingItem instanceof Scroll s)
@@ -741,7 +693,6 @@ public class InventoryUI {
                 : "Replace which move?";
         g2.drawString(title, panelX + 14, panelY + 22);
 
-        // Sub-label
         g2.setFont(base.deriveFont(9f));
         g2.setColor(new Color(100, 96, 90));
         g2.drawString("Choose a move to replace:", panelX + 14, panelY + 39);
@@ -775,7 +726,6 @@ public class InventoryUI {
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
             }
 
-            // Type badge
             g2.setFont(base.deriveFont(8f));
             FontMetrics fm = g2.getFontMetrics();
             int badgeW    = fm.stringWidth(mv.getType().name()) + padX * 2;
@@ -786,13 +736,11 @@ public class InventoryUI {
             g2.setColor(Color.WHITE);
             g2.drawString(mv.getType().name(), badgeX + padX, badgeTopY + 11);
 
-            // Move name
             int nameX = panelX + 24 + badgeW + 8;
             g2.setFont(base.deriveFont(hov ? Font.BOLD : Font.PLAIN, 11f));
             g2.setColor(new Color(44, 44, 42));
             g2.drawString(truncate(mv.getName(), g2.getFontMetrics(), panelW - 140), nameX, rowY + rowH / 2 + 5);
 
-            // SP cost — right-aligned
             String sp = "SP " + mv.getSpCost();
             g2.setFont(base.deriveFont(9f));
             fm = g2.getFontMetrics();
@@ -805,8 +753,6 @@ public class InventoryUI {
         g2.drawString("WS Move   ENT Replace   ESC Cancel", panelX + 14, panelY + panelH - 10);
     }
 
-    // ── Status bar ────────────────────────────────────────────────────────────
-
     private void drawStatusBar(Graphics2D g2, Font base,
                                int winX, int winY, int winW,
                                int statusBarY, int statusBarH) {
@@ -815,7 +761,6 @@ public class InventoryUI {
         g2.setColor(new Color(215, 210, 200));
         g2.fillRoundRect(barX, statusBarY, barW, statusBarH, 5, 5);
 
-        // ── Nav hints — two lines, right-aligned ──────────────────────────────
         String hint1 = "WS Move  TAB Tab";
         String hint2 = "ENT Use  ESC Close";
 
@@ -826,7 +771,6 @@ public class InventoryUI {
         g2.drawString(hint1, rx - hfm.stringWidth(hint1), statusBarY + 18);
         g2.drawString(hint2, rx - hfm.stringWidth(hint2), statusBarY + 32);
 
-        // ── Feedback — centered in the left half ─────────────────────────────
         if (!statusMessage.isEmpty()) {
             g2.setFont(base.deriveFont(10f));
             FontMetrics mfm = g2.getFontMetrics();
@@ -841,12 +785,6 @@ public class InventoryUI {
         }
     }
 
-    // ── Grey-out logic ────────────────────────────────────────────────────────
-
-    /**
-     * Returns true when the pending item cannot be usefully applied to this BrainRot.
-     * Scrolls with MOVESET_FULL are NOT greyed — the move-swap picker handles them.
-     */
     private boolean isGreyedOut(BrainRot rot) {
         if (rot == null) return true;
 
@@ -861,7 +799,6 @@ public class InventoryUI {
 
         if (pendingItem instanceof Scroll scroll) {
             Scroll.ScrollResult result = scroll.validate(rot);
-            // SUCCESS and MOVESET_FULL are both actionable — do NOT grey out
             return result != Scroll.ScrollResult.SUCCESS
                     && result != Scroll.ScrollResult.MOVESET_FULL;
         }
@@ -893,8 +830,6 @@ public class InventoryUI {
         return "";
     }
 
-    // ── Shared draw helpers ───────────────────────────────────────────────────
-
     private void drawWindow(Graphics2D g2, int x, int y, int w, int h) {
         int arc = 16;
         g2.setColor(new Color(245, 242, 235));
@@ -918,11 +853,6 @@ public class InventoryUI {
         g2.drawRoundRect(x, y, w, h, arc, arc);
     }
 
-    /**
-     * Word-wraps {@code text} into lines of max {@code maxW} pixels.
-     * Returns the y-baseline of the line after the last one drawn
-     * (so the caller knows where to place the next element).
-     */
     private int drawWordWrapped(Graphics2D g2, FontMetrics fm, String text,
                                 int x, int y, int maxW, int lineH, Color color) {
         g2.setColor(color);
@@ -950,7 +880,6 @@ public class InventoryUI {
         g2.drawString(t, bx + (bw - fm.stringWidth(t)) / 2, by + bh / 2 + 4);
     }
 
-    /** Truncates to fit within maxPx, appending "…". */
     private String truncate(String text, FontMetrics fm, int maxPx) {
         if (fm.stringWidth(text) <= maxPx) return text;
         while (text.length() > 1 && fm.stringWidth(text + "…") > maxPx)
@@ -958,16 +887,11 @@ public class InventoryUI {
         return text + "…";
     }
 
-    // ── Image loading ─────────────────────────────────────────────────────────
-
     private BufferedImage loadItemImage(Item item) {
         String path = item.getAssetPath();
         if (path == null || path.isEmpty()) return null;
         return imgCache.computeIfAbsent(path, AssetManager::loadImage);
     }
-
-
-    // ── Colour helpers ────────────────────────────────────────────────────────
 
     private Color typeColor(String typeName) {
         return switch (typeName.toUpperCase()) {
@@ -984,7 +908,6 @@ public class InventoryUI {
             default         -> new Color(130, 126, 118);
         };
     }
-    // ── String helpers ────────────────────────────────────────────────────────
 
     private String capitalize(String s) {
         if (s == null || s.isEmpty()) return s;
@@ -1000,8 +923,6 @@ public class InventoryUI {
         }
         return null;
     }
-
-    // ── Status helpers ────────────────────────────────────────────────────────
 
     private void setStatus(String msg) {
         statusMessage = msg;

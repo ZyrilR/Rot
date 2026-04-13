@@ -2,6 +2,7 @@ package battle;
 
 import brainrots.BrainRot;
 import items.Inventory;
+import items.Item;
 import skills.Skill;
 import skills.SkillEffect;
 
@@ -21,7 +22,7 @@ public class BattleManager {
 
     public enum BattleResult { ONGOING, PLAYER_WIN, ENEMY_WIN, CAPTURED, FLED }
 
-    private final BrainRot playerRot;
+    private BrainRot playerRot;
     private final BrainRot enemyRot;
     private final List<BrainRot> playerTeam;
     private final Inventory playerInventory;
@@ -68,18 +69,28 @@ public class BattleManager {
     }
 
     /** Player attempts to capture a wild BrainRot using a capsule from inventory */
-    public void executeCapture(int capsuleIndex) {
-        if (!wildBattle) {
-            System.out.println("You can't capture a trainer's BrainRot!");
-            return;
-        }
+    /** Player attempts to capture using a specific item instance */
+    public boolean executeCapture(Item capsule) {
+        if (!wildBattle) return false;
 
-        // Pass enemyRot and playerTeam to the Capsule
-        playerInventory.useItem(capsuleIndex, enemyRot, playerTeam);
+        // Calculate catch chance based on missing HP
+        double hpPercent = (double) enemyRot.getCurrentHp() / enemyRot.getMaxHp();
+        double catchRate = 0.5; // Base 50% chance for a normal capsule
 
-        if (playerTeam.contains(enemyRot)) {
+        // Better capsules have better rates
+        if (capsule.getName().toUpperCase().contains("BLUE")) catchRate = 0.75;
+        if (capsule.getName().toUpperCase().contains("MASTER")) catchRate = 1.0;
+
+        // The lower the HP, the higher the bonus!
+        double finalChance = catchRate + ((1.0 - hpPercent) * 0.5);
+
+        boolean success = Math.random() <= finalChance;
+
+        if (success) {
             result = BattleResult.CAPTURED;
         }
+
+        return success;
     }
 
 
@@ -145,4 +156,7 @@ public class BattleManager {
     public boolean isOver()            { return result != BattleResult.ONGOING; }
     public BrainRot getPlayerRot()     { return playerRot; }
     public BrainRot getEnemyRot()      { return enemyRot; }
+    public boolean isWildBattle() { return wildBattle; }
+
+    public void setPlayerRot(BrainRot rot) { this.playerRot = rot; }
 }
