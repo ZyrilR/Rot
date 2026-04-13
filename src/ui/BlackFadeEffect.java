@@ -1,6 +1,5 @@
 package ui;
 
-import engine.GamePanel;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import static utils.Constants.SCREEN_WIDTH;
@@ -12,7 +11,9 @@ public class BlackFadeEffect {
     private boolean fullyBlack = false;
 
     public enum FadeMode { FADE_IN_TO_BLACK, FADE_OUT_TO_PLAY }
-    private FadeMode mode = FadeMode.FADE_IN_TO_BLACK;
+
+    // FIX: Start in FADE_OUT_TO_PLAY mode with 0 alpha so the screen is clear by default!
+    private FadeMode mode = FadeMode.FADE_OUT_TO_PLAY;
 
     public void start(FadeMode mode, int speed) {
         this.mode = mode;
@@ -39,5 +40,6 @@ public class BlackFadeEffect {
     }
 
     public boolean isFullyBlack() { return fullyBlack; }
-    public boolean isFadeOutComplete() { return mode == FadeMode.FADE_OUT_TO_PLAY && alpha == 0; }
+    // FIX: Safely check if alpha is 0 or less
+    public boolean isFadeOutComplete() { return mode == FadeMode.FADE_OUT_TO_PLAY && alpha <= 0; }
 }

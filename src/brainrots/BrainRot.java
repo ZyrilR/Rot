@@ -9,20 +9,13 @@ import java.util.List;
 import static brainrots.Type.getType;
 import static brainrots.Tier.getTier;
 
-/**
- * Represents a BrainRot creature with stats, type, moves, and status.
- */
 public class BrainRot {
 
-    //Sound Effects: (Taking Damage, Attack, Buff, Encounter)
-
-    // Identity
     private String name;
     private Type primaryType;
-    private Type secondaryType; // nullable
+    private Type secondaryType;
     private Tier tier;
 
-    // Base stats (set at creation by Factory)
     private int maxHp;
     private int currentHp;
     private int attack;
@@ -31,18 +24,19 @@ public class BrainRot {
     private int maxSp;
     private int currentSp;
 
-    // Stat modifiers (as multipliers applied on base, capped at ±40%)
+    // --- INTEGRATED LEVELING SYSTEM variables ---
+    private int level = 1;
+    private int currentXp = 0;
+
     private double attackMod  = 1.0;
     private double defenseMod = 1.0;
     private double speedMod   = 1.0;
 
-    // Battle state
-    private String status = "NONE"; // NONE, BURN, PARALYZE, CONFUSE, FLINCH
+    private String status = "NONE";
     private int statusTurns = 0;
     private boolean ultimateUsed = false;
     private int turnCount = 0;
 
-    // Moves (max 4)
     private static final int MAX_MOVES = 4;
     private List<Skill> moves = new ArrayList<>();
 
@@ -57,11 +51,9 @@ public class BrainRot {
         this.attack = attack;
         this.defense = defense;
         this.speed = speed;
-        this.maxSp = 100;
+        this.maxSp = 50; // Default SP for all
         this.currentSp = maxSp;
     }
-
-    // ── HP / Damage / Healing ────────────────────────────────────────────────
 
     public void takeDamage(int dmg) {
         currentHp = Math.max(0, currentHp - dmg);
@@ -75,8 +67,6 @@ public class BrainRot {
         return currentHp <= 0;
     }
 
-    // ── SP ───────────────────────────────────────────────────────────────────
-
     public boolean useSkill(Skill skill) {
         if (currentSp < skill.getSpCost()) {
             System.out.println(name + " doesn't have enough SP!");
@@ -85,8 +75,6 @@ public class BrainRot {
         currentSp -= skill.getSpCost();
         return true;
     }
-
-    // ── Status ───────────────────────────────────────────────────────────────
 
     public void setStatus(String status) {
         this.status = status;
@@ -117,16 +105,9 @@ public class BrainRot {
         }
     }
 
-    /**
-     * Returns true if any stat modifier is currently below neutral (1.0),
-     * meaning the BrainRot has at least one active negative debuff.
-     * Used by InventoryUI to prevent wasting a Debuff Tonic on a healthy BrainRot.
-     */
     public boolean hasActiveDebuffs() {
         return attackMod < 1.0 || defenseMod < 1.0 || speedMod < 1.0;
     }
-
-    // ── Stat Modifiers (capped at ±40%) ──────────────────────────────────────
 
     public void modifyAttack(double delta) {
         attackMod = Math.min(1.4, Math.max(0.6, attackMod + delta));
@@ -146,8 +127,6 @@ public class BrainRot {
         speedMod = 1.0;
     }
 
-    // ── Moves ─────────────────────────────────────────────────────────────────
-
     public boolean addMove(Skill skill) {
         if (moves.size() >= MAX_MOVES) {
             System.out.println(name + " already knows " + MAX_MOVES + " moves!");
@@ -163,6 +142,34 @@ public class BrainRot {
         return true;
     }
 
+    // --- INTEGRATED LEVELING AND XP LOGIC ---
+    public List<LevelUpResult> gainXp(int xpGained) {
+        List<LevelUpResult> results = new ArrayList<>();
+        currentXp += xpGained;
+
+        while (level < ExperienceSystem.MAX_LEVEL && currentXp >= getXpToNextLevel()) {
+            currentXp -= getXpToNextLevel();
+            level++;
+
+            int hpGain = 2; int atkGain = 1; int defGain = 1; int spdGain = 1;
+            maxHp += hpGain;
+            currentHp += hpGain;
+            attack += atkGain;
+            defense += defGain;
+            speed += spdGain;
+
+            Skill newSkill = LevelUpLearnset.getSkillAt(name, level);
+            results.add(new LevelUpResult(level, hpGain, atkGain, defGain, spdGain, newSkill));
+
+            progression.QuestSystem.getInstance().onLevelUp(level);
+        }
+        return results;
+    }
+
+    public int getXpToNextLevel() {
+        return ExperienceSystem.xpToNextLevel(level);
+    }
+
     // ── Getters ───────────────────────────────────────────────────────────────
 
     public String getName()         { return name; }
@@ -175,7 +182,15 @@ public class BrainRot {
     public int getDefense()         { return (int)(defense * defenseMod); }
     public int getSpeed()           { return (int)(speed * speedMod); }
     public int getBaseSpeed()       { return speed; }
+
+    // --- INTEGRATED REQUIRED UI GETTERS ---
+    public int getMaxSp()           { return maxSp; }
     public int getCurrentSp()       { return currentSp; }
+    public int getLevel()           { return level; }
+    public int getCurrentXp()       { return currentXp; }
+    public int getBaseAtk()         { return attack; }
+    public int getBaseDef()         { return defense; }
+
     public String getStatus()       { return status; }
     public List<Skill> getMoves()   { return moves; }
 
@@ -193,8 +208,8 @@ public class BrainRot {
     }
 
     public BrainRot(String name, String primaryType, String secondaryType, String tier, int maxHp, int currentHp,
-    int attack, int defense, int speed, int currentSp, double attackMod, double defenseMod, double speedMod, String status,
-    int statusTurns, int turnCount, String[] moves) {
+                    int attack, int defense, int speed, int currentSp, double attackMod, double defenseMod, double speedMod, String status,
+                    int statusTurns, int turnCount, String[] moves) {
         this.name = name;
         this.primaryType = getType(primaryType);
         this.secondaryType = getType(secondaryType);

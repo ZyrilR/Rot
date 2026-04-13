@@ -294,7 +294,6 @@ public class BattleUI {
                 queueMessage(selected.getName(), "has no energy left!");
                 playNextMessage(BattleState.TEAM_SELECT);
             } else {
-                // Transition to Confirmation Mode
                 dialogueLine1 = "Reviewing " + selected.getName() + ".";
                 dialogueLine2 = "Send this BrainRot into battle?";
                 dialogueTicks = 0;
@@ -484,13 +483,11 @@ public class BattleUI {
         g2.setColor(new Color(100, 180, 100));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        // --- NEW: OVERRIDE BATTLE DRAWING FOR TEAM MENU ---
         if (currentState == BattleState.TEAM_SELECT || currentState == BattleState.TEAM_CONFIRM) {
             drawFullTeamScreen(g2);
-            return; // Skip drawing platforms and regular battle UI
+            return;
         }
 
-        // --- REGULAR BATTLE SCENE ---
         g2.setColor(new Color(150, 210, 150));
         g2.fillOval(480, 200, 240, 60);
         g2.fillOval(40, 440, 300, 70);
@@ -535,25 +532,18 @@ public class BattleUI {
         else if (currentState == BattleState.SKILL_SELECT) drawSkillSelect(g2, boxY);
     }
 
-    // --- FULL SCREEN TEAM SELECTION UI ---
-    // --- FULL SCREEN TEAM SELECTION UI ---
-    // --- FULL SCREEN TEAM SELECTION UI ---
-    // --- FULL SCREEN TEAM SELECTION UI ---
-    // --- FULL SCREEN TEAM SELECTION UI ---
     private void drawFullTeamScreen(Graphics2D g2) {
         int pad = 15;
         int gap = 15;
         int panelW = (SCREEN_WIDTH - (pad * 2) - (gap * 2)) / 3;
         int panelH = SCREEN_HEIGHT - 165;
 
-        // Draw the 3 Background Cards
         drawUIPanel(g2, pad, pad, panelW, panelH, "TEAM SELECTION");
         drawUIPanel(g2, pad + panelW + gap, pad, panelW, panelH, "INFO");
         drawUIPanel(g2, pad + (panelW * 2) + (gap * 2), pad, panelW, panelH, "SKILLS");
 
         BrainRot selectedRot = gp.player.getPCSYSTEM().getPartyMember(partyCursor);
 
-        // 1. Left Panel (List)
         int size = gp.player.getPCSYSTEM().getPartySize();
         for (int i = 0; i < size; i++) {
             BrainRot rot = gp.player.getPCSYSTEM().getPartyMember(i);
@@ -569,7 +559,6 @@ public class BattleUI {
             if (name.length() > 18) name = name.substring(0, 18) + "..";
             g2.drawString(name, rowX, rowY);
 
-            // Miniature HP Bar
             g2.setFont(new Font("Arial", Font.BOLD, 12));
             String hpStr = rot.getCurrentHp() + "/" + rot.getMaxHp() + " HP";
             g2.drawString(hpStr, rowX + panelW - 105, rowY + 16);
@@ -580,14 +569,12 @@ public class BattleUI {
             g2.setColor(hpFrac > 0.5 ? new Color(80, 220, 100) : hpFrac > 0.2 ? new Color(220, 200, 50) : new Color(220, 80, 60));
             g2.fillRect(rowX, rowY + 8, (int)(115 * hpFrac), 8);
 
-            // Fixed Cursor Position
             if (i == partyCursor) {
                 g2.setColor(new Color(50, 50, 50));
                 g2.fillPolygon(new int[]{pad + 10, pad + 20, pad + 10}, new int[]{rowY - 10, rowY - 5, rowY}, 3);
             }
         }
 
-        // 2. Middle Panel (Info)
         if (selectedRot != null) {
             int midX = pad + panelW + gap;
             BufferedImage spr = getSprite(selectedRot);
@@ -596,7 +583,6 @@ public class BattleUI {
             g2.setFont(new Font("Arial", Font.BOLD, 16));
             g2.setColor(new Color(40, 40, 40));
 
-            // Smart Name Wrap & Dynamic Y Tracking
             String[] nameParts = selectedRot.getName().split(" ");
             int ny = pad + 60;
             String currentLine = "";
@@ -615,14 +601,12 @@ public class BattleUI {
 
             ny += 25;
 
-            // Draw Stats using the dynamic 'ny' variable
             g2.setFont(new Font("Arial", Font.PLAIN, 14));
             g2.drawString("Type: " + selectedRot.getPrimaryType().name(), midX + 115, ny);
             ny += 20;
             g2.drawString("Lv " + selectedRot.getLevel(), midX + 115, ny);
             ny += 25;
 
-            // HP / SP
             g2.setFont(new Font("Arial", Font.BOLD, 13));
             g2.drawString("HP: " + selectedRot.getCurrentHp() + "/" + selectedRot.getMaxHp(), midX + 115, ny);
             ny += 8;
@@ -636,7 +620,6 @@ public class BattleUI {
             g2.setColor(new Color(50, 50, 50));
             g2.drawString("SP: " + selectedRot.getCurrentSp(), midX + 115, ny);
 
-            // Description
             g2.setFont(new Font("Arial", Font.PLAIN, 13));
             String desc = Constants.getDescription(selectedRot.getName());
 
@@ -655,7 +638,6 @@ public class BattleUI {
             g2.drawString(line.toString(), midX + 20, dy);
         }
 
-        // 3. Right Panel (Skills)
         if (selectedRot != null) {
             int rightX = pad + (panelW * 2) + (gap * 2);
             List<Skill> moves = selectedRot.getMoves();
@@ -665,7 +647,6 @@ public class BattleUI {
                 int sx = rightX + 15 + (i % 2 == 1 ? (panelW/2 - 5) : 0);
                 int sy = pad + 50 + (i >= 2 ? 100 : 0);
 
-                // Skill Box
                 g2.setColor(new Color(240, 235, 220));
                 g2.fillRoundRect(sx, sy, panelW/2 - 25, 80, 8, 8);
 
@@ -686,22 +667,20 @@ public class BattleUI {
             }
         }
 
-        // Bottom Dialogue Box
         int boxY = SCREEN_HEIGHT - 136;
         if (dialogueBoxFrame != null) g2.drawImage(dialogueBoxFrame, 6, boxY, SCREEN_WIDTH - 12, 126, null);
         else drawUIPanel(g2, 10, boxY, SCREEN_WIDTH - 20, 126, "");
 
         drawDialogueText(g2, boxY);
 
-        // --- FIXED: YES/NO Box docked to the right side of the dialogue box ---
         if (currentState == BattleState.TEAM_CONFIRM) {
-            int menuW = 160, menuH = 126; // Matches dialogue box height perfectly
-            int menuX = SCREEN_WIDTH - menuW - 10; // Aligned to the right padding
+            int menuW = 160, menuH = 126;
+            int menuX = SCREEN_WIDTH - menuW - 10;
             int menuY = boxY;
 
             drawUIPanel(g2, menuX, menuY, menuW, menuH, "");
 
-            g2.setFont(new Font("Arial", Font.BOLD, 20)); // Matches main menu font
+            g2.setFont(new Font("Arial", Font.BOLD, 20));
             g2.setColor(new Color(50, 50, 50));
             g2.drawString("YES", menuX + 60, menuY + 50);
             g2.drawString("NO", menuX + 60, menuY + 95);

@@ -2,32 +2,24 @@ package battle;
 
 import brainrots.BrainRot;
 import items.Inventory;
+import items.Item;
+import items.Capsule;
 import skills.Skill;
 import skills.SkillEffect;
 
 import java.util.List;
 
-/**
- * Orchestrates a single battle between a player BrainRot and an enemy BrainRot.
- * Handles turn resolution, skill use, status effects, and capture attempts.
- *
- * Usage:
- *   BattleManager battle = new BattleManager(playerRot, enemyRot, playerTeam, playerInventory);
- *   battle.executePlayerTurn(chosenSkillIndex);   // player acts
- *   battle.executeEnemyTurn(chosenSkillIndex);    // AI/enemy acts
- *   battle.endTurn();                             // process end-of-turn effects
- */
 public class BattleManager {
 
     public enum BattleResult { ONGOING, PLAYER_WIN, ENEMY_WIN, CAPTURED, FLED }
 
-    private final BrainRot playerRot;
+    private BrainRot playerRot; // Removed 'final' so we can swap BrainRots mid-battle!
     private final BrainRot enemyRot;
     private final List<BrainRot> playerTeam;
     private final Inventory playerInventory;
 
     private BattleResult result = BattleResult.ONGOING;
-    private boolean wildBattle; // true = wild BrainRot, can attempt capture
+    private boolean wildBattle;
 
     public BattleManager(BrainRot playerRot, BrainRot enemyRot, List<BrainRot> playerTeam, Inventory playerInventory, boolean wildBattle) {
         this.playerRot       = playerRot;
@@ -40,9 +32,16 @@ public class BattleManager {
         enemyRot.restoreForBattle();
     }
 
-    /**
-     * Player uses a skill by index from their moveset.
-     */
+    // --- MISSING SETTER ADDED ---
+    public void setPlayerRot(BrainRot rot) {
+        this.playerRot = rot;
+    }
+
+    // --- MISSING GETTER ADDED ---
+    public boolean isWildBattle() {
+        return wildBattle;
+    }
+
     public void executePlayerTurn(int skillIndex) {
         if (result != BattleResult.ONGOING) return;
 
@@ -52,7 +51,7 @@ public class BattleManager {
         }
 
         Skill skill = playerRot.getMoves().get(skillIndex);
-        if (!playerRot.useSkill(skill)) return; // not enough SP / ultimate restriction
+        if (!playerRot.useSkill(skill)) return;
 
         System.out.println(playerRot.getName() + " used " + skill.getName() + "!");
 
@@ -67,27 +66,19 @@ public class BattleManager {
         checkFainted();
     }
 
-    /** Player attempts to capture a wild BrainRot using a capsule from inventory */
-    public void executeCapture(int capsuleIndex) {
-        if (!wildBattle) {
-            System.out.println("You can't capture a trainer's BrainRot!");
-            return;
-        }
+    // --- FIXED SIGNATURE TO ACCEPT ITEM ---
+    public boolean executeCapture(Item capsule) {
+        if (!wildBattle) return false;
 
-        // Pass enemyRot and playerTeam to the Capsule
-        playerInventory.useItem(capsuleIndex, enemyRot, playerTeam);
+        // Use CaptureManager directly to calculate the math
+        boolean success = CaptureManager.attempt((Capsule) capsule, enemyRot, playerRot, playerTeam);
 
-        if (playerTeam.contains(enemyRot)) {
+        if (success) {
             result = BattleResult.CAPTURED;
         }
+        return success;
     }
 
-
-    // ── Enemy Action ──────────────────────────────────────────────────────────
-
-    /**
-     * Enemy uses a skill by index (AI passes in chosen index).
-     */
     public void executeEnemyTurn(int skillIndex) {
         if (result != BattleResult.ONGOING) return;
 
@@ -112,12 +103,6 @@ public class BattleManager {
         checkFainted();
     }
 
-    // ── End of Turn ───────────────────────────────────────────────────────────
-
-    /**
-     * Processes end-of-turn effects (burn ticks, status countdowns).
-     * Call once after both combatants have acted.
-     */
     public void endTurn() {
         if (result != BattleResult.ONGOING) return;
         endTurnCleanup();
@@ -138,8 +123,6 @@ public class BattleManager {
             result = BattleResult.ENEMY_WIN;
         }
     }
-
-    // ── Getters ───────────────────────────────────────────────────────────────
 
     public BattleResult getResult()    { return result; }
     public boolean isOver()            { return result != BattleResult.ONGOING; }

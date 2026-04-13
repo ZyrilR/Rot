@@ -7,9 +7,6 @@ import utils.RandomUtil;
 
 import java.util.List;
 
-/**
- * Handles capture attempt logic when a player throws a Capsule.
- */
 public class CaptureManager {
 
     public static boolean attempt(Capsule capsule, BrainRot target,
@@ -19,7 +16,7 @@ public class CaptureManager {
 
         // Master capsule = guaranteed
         if (capsuleName.equals("MASTER CAPSULE")) {
-            return capture(target, playerTeam);
+            return capture(target, target.getCurrentHp() == target.getMaxHp());
         }
 
         // Base capture rate scales with missing HP (0–60%)
@@ -39,7 +36,7 @@ public class CaptureManager {
         System.out.printf("Capture rate: %.1f%%%n", totalRate);
 
         if (RandomUtil.chance(totalRate)) {
-            return capture(target, playerTeam, atFullHp);
+            return capture(target, atFullHp);
         } else {
             System.out.println(target.getName() + " broke free!");
             return false;
@@ -59,19 +56,9 @@ public class CaptureManager {
                 target.getSecondaryType().name().equalsIgnoreCase(typePrefix);
     }
 
-    /** Overload without atFullHp (for Master Capsule path). */
-    private static boolean capture(BrainRot target, List<BrainRot> playerTeam) {
-        return capture(target, playerTeam, false);
-    }
-
-    private static boolean capture(BrainRot target, List<BrainRot> playerTeam,
-                                   boolean atFullHp) {
-        if (playerTeam.size() >= 6) {
-            System.out.println("Your team is full! " + target.getName() + " could not be added.");
-            return true;
-        }
-        playerTeam.add(target);
-        System.out.println(target.getName() + " was caught and added to your team!");
+    private static boolean capture(BrainRot target, boolean atFullHp) {
+        // DO NOT add to playerTeam directly here! BattleUI will route it safely through PCSystem.
+        System.out.println(target.getName() + " was caught!");
 
         // Fire achievement hooks
         QuestSystem.getInstance().onCapture(target, atFullHp);
