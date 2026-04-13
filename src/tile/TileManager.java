@@ -14,10 +14,14 @@ public class TileManager {
 
     //layerType : {BACKGROUND, DECORATION, BUILDING, INTERACTIVE}
     private String layerType;
+    private String layerName;
     private int map[][];
     private boolean[][] collisionMap;
     private ArrayList<NPC> NPCs = new ArrayList<>();
     private ArrayList<TileTeleporter> teleporters = new ArrayList<>();
+
+    private boolean isRampLayer = false;
+    private int overlayCollisionLevel = -1; // -1 = not an overlay-collision layer
 
     //TileSets
     public static ArrayList<Tile> BACKGROUND_TILES = new ArrayList<>();
@@ -199,7 +203,7 @@ public class TileManager {
 
     public static void loadTiles() {
         //Tiles
-        for (int i = 1; i <= 555; i++) {
+        for (int i = 1; i <= 561; i++) {
             BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/" + i + ".png")));
             System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
         }
@@ -254,4 +258,13 @@ public class TileManager {
     public ArrayList<TileTeleporter> getTeleporters() {
         return teleporters;
     }
+
+    public boolean isRampLayer() { return isRampLayer; }
+    public void setRampLayer(boolean ramp) { this.isRampLayer = ramp; }
+
+    public int getOverlayCollisionLevel() { return overlayCollisionLevel; }
+    public void setOverlayCollisionLevel(int level) { this.overlayCollisionLevel = level; }
+
+    public String getLayerName() { return layerName; }
+    public void setLayerName(String name) { this.layerName = name; }
 }

@@ -1,7 +1,9 @@
-6,30,70,3,26
+8,30,70,3,26
 Background:BACKGROUND
 Background2:BACKGROUND
 Wall_Collision:BACKGROUND
-Decoration:DECORATION
+Background_2:BACKGROUND
+Decoration_Collision:DECORATION
 Building:BUILDING
 Interactive:INTERACTIVE
+Ramps:BACKGROUND

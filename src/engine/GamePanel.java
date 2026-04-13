@@ -361,6 +361,9 @@ public class GamePanel extends JPanel {
         // Player
         player.draw(g2);
 
+        // Overlay layers (drawn on top of the player)
+        world.drawOverlay(g2);
+
         // ── UI overlays ───────────────────────────────────────────────────────
         switch (GAMESTATE.toLowerCase()) {
             case "dialogue":
