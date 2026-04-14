@@ -747,7 +747,7 @@ public class InventoryUI {
             g2.setColor(new Color(44, 44, 42));
             g2.drawString(truncate(mv.getName(), g2.getFontMetrics(), panelW - 140), nameX, rowY + rowH / 2 + 5);
 
-            String sp = "SP " + mv.getSpCost();
+            String sp = "UP " + mv.getCurrentUP() + "/" + mv.getMaxUP();
             g2.setFont(base.deriveFont(9f));
             fm = g2.getFontMetrics();
             g2.setColor(new Color(100, 96, 90));

@@ -252,8 +252,8 @@ public class BattleUI {
             kh.enterPressed = false;
             Skill chosenSkill = battle.getPlayerRot().getMoves().get(skillCursor);
 
-            if (battle.getPlayerRot().getCurrentSp() < chosenSkill.getSpCost()) {
-                queueMessage(battle.getPlayerRot().getName(), "doesn't have enough SP!");
+            if (chosenSkill.getCurrentUP() < 1) {
+                queueMessage(battle.getPlayerRot().getName(), "doesn't have enough UP for " + chosenSkill.getName() + "!");
                 playNextMessage(BattleState.SKILL_SELECT);
             } else {
                 playerChosenIndex = skillCursor;
@@ -616,10 +616,6 @@ public class BattleUI {
             g2.setColor(new Color(220, 80, 60));
             g2.fillRect(midX + 115, ny, (int)(90 * mHpFrac), 8);
 
-            ny += 25;
-            g2.setColor(new Color(50, 50, 50));
-            g2.drawString("SP: " + selectedRot.getCurrentSp(), midX + 115, ny);
-
             g2.setFont(new Font("Arial", Font.PLAIN, 13));
             String desc = Constants.getDescription(selectedRot.getName());
 
@@ -663,7 +659,7 @@ public class BattleUI {
 
                 g2.setFont(new Font("Arial", Font.PLAIN, 11));
                 g2.drawString("Type: " + m.getType().name(), sx + 10, sy + 50);
-                g2.drawString("SP Cost: " + m.getSpCost(), sx + 10, sy + 65);
+                g2.drawString("UP: " + m.getCurrentUP() + "/" + m.getMaxUP(), sx + 10, sy + 65);
             }
         }
 
@@ -752,9 +748,6 @@ public class BattleUI {
             fm = g2.getFontMetrics();
             g2.drawString(hpNum, x + w - fm.stringWidth(hpNum) - 25, y + 78);
 
-            g2.setFont(baseFont.deriveFont(Font.BOLD, 11f));
-            g2.setColor(new Color(70, 130, 200));
-            g2.drawString("SP: " + rot.getCurrentSp(), x + 20, y + 75);
         }
     }
 
@@ -796,7 +789,7 @@ public class BattleUI {
             int dx = menuX + 40 + (i % 2 == 1 ? 230 : 0);
             int dy = menuY + 50 + (i >= 2 ? 40 : 0);
 
-            if (battle.getPlayerRot().getCurrentSp() < moves.get(i).getSpCost()) {
+            if (moves.get(i).getCurrentUP() < 1) {
                 g2.setColor(new Color(180, 180, 180));
             } else {
                 g2.setColor(new Color(50, 50, 50));

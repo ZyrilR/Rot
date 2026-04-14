@@ -216,16 +216,26 @@ public class DataManager {
                 6 = Attack
                 7 = Defense
                 8 = Speed
-                9 = CurrentSpeed
-                10 = AttackMod
-                11 = DefenseMod
-                12 = SpeedMod
-                13 = Status
-                14 = StatusTurns
-                15 = TurnCount
+                9 = AttackMod
+                10 = DefenseMod
+                11 = SpeedMod
+                12 = Status
+                13 = StatusTurns
+                14 = TurnCount
+                parts[1] = moves (pipe-separated)
+                parts[2] = per-move UP values (pipe-separated)
                  */
 
         String[] skills = parts[1].split("\\|");
+
+        // Parse per-move UP values
+        int[] moveUPs = new int[skills.length];
+        if (parts.length > 2 && !parts[2].isEmpty()) {
+            String[] upParts = parts[2].split("\\|");
+            for (int i = 0; i < upParts.length && i < moveUPs.length; i++) {
+                moveUPs[i] = Integer.parseInt(upParts[i]);
+            }
+        }
 
         BrainRot rot = new BrainRot(
                 attributes[0],
@@ -237,14 +247,14 @@ public class DataManager {
                 Integer.parseInt(attributes[6]),
                 Integer.parseInt(attributes[7]),
                 Integer.parseInt(attributes[8]),
-                Integer.parseInt(attributes[9]),
+                Double.parseDouble(attributes[9]),
                 Double.parseDouble(attributes[10]),
                 Double.parseDouble(attributes[11]),
-                Double.parseDouble(attributes[12]),
-                attributes[13],
+                attributes[12],
+                Integer.parseInt(attributes[13]),
                 Integer.parseInt(attributes[14]),
-                Integer.parseInt(attributes[15]),
-                skills
+                skills,
+                moveUPs
                 );
         return rot;
     }

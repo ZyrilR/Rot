@@ -971,7 +971,7 @@ public class PCUI {
                 g2.drawString(mv.getName(), nameX, rowY + rowTextOffsetY);
 
                 // SP cost - right-aligned
-                String spStr = "UP " + mv.getSpCost() + "/" + mv.getSpCost();
+                String spStr = "UP " + mv.getCurrentUP() + "/" + mv.getMaxUP();
                 g2.setFont(base.deriveFont(10f));
                 g2.setColor(new Color(80, 76, 70));
                 FontMetrics spFm = g2.getFontMetrics();

@@ -255,8 +255,6 @@ public class StarterUI {
 
         g2.setColor(new Color(60, 160, 80));
         g2.drawString("HP: " + preview.getMaxHp(), cardX + 320, cardY + 70);
-        g2.setColor(new Color(70, 130, 200));
-        g2.drawString("SP: " + preview.getMaxSp(), cardX + 410, cardY + 70);
 
         g2.setColor(new Color(200, 200, 200));
         g2.drawLine(cardX + 170, cardY + 85, cardX + cardW - 20, cardY + 85);
@@ -298,8 +296,6 @@ public class StarterUI {
 
         g2.setColor(new Color(60, 160, 80));
         g2.drawString("HP: " + received.getMaxHp(), cardX + 210, cardY + 125);
-        g2.setColor(new Color(70, 130, 200));
-        g2.drawString("SP: " + received.getMaxSp(), cardX + 300, cardY + 125);
 
         g2.setColor(new Color(200, 200, 200));
         g2.drawLine(cardX + 210, cardY + 145, cardX + cardW - 30, cardY + 145);
@@ -338,7 +334,7 @@ public class StarterUI {
 
             g2.setFont(new Font("Arial", Font.PLAIN, 11));
             g2.drawString("Type: " + m.getType().name(), sx + 10, sy + 50);
-            g2.drawString("SP Cost: " + m.getSpCost(), sx + 10, sy + 63);
+            g2.drawString("UP: " + m.getCurrentUP() + "/" + m.getMaxUP(), sx + 10, sy + 63);
         }
     }
 
