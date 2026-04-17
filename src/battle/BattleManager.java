@@ -28,8 +28,8 @@ public class BattleManager {
         this.playerInventory = playerInventory;
         this.wildBattle      = wildBattle;
 
-        playerRot.restoreForBattle();
-        enemyRot.restoreForBattle();
+//        playerRot.restoreForBattle();
+//        enemyRot.restoreForBattle();
     }
 
     // --- MISSING SETTER ADDED ---
@@ -51,7 +51,7 @@ public class BattleManager {
         }
 
         Skill skill = playerRot.getMoves().get(skillIndex);
-        if (!playerRot.useSkill(skill)) return;
+        if (!playerRot.useSkill(skillIndex)) return;
 
         System.out.println(playerRot.getName() + " used " + skill.getName() + "!");
 
@@ -88,7 +88,7 @@ public class BattleManager {
         }
 
         Skill skill = enemyRot.getMoves().get(skillIndex);
-        if (!enemyRot.useSkill(skill)) return;
+        if (!enemyRot.useSkill(skillIndex)) return;
 
         System.out.println(enemyRot.getName() + " used " + skill.getName() + "!");
 

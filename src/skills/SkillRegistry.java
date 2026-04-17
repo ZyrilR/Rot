@@ -204,7 +204,7 @@ public class SkillRegistry {
     public static Skill get(String name) {
         Skill skill = registry.get(name.toUpperCase());
         if (skill == null) System.err.println("Skill not found: " + name);
-        return skill;
+        return skill == null ? null : skill.copy();
     }
 
     public static boolean has(String name) {
