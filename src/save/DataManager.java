@@ -238,25 +238,37 @@ public class DataManager {
         }
 
         BrainRot rot = new BrainRot(
-                attributes[0],
-                attributes[1],
-                attributes[2],
-                attributes[3],
-                Integer.parseInt(attributes[4]),
-                Integer.parseInt(attributes[5]),
-                Integer.parseInt(attributes[6]),
-                Integer.parseInt(attributes[7]),
-                Integer.parseInt(attributes[8]),
-                Double.parseDouble(attributes[9]),
-                Double.parseDouble(attributes[10]),
-                Double.parseDouble(attributes[11]),
-                attributes[12],
-                Integer.parseInt(attributes[13]),
-                Integer.parseInt(attributes[14]),
+                attributes[0],                               // Name
+                attributes[1],                               // primaryType
+                attributes[2],                               // secondaryType
+                attributes[3],                               // tier
+                safeParseInt(attributes[4]),                 // MAX_HP
+                safeParseInt(attributes[5]),                 // currentHP
+                safeParseInt(attributes[6]),                 // BASE_ATK
+                safeParseInt(attributes[7]),                 // BASE_DEF
+                safeParseInt(attributes[8]),                 // BASE_SPEED
+                Double.parseDouble(attributes[9]),           // attackMod
+                Double.parseDouble(attributes[10]),          // defenseMod
+                Double.parseDouble(attributes[11]),          // speedMod
+                attributes[12],                              // status
+                safeParseInt(attributes[13]),                // statusTurns
+                safeParseInt(attributes[14]),                // turnCount
                 skills,
                 moveUPs
-                );
+        );
         return rot;
+    }
+
+    private static int safeParseInt(String value) {
+        if (value == null || value.trim().isEmpty() ||
+                value.equalsIgnoreCase("NONE") || value.equalsIgnoreCase("null")) {
+            return 0;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
     }
 
     public static BufferedImage screenshotGamePanel(GamePanel gamePanel) {
