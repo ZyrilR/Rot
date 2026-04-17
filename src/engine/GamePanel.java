@@ -48,6 +48,8 @@ public class GamePanel extends JPanel {
     public final MenuUI MENUUI            = new MenuUI(this);
     public final InventoryUI INVENTORYUI  = new InventoryUI(this);
 
+    public final DarknessOverlay DARKNESSOVERLAY = new DarknessOverlay();
+
     public final WorldLoader world = new WorldLoader(this);
     public String CURRENT_PATH;
 
@@ -154,6 +156,7 @@ public class GamePanel extends JPanel {
                         String link = tr.getLinkTo();
                         world.loadMap(Directories.getPath(link), true);
                         CURRENT_PATH = Directories.getPath(link);
+                        DARKNESSOVERLAY.setActive(CURRENT_PATH.toLowerCase().contains("cave"));
                         int[] coordinates = new int[2];
                         for (TileTeleporter tile : getWorldInteractiveLayer().getTeleporters()) {
                             if (tile != null) {
@@ -267,6 +270,13 @@ public class GamePanel extends JPanel {
 
             // Overlay layers (drawn on top of the player)
             world.drawOverlay(g2);
+
+            // ── Cave darkness — after world, before UI ────────────────────────────
+            DARKNESSOVERLAY.draw(
+                    g2,
+                    player.screenX + TILE_SIZE / 2,
+                    player.screenY + TILE_SIZE / 2
+            );
         }
 
         // ── UI overlays ───────────────────────────────────────────────────────
