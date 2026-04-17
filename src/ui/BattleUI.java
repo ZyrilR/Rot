@@ -2,6 +2,8 @@ package ui;
 
 import battle.BattleManager;
 import brainrots.BrainRot;
+import brainrots.ExperienceSystem;
+import brainrots.LevelUpResult;
 import items.Item;
 import items.Capsule;
 import engine.GamePanel;
@@ -425,7 +427,20 @@ public class BattleUI {
         playerMovesFirst = battle.getPlayerRot().getSpeed() >= battle.getEnemyRot().getSpeed();
 
         if (battle.isOver()) {
-            queueMessage("Battle Finished!", "Result: " + battle.getResult().name());
+            if (battle.getResult() == BattleManager.BattleResult.PLAYER_WIN) {
+                int xp = ExperienceSystem.xpYield(battle.getEnemyRot());
+                queueMessage(battle.getEnemyRot().getName() + " fainted!", "");
+                queueMessage(battle.getPlayerRot().getName() + " gained", xp + " XP!");
+                List<LevelUpResult> levelUps = battle.getPlayerRot().gainXp(xp);
+                for (LevelUpResult lu : levelUps) {
+                    queueMessage(battle.getPlayerRot().getName() + " grew to", "level " + lu.newLevel + "!");
+                    if (lu.skillUnlocked != null) {
+                        queueMessage(battle.getPlayerRot().getName() + " learned", lu.skillUnlocked.getName() + "!");
+                    }
+                }
+            } else {
+                queueMessage("Battle Finished!", "Result: " + battle.getResult().name());
+            }
             playNextMessage(BattleState.FINISH);
         } else {
             if (playerMovesFirst) setPrompt();

@@ -127,16 +127,39 @@ public class BrainRot {
     private LevelUpResult levelUp() {
         level++;
 
-        int hpGain  = 3;
-        int atkGain = 1;
-        int defGain = 1;
-        int spdGain = 1;
+        // Type-aware growth rates
+        int hpGain  = StatGrowth.hpGrowth(primaryType);
+        int atkGain = StatGrowth.atkGrowth();
+        int defGain = StatGrowth.defGrowth(level);
+        int spdGain = StatGrowth.spdGrowth(level);
+
+        // Apply gains, clamping to hard caps
+        int hpCap  = StatGrowth.hpCap(primaryType);
+        int atkCap = StatGrowth.atkCap(primaryType, BASE_SPEED + spdGain);
+        int defCap = StatGrowth.defCap();
+        int spdCap = StatGrowth.spdCap();
+
+        hpGain  = Math.min(hpGain,  hpCap  - MAX_HP);
+        atkGain = Math.min(atkGain, atkCap  - BASE_ATK);
+        defGain = Math.min(defGain, defCap  - BASE_DEF);
+        spdGain = Math.min(spdGain, spdCap  - BASE_SPEED);
+
+        // Ensure no negative gains (already at or past cap)
+        hpGain  = Math.max(0, hpGain);
+        atkGain = Math.max(0, atkGain);
+        defGain = Math.max(0, defGain);
+        spdGain = Math.max(0, spdGain);
 
         // Grow permanent bases
         MAX_HP     += hpGain;
         BASE_ATK   += atkGain;
         BASE_DEF   += defGain;
         BASE_SPEED += spdGain;
+
+        // Re-check ATK cap in case speed crossed the 40 threshold
+        if (BASE_SPEED > 40 && BASE_ATK > 115) {
+            BASE_ATK = 115;
+        }
 
         // Keep current HP healed by the gained amount
         currentHP += hpGain;
@@ -145,6 +168,9 @@ public class BrainRot {
         attack  = (int)(BASE_ATK   * attackMod);
         defense = (int)(BASE_DEF   * defenseMod);
         speed   = (int)(BASE_SPEED * speedMod);
+
+        // Enforce buffed speed ceiling
+        speed = Math.min(speed, StatGrowth.spdBuffCap());
 
         Skill unlocked = LevelUpLearnset.getSkillAt(name, level);
         return new LevelUpResult(level, hpGain, atkGain, defGain, spdGain, unlocked);
@@ -224,7 +250,7 @@ public class BrainRot {
 
     public void modifySpeed(double delta) {
         speedMod = Math.min(1.4, Math.max(0.6, speedMod + delta));
-        speed    = (int)(BASE_SPEED * speedMod);
+        speed    = Math.min((int)(BASE_SPEED * speedMod), StatGrowth.spdBuffCap());
     }
 
     public void resetModifiers() {
@@ -233,7 +259,7 @@ public class BrainRot {
         speedMod   = 1.0;
         attack     = BASE_ATK;
         defense    = BASE_DEF;
-        speed      = BASE_SPEED;
+        speed      = Math.min(BASE_SPEED, StatGrowth.spdBuffCap());
     }
 
     // ── Moves ─────────────────────────────────────────────────────────────────
