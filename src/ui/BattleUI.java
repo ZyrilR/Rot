@@ -1,6 +1,7 @@
 package ui;
 
 import battle.BattleManager;
+import battle.LootDrop;
 import brainrots.BrainRot;
 import brainrots.ExperienceSystem;
 import brainrots.LevelUpResult;
@@ -429,8 +430,26 @@ public class BattleUI {
         if (battle.isOver()) {
             if (battle.getResult() == BattleManager.BattleResult.PLAYER_WIN) {
                 int xp = ExperienceSystem.xpYield(battle.getEnemyRot());
+
+                // ── Loot ──────────────────────────────────────────────────────────────
+                LootDrop.Result loot = LootDrop.roll(battle.getEnemyRot());
+                gp.player.earnRotCoins(loot.coins);
+                if (loot.hasScroll() && loot.scroll != null) {
+                    gp.player.getInventory().addItem(loot.scroll);
+                }
+
+                // ── Messages ──────────────────────────────────────────────────────────
                 queueMessage(battle.getEnemyRot().getName() + " fainted!", "");
                 queueMessage(battle.getPlayerRot().getName() + " gained", xp + " XP!");
+                queueMessage("Coins earned:", "+" + loot.coins + " RotCoins!");
+
+                if (loot.hasScroll() && loot.scroll != null) {
+                    boolean added = gp.player.getInventory().addItem(loot.scroll);
+                    queueMessage("Loot drop!", loot.scrollSkillName + " Scroll" + (added ? " found!" : " (bag full)"));
+                } else if (loot.hasScroll()) {
+                    queueMessage("Loot drop!", loot.scrollSkillName + " Scroll found!");
+                }
+
                 List<LevelUpResult> levelUps = battle.getPlayerRot().gainXp(xp);
                 for (LevelUpResult lu : levelUps) {
                     queueMessage(battle.getPlayerRot().getName() + " grew to", "level " + lu.newLevel + "!");
