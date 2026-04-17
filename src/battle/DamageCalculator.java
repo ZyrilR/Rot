@@ -23,7 +23,11 @@ public class DamageCalculator {
         double randomFactor   = 0.85 + Math.random() * 0.15; // 85–100% variance
 
         int damage = (int)(base * typeMultiplier * randomFactor);
-        damage = MathUtil.clamp(damage, 1, 9999);
+
+        // Defense cannot reduce damage below 20% of the unmitigated value
+        int rawDamage = (int)(skill.getPower() * attacker.getAttack() * typeMultiplier * randomFactor);
+        int minDamage = Math.max(1, (int)(rawDamage * 0.20));
+        damage = MathUtil.clamp(damage, minDamage, 9999);
 
         if (typeMultiplier > 1.0) System.out.println("It's super effective!");
         if (typeMultiplier < 1.0) System.out.println("It's not very effective...");
