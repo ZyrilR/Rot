@@ -47,6 +47,7 @@ public class GamePanel extends JPanel {
     public final QuestToast QUESTTOAST    = new QuestToast();
     public final MenuUI MENUUI            = new MenuUI(this);
     public final InventoryUI INVENTORYUI  = new InventoryUI(this);
+    public final MapUI MAPUI              = new MapUI(this);
 
     public final DarknessOverlay DARKNESSOVERLAY = new DarknessOverlay();
 
@@ -191,6 +192,14 @@ public class GamePanel extends JPanel {
                     GAMESTATE = "MENU";
                     System.out.println("[GamePanel] Menu opened via ESC key.");
                 }
+
+                if (KEYBOARDHANDLER.mPressed && !CURRENT_PATH.toLowerCase().contains("cave")) {
+                    KEYBOARDHANDLER.mPressed = false;
+                    MAPUI.open();
+                    GAMESTATE = "map";
+                    System.out.println("[GamePanel] Map opened via M key.");
+                }
+
                 break;
 
             // --- INTEGRATED OUR BATTLE STATES ---
@@ -237,6 +246,10 @@ public class GamePanel extends JPanel {
 
             case "QUESTS":
                 QUESTUI.update();
+                break;
+
+            case "MAP":
+                MAPUI.update();
                 break;
 
             default:
@@ -300,6 +313,9 @@ public class GamePanel extends JPanel {
                 break;
             case "quests":
                 QUESTUI.draw(g2);
+                break;
+            case "map":
+                MAPUI.draw(g2);
                 break;
         }
 

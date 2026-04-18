@@ -31,6 +31,8 @@ public class Constants {
     //Dialogue Settings
     public static final int TEXT_SPEED = 1;
 
+    public static final int MAX_LEVEL = 100;
+
     // PC UI Constants
     public static final int    GRID_COLS    = 5;
     public static final int    GRID_ROWS    = 5;

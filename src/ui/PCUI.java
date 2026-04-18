@@ -1,7 +1,6 @@
 package ui;
 
 import brainrots.BrainRot;
-import brainrots.ExperienceSystem;
 import brainrots.Tier;
 import engine.GamePanel;
 import skills.Skill;
@@ -463,7 +462,7 @@ public class PCUI {
         g2.drawString(rot.getName(), tx, y + 18);
 
         // Level + inline XP bar
-        boolean maxLvl = rot.getLevel() >= ExperienceSystem.MAX_LEVEL;
+        boolean maxLvl = rot.getLevel() >= MAX_LEVEL;
         double xpFrac  = maxLvl ? 1.0
                 : (rot.getXpToNextLevel() > 0 ? (double) rot.getCurrentXp() / rot.getXpToNextLevel() : 0.0);
         int lvlY    = y + 31;
@@ -732,7 +731,7 @@ public class PCUI {
         // Level & Type Info - 10pt
         g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(80, 76, 70));
-        boolean isMaxLevel = detailRot.getLevel() >= ExperienceSystem.MAX_LEVEL;
+        boolean isMaxLevel = detailRot.getLevel() >= MAX_LEVEL;
         g2.drawString("LVL " + detailRot.getLevel(), tx, ty);
 
         // XP Bar - Positioned below the level/type line

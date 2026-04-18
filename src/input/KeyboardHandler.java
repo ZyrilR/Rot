@@ -12,6 +12,7 @@ public class KeyboardHandler implements KeyListener {
     public boolean bPressed;   // opens PC storage
     public boolean tabPressed; // switches box in PCUI
     public boolean shiftPressed;   // toggles Party / Box view in PCUI
+    public boolean mPressed;    // opens world map
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -32,7 +33,8 @@ public class KeyboardHandler implements KeyListener {
             case KeyEvent.VK_ESCAPE               -> escPressed   = true;
             case KeyEvent.VK_B                    -> bPressed     = true;
             case KeyEvent.VK_TAB                  -> tabPressed   = true;
-            case KeyEvent.VK_SHIFT                    -> shiftPressed     = true;
+            case KeyEvent.VK_SHIFT                -> shiftPressed = true;
+            case KeyEvent.VK_M                    -> mPressed     = true;
         }
 
     }
@@ -51,7 +53,8 @@ public class KeyboardHandler implements KeyListener {
             case KeyEvent.VK_ESCAPE               -> escPressed   = false;
             case KeyEvent.VK_B                    -> bPressed     = false;
             case KeyEvent.VK_TAB                  -> tabPressed   = false;
-            case KeyEvent.VK_SHIFT                    -> shiftPressed     = false;
+            case KeyEvent.VK_SHIFT                -> shiftPressed = false;
+            case KeyEvent.VK_M                    -> mPressed     = false;
         }
 
     }

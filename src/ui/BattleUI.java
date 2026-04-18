@@ -1,8 +1,8 @@
 package ui;
 
 import battle.BattleManager;
+import battle.BattleReward;
 import brainrots.BrainRot;
-import brainrots.ExperienceSystem;
 import brainrots.LevelUpResult;
 import items.Item;
 import items.Capsule;
@@ -11,7 +11,6 @@ import engine.GamePanel;
 import input.KeyboardHandler;
 import skills.Skill;
 import utils.AssetManager;
-import utils.RandomUtil;
 import utils.Constants;
 
 import java.awt.*;
@@ -428,14 +427,22 @@ public class BattleUI {
 
         if (battle.isOver()) {
             if (battle.getResult() == BattleManager.BattleResult.PLAYER_WIN) {
-                int xp = ExperienceSystem.xpYield(battle.getEnemyRot());
+                BattleReward.Result reward = battle.getReward();
+
                 queueMessage(battle.getEnemyRot().getName() + " fainted!", "");
-                queueMessage(battle.getPlayerRot().getName() + " gained", xp + " XP!");
-                List<LevelUpResult> levelUps = battle.getPlayerRot().gainXp(xp);
-                for (LevelUpResult lu : levelUps) {
-                    queueMessage(battle.getPlayerRot().getName() + " grew to", "level " + lu.newLevel + "!");
+                queueMessage(battle.getPlayerRot().getName() + " gained", reward.xp + " XP!");
+                queueMessage("Coins earned:", "+" + reward.coins + " RotCoins!");
+
+                if (reward.hasScroll()) {
+                    queueMessage("Loot drop!", reward.scrollSkillName + " Scroll" + (reward.scrollAdded ? " found!" : " [Bag full]"));
+                }
+
+                for (LevelUpResult lu : reward.levelUps) {
+                    queueMessage(battle.getPlayerRot().getName() + " grew to",
+                            "level " + lu.newLevel + "!");
                     if (lu.skillUnlocked != null) {
-                        queueMessage(battle.getPlayerRot().getName() + " learned", lu.skillUnlocked.getName() + "!");
+                        queueMessage(battle.getPlayerRot().getName() + " learned",
+                                lu.skillUnlocked.getName() + "!");
                     }
                 }
             } else {
