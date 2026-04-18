@@ -92,7 +92,7 @@ public class QuestToast {
 
         // Quest image
         if (cachedImg == null) {
-            cachedImg = AssetManager.loadImage("/res/Achievements/PROGRESSION_BADGES/ASCENSION.png");
+            cachedImg = AssetManager.loadImage(current.getAssetPath());
         }
 
         int imgX = toastX + 10;

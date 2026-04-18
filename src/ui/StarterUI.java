@@ -4,6 +4,7 @@ import brainrots.BrainRot;
 import brainrots.BrainRotFactory;
 import brainrots.Tier;
 import engine.GamePanel;
+import ui.BlackFadeEffect;
 import input.KeyboardHandler;
 import skills.Skill;
 import utils.AssetManager;
@@ -118,13 +119,11 @@ public class StarterUI {
             case FINISH_TEXT -> {
                 if (kh.enterPressed) {
                     kh.enterPressed = false;
-                    // --- TRIGGER THE FADE INSTEAD OF JUMPING TO PLAY ---
                     currentState = State.FADE_TO_BLACK;
                     gp.BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_IN_TO_BLACK, 8);
                 }
             }
             case FADE_TO_BLACK -> {
-                // --- UPDATE FADE AND JUMP TO PLAY WHEN FULLY BLACK ---
                 gp.BLACKFADEEFFECT.update();
                 if (gp.BLACKFADEEFFECT.isFullyBlack()) {
                     gp.GAMESTATE = "play";
@@ -138,48 +137,52 @@ public class StarterUI {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+        // pokemonGb everywhere; Arial fallback only if font failed to load
+        Font baseFont = (AssetManager.pokemonGb != null)
+                ? AssetManager.pokemonGb : new Font("Arial", Font.PLAIN, 18);
+
         GradientPaint bgGrad = new GradientPaint(0, 0, new Color(20, 25, 35), 0, SCREEN_HEIGHT, new Color(45, 90, 110));
         g2.setPaint(bgGrad);
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         if (currentState == State.FINISH_TEXT || currentState == State.FADE_TO_BLACK) {
-            drawReceivedCard(g2);
+            drawReceivedCard(g2, baseFont);
         } else {
             drawDeskAndCapsules(g2);
             if (currentState == State.CHOOSE || currentState == State.CONFIRM) {
-                drawPreviewCard(g2);
+                drawPreviewCard(g2, baseFont);
             }
         }
 
-        // Only draw Dialogue if we are not fading
         if (currentState != State.FADE_TO_BLACK) {
             String currentText = switch (currentState) {
-                case INTRO_TEXT -> introLines[textIndex];
-                case CHOOSE -> "Choose your first BrainRot partner.";
-                case CONFIRM -> "Do you want to choose " + starterRots[capsuleCursor].getName() + "?";
+                case INTRO_TEXT  -> introLines[textIndex];
+                case CHOOSE      -> "Choose your first BrainRot partner.";
+                case CONFIRM     -> "Do you want to choose " + starterRots[capsuleCursor].getName() + "?";
                 case FINISH_TEXT -> "You received " + starterRots[capsuleCursor].getName() + "!";
-                default -> "";
+                default          -> "";
             };
 
             int boxY = SCREEN_HEIGHT - 136;
-            drawDialogueBox(g2, currentText, boxY);
+            drawDialogueBox(g2, baseFont, currentText, boxY);
 
             if (currentState == State.CONFIRM) {
-                drawYesNoMenu(g2, boxY);
+                drawYesNoMenu(g2, baseFont, boxY);
             }
         }
 
-        // --- DRAW THE FADE EFFECT ON TOP OF EVERYTHING ---
         if (currentState == State.FADE_TO_BLACK) {
             gp.BLACKFADEEFFECT.draw(g2);
         }
     }
 
+    // ── Desk + capsules — completely unchanged ────────────────────────────────
+
     private void drawDeskAndCapsules(Graphics2D g2) {
         int deskW = 500;
         int deskH = 140;
         int deskX = (SCREEN_WIDTH - deskW) / 2;
-        int deskY = SCREEN_HEIGHT - 320;
+        int deskY = SCREEN_HEIGHT - 305;
 
         g2.setColor(new Color(0, 0, 0, 150));
         g2.fillOval(deskX + 30, deskY + deskH - 30, deskW - 60, 50);
@@ -226,17 +229,14 @@ public class StarterUI {
         }
     }
 
-    private void drawPreviewCard(Graphics2D g2) {
-        int cardW = 540, cardH = 210;
+    // ── Preview card — same layout, pokemonGb font + PC triple-stroke border ──
+
+    private void drawPreviewCard(Graphics2D g2, Font base) {
+        int cardW = 540, cardH = 225;
         int cardX = (SCREEN_WIDTH - cardW) / 2;
         int cardY = 30;
 
-        g2.setColor(new Color(250, 250, 250, 245));
-        g2.fillRoundRect(cardX, cardY, cardW, cardH, 15, 15);
-        g2.setStroke(new BasicStroke(4));
-        g2.setColor(new Color(90, 95, 105));
-        g2.drawRoundRect(cardX, cardY, cardW, cardH, 15, 15);
-        g2.setStroke(new BasicStroke(1));
+        drawPCBorder(g2, cardX, cardY, cardW, cardH, 15);
 
         BrainRot preview = starterRots[capsuleCursor];
         BufferedImage sprite = getSprite(preview);
@@ -245,38 +245,41 @@ public class StarterUI {
             g2.drawImage(sprite, cardX + 20, cardY + 30, 130, 130, null);
         }
 
-        g2.setFont(new Font("Arial", Font.BOLD, 22));
-        g2.setColor(new Color(40, 44, 52));
+        g2.setFont(base.deriveFont(Font.BOLD, 14f));
+        g2.setColor(new Color(44, 44, 42));
         g2.drawString(preview.getName(), cardX + 170, cardY + 45);
 
-        g2.setFont(new Font("Arial", Font.BOLD, 14));
-        g2.setColor(new Color(80, 80, 80));
-        g2.drawString("TYPE: " + preview.getPrimaryType().name(), cardX + 170, cardY + 70);
+        // Header Badges
+        int bX = cardX + 170;
+        int bY = cardY + 68;
+        int pW = drawTypeBadge(g2, preview.getPrimaryType().name(), bX, bY, 9f);
+        int sW = 0;
+        if (preview.getSecondaryType() != null && !preview.getSecondaryType().name().equals("NONE")) {
+            sW = drawTypeBadge(g2, preview.getSecondaryType().name(), bX + pW + 5, bY, 9f) + 5;
+        }
 
+        g2.setFont(base.deriveFont(11f));
         g2.setColor(new Color(60, 160, 80));
-        g2.drawString("HP: " + preview.getMaxHp(), cardX + 320, cardY + 70);
+        g2.drawString("HP: " + preview.getMaxHp(), bX + pW + sW + 15, bY);
 
         g2.setColor(new Color(200, 200, 200));
-        g2.drawLine(cardX + 170, cardY + 85, cardX + cardW - 20, cardY + 85);
+        g2.drawLine(cardX + 170, cardY + 82, cardX + cardW - 20, cardY + 80);
 
-        g2.setFont(new Font("Arial", Font.PLAIN, 14));
+        g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(60, 64, 70));
         String desc = Constants.getDescription(preview.getName());
-        drawWrappedText(g2, desc, cardX + 170, cardY + 110, cardW - 190);
+        drawWrappedText(g2, base.deriveFont(10f), desc, cardX + 170, cardY + 102, cardW - 190);
     }
 
-    private void drawReceivedCard(Graphics2D g2) {
+    // ── Received card — same layout except skills section replaced with 4×1 rows
+
+    private void drawReceivedCard(Graphics2D g2, Font base) {
         int cardW = SCREEN_WIDTH - 60;
         int cardH = SCREEN_HEIGHT - 190;
         int cardX = 30;
         int cardY = 25;
 
-        g2.setColor(new Color(250, 250, 250, 245));
-        g2.fillRoundRect(cardX, cardY, cardW, cardH, 20, 20);
-        g2.setStroke(new BasicStroke(5));
-        g2.setColor(new Color(216, 184, 88));
-        g2.drawRoundRect(cardX, cardY, cardW, cardH, 20, 20);
-        g2.setStroke(new BasicStroke(1));
+        drawPCBorder(g2, cardX, cardY, cardW, cardH, 20);
 
         BrainRot received = starterRots[capsuleCursor];
         BufferedImage sprite = getSprite(received);
@@ -285,79 +288,119 @@ public class StarterUI {
             g2.drawImage(sprite, cardX + 20, cardY + 60, 160, 160, null);
         }
 
-        g2.setFont(new Font("Arial", Font.BOLD, 28));
-        g2.setColor(new Color(40, 44, 52));
+        g2.setFont(base.deriveFont(Font.BOLD, 16f));
+        g2.setColor(new Color(44, 44, 42));
         g2.drawString(received.getName(), cardX + 210, cardY + 60);
 
-        g2.setFont(new Font("Arial", Font.BOLD, 16));
+        // Header Badges
+        int bX = cardX + 210;
+        int bY = cardY + 88;
+        int pW = drawTypeBadge(g2, received.getPrimaryType().name(), bX, bY, 9f);
+        int sW = 0;
+        if (received.getSecondaryType() != null && !received.getSecondaryType().name().equals("NONE")) {
+            sW = drawTypeBadge(g2, received.getSecondaryType().name(), bX + pW + 5, bY, 9f) + 5;
+        }
+
+        g2.setFont(base.deriveFont(12f));
         g2.setColor(new Color(80, 80, 80));
-        g2.drawString("TYPE: " + received.getPrimaryType().name(), cardX + 210, cardY + 95);
-        g2.drawString("LEVEL: " + received.getLevel(), cardX + 370, cardY + 95);
+        g2.drawString("LEVEL: " + received.getLevel(), bX + pW + sW + 15, bY);
 
         g2.setColor(new Color(60, 160, 80));
-        g2.drawString("HP: " + received.getMaxHp(), cardX + 210, cardY + 125);
+        g2.drawString("HP: " + received.getMaxHp(), cardX + 210, cardY + 118);
 
         g2.setColor(new Color(200, 200, 200));
-        g2.drawLine(cardX + 210, cardY + 145, cardX + cardW - 30, cardY + 145);
+        g2.drawLine(cardX + 210, cardY + 132, cardX + cardW - 30, cardY + 132);
 
-        g2.setFont(new Font("Arial", Font.PLAIN, 15));
+        g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(60, 64, 70));
         String desc = Constants.getDescription(received.getName());
-        drawWrappedText(g2, desc, cardX + 210, cardY + 175, cardW - 500);
+        drawWrappedText(g2, base.deriveFont(10f), desc, cardX + 210, cardY + 155, cardW - 500);
 
-        int skillsX = cardX + cardW - 270;
-        int skillsY = cardY + 165;
+        // ── Starting skills: 4×1 move rows
+        int skillsX = cardX + cardW - 280;
+        int skillsY = cardY + 155;
+        int rowW    = 250;
+        int rowH    = 36;
 
-        g2.setFont(new Font("Arial", Font.BOLD, 14));
-        g2.setColor(new Color(100, 100, 100));
-        g2.drawString("STARTING SKILLS:", skillsX, skillsY);
+        g2.setFont(base.deriveFont(Font.BOLD, 11f));
+        g2.setColor(new Color(60, 64, 70));
+        g2.drawString("STARTING SKILLS", skillsX, skillsY);
+        skillsY += 8;
+
+        g2.setColor(new Color(216, 184, 88));
+        g2.drawLine(skillsX, skillsY, skillsX + rowW, skillsY);
+        skillsY += 4;
 
         List<Skill> moves = received.getMoves();
-        for (int i = 0; i < moves.size(); i++) {
-            Skill m = moves.get(i);
-            int sx = skillsX + (i % 2 == 1 ? 125 : 0);
-            int sy = skillsY + 15 + (i >= 2 ? 80 : 0);
 
-            g2.setColor(new Color(240, 235, 220));
-            g2.fillRoundRect(sx, sy, 115, 70, 8, 8);
+        for (int i = 0; i < 4; i++) {
+            int rowY = skillsY + i * rowH;
+            g2.setColor(new Color(245, 242, 235));
+            g2.fillRoundRect(skillsX, rowY, rowW, rowH - 2, 5, 5);
 
-            g2.setColor(new Color(50, 50, 50));
-            g2.setFont(new Font("Arial", Font.BOLD, 12));
-
-            String[] mName = m.getName().split(" ");
-            if (mName.length > 1) {
-                g2.drawString(mName[0], sx + 10, sy + 20);
-                g2.drawString(mName[1], sx + 10, sy + 35);
-            } else {
-                g2.drawString(m.getName(), sx + 10, sy + 25);
+            if (i < 3) {
+                g2.setColor(new Color(200, 200, 200));
+                g2.drawLine(skillsX + 4, rowY + rowH - 2, skillsX + rowW - 4, rowY + rowH - 2);
             }
 
-            g2.setFont(new Font("Arial", Font.PLAIN, 11));
-            g2.drawString("Type: " + m.getType().name(), sx + 10, sy + 50);
-            g2.drawString("UP: " + m.getCurrentUP() + "/" + m.getMaxUP(), sx + 10, sy + 63);
+            int baseline = rowY + (rowH + 8) / 2;
+
+            if (i < moves.size()) {
+                Skill mv = moves.get(i);
+
+                // --- Type badge using helper ---
+                int skillBadgeW = drawTypeBadge(g2, mv.getType().name(), skillsX + 6, baseline, 6f);
+
+                g2.setFont(base.deriveFont(Font.PLAIN, 9f));
+                g2.setColor(new Color(44, 44, 42));
+                g2.drawString(mv.getName(), skillsX + 6 + skillBadgeW + 8, baseline);
+
+                String upStr = mv.getCurrentUP() + "/" + mv.getMaxUP();
+                g2.setFont(base.deriveFont(7f));
+                g2.setColor(new Color(88, 84, 76));
+                g2.drawString(upStr, skillsX + rowW - g2.getFontMetrics().stringWidth(upStr) - 8, baseline);
+
+            } else {
+                g2.setFont(base.deriveFont(9f));
+                g2.setColor(new Color(170, 165, 158));
+                g2.drawString("-", skillsX + 12, baseline);
+            }
         }
     }
 
-    private void drawWrappedText(Graphics2D g2, String text, int x, int y, int maxWidth) {
+    private int drawTypeBadge(Graphics2D g2, String typeName, int x, int y, float fontSize) {
+        if (typeName == null || typeName.equalsIgnoreCase("NONE")) return 0;
+
+        Font oldFont = g2.getFont();
+        g2.setFont(oldFont.deriveFont(fontSize));
         FontMetrics fm = g2.getFontMetrics();
-        int lineHeight = fm.getHeight() + 4;
-        int curY = y;
-        String[] words = text.split(" ");
-        StringBuilder line = new StringBuilder();
 
-        for (String word : words) {
-            if (fm.stringWidth(line + word) < maxWidth) {
-                line.append(word).append(" ");
-            } else {
-                g2.drawString(line.toString(), x, curY);
-                line = new StringBuilder(word).append(" ");
-                curY += lineHeight;
-            }
-        }
-        g2.drawString(line.toString(), x, curY);
+        int padX = 10;
+        // fm.getHeight() is safer than Ascent+Descent for pixel fonts to prevent clipping
+        int badgeH = fm.getHeight() + 5;
+        int badgeW = fm.stringWidth(typeName.toUpperCase()) + (padX * 2);
+
+        // Position the badge top relative to the baseline (y)
+        // We subtract the ascent to get to the 'top' of the text,
+        // then subtract 1 or 2 pixels for the top padding.
+        int badgeTopY = y - fm.getAscent() - 5;
+
+        g2.setColor(typeColor(typeName));
+        // Increase badgeH slightly if it still looks tight on the bottom
+        g2.fillRoundRect(x, badgeTopY, badgeW, badgeH + 2, 4, 4);
+
+        g2.setColor(Color.WHITE);
+        // Standardize text rendering to prevent sub-pixel shifting
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.drawString(typeName.toUpperCase(), x + padX, y);
+
+        g2.setFont(oldFont);
+        return badgeW;
     }
 
-    private void drawDialogueBox(Graphics2D g2, String text, int boxY) {
+    // ── Dialogue box — PC triple-stroke border + pokemonGb ───────────────────
+
+    private void drawDialogueBox(Graphics2D g2, Font base, String text, int boxY) {
         int boxH = 126;
         int boxX = 10;
         int boxW = SCREEN_WIDTH - 20;
@@ -365,49 +408,99 @@ public class StarterUI {
         if (dialogueBoxFrame != null) {
             g2.drawImage(dialogueBoxFrame, 6, boxY, SCREEN_WIDTH - 12, boxH, null);
         } else {
-            g2.setColor(new Color(250, 250, 250));
-            g2.fillRoundRect(boxX, boxY, boxW, boxH, 15, 15);
-            g2.setStroke(new BasicStroke(5));
-            g2.setColor(new Color(90, 95, 105));
-            g2.drawRoundRect(boxX, boxY, boxW, boxH, 15, 15);
-            g2.setStroke(new BasicStroke(2));
-            g2.setColor(new Color(200, 80, 80));
-            g2.drawRoundRect(boxX + 4, boxY + 4, boxW - 8, boxH - 8, 10, 10);
-            g2.setStroke(new BasicStroke(1));
+            drawPCBorder(g2, boxX, boxY, boxW, boxH, 15);
         }
 
-        g2.setFont(new Font("Arial", Font.BOLD, 22));
-        g2.setColor(new Color(50, 50, 50));
-
-        drawWrappedText(g2, text, boxX + 25, boxY + 50, boxW - 180);
+        g2.setFont(base.deriveFont(Font.BOLD, 16f));
+        g2.setColor(new Color(44, 44, 42));
+        drawWrappedText(g2, base.deriveFont(Font.BOLD, 16f), text, boxX + 28, boxY + 55, boxW - 20);
     }
 
-    private void drawYesNoMenu(Graphics2D g2, int boxY) {
+    private void drawYesNoMenu(Graphics2D g2, Font base, int boxY) {
         int menuW = 160, menuH = 126;
         int menuX = SCREEN_WIDTH - menuW - 10;
         int menuY = boxY;
 
-        g2.setColor(Color.WHITE);
-        g2.fillRoundRect(menuX, menuY, menuW, menuH, 12, 12);
-        g2.setStroke(new BasicStroke(4));
-        g2.setColor(new Color(90, 95, 105));
-        g2.drawRoundRect(menuX, menuY, menuW, menuH, 12, 12);
+        drawPCBorder(g2, menuX, menuY, menuW, menuH, 12);
 
-        g2.setFont(new Font("Arial", Font.BOLD, 20));
-        g2.setColor(new Color(50, 50, 50));
-        g2.drawString("YES", menuX + 60, menuY + 50);
-        g2.drawString("NO", menuX + 60, menuY + 95);
+        g2.setFont(base.deriveFont(Font.BOLD, 13f));
+        g2.setColor(new Color(44, 44, 42));
+        g2.drawString("YES", menuX + 60, menuY + 45);
+        g2.drawString("NO",  menuX + 60, menuY + 88);
 
+        // Cursor triangle — fillPolygon, no ▶ glyph (pokemonGb limitation)
+        int ts = 8;
         int cx = menuX + 35;
-        int cy = menuY + (confirmCursor == 0 ? 36 : 81);
-        g2.fillPolygon(new int[]{cx, cx+12, cx}, new int[]{cy, cy+8, cy+16}, 3);
+        int cy = menuY + (confirmCursor == 0 ? 38 : 81);
+        g2.setColor(new Color(44, 44, 42));
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.fillPolygon(new int[]{ cx, cx, cx + ts }, new int[]{ cy - ts, cy + ts, cy }, 3);
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
+    }
+
+    // ── Shared helpers ────────────────────────────────────────────────────────
+
+    /**
+     * Triple-stroke window border — exactly matches PC / Inventory / Quest UIs.
+     * dark 6px → gold 4px → dark 2px
+     */
+    private void drawPCBorder(Graphics2D g2, int x, int y, int w, int h, int arc) {
+        g2.setColor(new Color(245, 242, 235));
+        g2.fillRoundRect(x, y, w, h, arc, arc);
+        g2.setStroke(new BasicStroke(6));
+        g2.setColor(new Color(80, 80, 80));
+        g2.drawRoundRect(x, y, w, h, arc, arc);
+        g2.setStroke(new BasicStroke(4));
+        g2.setColor(new Color(216, 184, 88));
+        g2.drawRoundRect(x + 1, y + 1, w - 2, h - 2, arc, arc);
+        g2.setStroke(new BasicStroke(2));
+        g2.setColor(new Color(80, 80, 80));
+        g2.drawRoundRect(x + 4, y + 4, w - 8, h - 8, Math.max(arc - 4, 4), Math.max(arc - 4, 4));
+        g2.setStroke(new BasicStroke(1));
+    }
+
+    private void drawWrappedText(Graphics2D g2, Font font, String text, int x, int y, int maxWidth) {
+        if (text.toLowerCase().contains("do you want to choose")) maxWidth -= 200;
+        g2.setFont(font);
+        FontMetrics fm = g2.getFontMetrics();
+        int lineHeight = fm.getHeight() + 6;
+        int curY = y;
+        StringBuilder line = new StringBuilder();
+        for (String word : text.split(" ")) {
+            String test = line.isEmpty() ? word : line + " " + word;
+            if (fm.stringWidth(test) < maxWidth) {
+                line = new StringBuilder(test);
+            } else {
+                g2.drawString(line.toString(), x, curY);
+                line = new StringBuilder(word);
+                curY += lineHeight;
+            }
+        }
+        g2.drawString(line.toString(), x, curY);
+    }
+
+    /** Type badge colors — identical to PCUI / InventoryUI. */
+    private Color typeColor(String typeName) {
+        return switch (typeName.toUpperCase()) {
+            case "FIGHTING" -> new Color(180,  80,  60);
+            case "WATER"    -> new Color( 60, 130, 210);
+            case "PSYCHIC"  -> new Color(200,  60, 140);
+            case "FLYING"   -> new Color(120, 160, 220);
+            case "SAND"     -> new Color(190, 155,  80);
+            case "GRASS"    -> new Color( 80, 170,  80);
+            case "ROCK"     -> new Color(140, 120,  80);
+            case "FIRE"     -> new Color(220, 100,  40);
+            case "DARK"     -> new Color( 80,  60, 100);
+            case "POISON"   -> new Color(140,  70, 160);
+            default         -> new Color(130, 126, 118);
+        };
     }
 
     private BufferedImage getSprite(BrainRot rot) {
         String key = rot.getName() + "_" + rot.getTier().name();
         if (spriteCache.containsKey(key)) return spriteCache.get(key);
-
-        String path = "/res/InteractiveTiles/Brainrots/" + toFolderName(rot.getName()) + "/" + rot.getTier().name() + "_1.png";
+        String path = "/res/InteractiveTiles/Brainrots/" + toFolderName(rot.getName())
+                + "/" + rot.getTier().name() + "_1.png";
         BufferedImage img = AssetManager.loadImage(path);
         if (img != null) spriteCache.put(key, img);
         return img;

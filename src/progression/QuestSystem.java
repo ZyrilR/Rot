@@ -78,7 +78,7 @@ public class QuestSystem {
     private void reg(String id, String name, String desc,
                      int difficulty, boolean hidden, int goal,
                      RewardType rewardType, int rewardCoins, String rewardItemName) {
-        String asset = "/res/Achievements/PROGRESSION_BADGES/ASCENSION.png";
+        String asset = "/res/Achievements/QUEST/" + id + ".png";
         Quest q = new Quest(id, name, desc, asset, difficulty, hidden, goal,
                 rewardType, rewardCoins, rewardItemName);
         registry.put(id, q);
