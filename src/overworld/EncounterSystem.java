@@ -68,21 +68,23 @@ public class EncounterSystem {
     public void startWildBattle(Player player, BrainRot wildRot, GamePanel gp) {
         BrainRot playerRot = getLeadBrainRot(gp);
         if (playerRot == null) return;
-
-        Inventory inventory = player.getInventory();
-        // Pass the actual party from PCSystem
-        activeBattle = new BattleManager(playerRot, wildRot, gp.player.getPCSYSTEM().getParty(), inventory, true);
+        activeBattle = new BattleManager(
+                playerRot, wildRot,
+                gp.player.getPCSYSTEM().getParty(),
+                player,
+                true);
         System.out.println("Wild battle started against " + wildRot.getName() + "!");
     }
 
     public void startTrainerBattle(Player player, TrainerNPC trainer, GamePanel gp) {
         BrainRot playerRot = getLeadBrainRot(gp);
         if (playerRot == null) return;
-
         BrainRot trainerRot = trainer.getLeadBrainRot();
-        Inventory inventory = player.getInventory();
-        // Pass the actual party from PCSystem
-        activeBattle = new BattleManager(playerRot, trainerRot, gp.player.getPCSYSTEM().getParty(), inventory, false);
+        activeBattle = new BattleManager(
+                playerRot, trainerRot,
+                gp.player.getPCSYSTEM().getParty(),
+                player,
+                false);
         System.out.println("Trainer battle started against " + trainer.name + "!");
     }
 

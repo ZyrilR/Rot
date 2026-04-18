@@ -1,9 +1,10 @@
 package battle;
 
 import brainrots.BrainRot;
-import items.Inventory;
+import brainrots.LevelUpResult;
 import items.Item;
 import items.Capsule;
+import overworld.Player;
 import skills.Skill;
 import skills.SkillEffect;
 
@@ -13,42 +14,32 @@ public class BattleManager {
 
     public enum BattleResult { ONGOING, PLAYER_WIN, ENEMY_WIN, CAPTURED, FLED }
 
-    private BrainRot playerRot; // Removed 'final' so we can swap BrainRots mid-battle!
-    private final BrainRot enemyRot;
+    private BrainRot             playerRot;
+    private final BrainRot       enemyRot;
     private final List<BrainRot> playerTeam;
-    private final Inventory playerInventory;
+    private final Player         player;
+    private final boolean        wildBattle;
 
-    private BattleResult result = BattleResult.ONGOING;
-    private boolean wildBattle;
+    private BattleResult        result = BattleResult.ONGOING;
+    private BattleReward.Result reward = null;
 
-    public BattleManager(BrainRot playerRot, BrainRot enemyRot, List<BrainRot> playerTeam, Inventory playerInventory, boolean wildBattle) {
-        this.playerRot       = playerRot;
-        this.enemyRot        = enemyRot;
-        this.playerTeam      = playerTeam;
-        this.playerInventory = playerInventory;
-        this.wildBattle      = wildBattle;
-
-//        playerRot.restoreForBattle();
-//        enemyRot.restoreForBattle();
+    public BattleManager(BrainRot playerRot, BrainRot enemyRot,
+                         List<BrainRot> playerTeam, Player player, boolean wildBattle) {
+        this.playerRot  = playerRot;
+        this.enemyRot   = enemyRot;
+        this.playerTeam = playerTeam;
+        this.player     = player;
+        this.wildBattle = wildBattle;
     }
 
-    // --- MISSING SETTER ADDED ---
-    public void setPlayerRot(BrainRot rot) {
-        this.playerRot = rot;
-    }
+    public void setPlayerRot(BrainRot rot) { this.playerRot = rot; }
+    public boolean isWildBattle()          { return wildBattle; }
 
-    // --- MISSING GETTER ADDED ---
-    public boolean isWildBattle() {
-        return wildBattle;
-    }
+    // ── Turn execution ────────────────────────────────────────────────────────
 
     public void executePlayerTurn(int skillIndex) {
         if (result != BattleResult.ONGOING) return;
-
-        if (!StatusEffectManager.canAct(playerRot)) {
-            endTurnCleanup();
-            return;
-        }
+        if (!StatusEffectManager.canAct(playerRot)) { endTurnCleanup(); return; }
 
         Skill skill = playerRot.getMoves().get(skillIndex);
         if (!playerRot.useSkill(skillIndex)) return;
@@ -66,26 +57,9 @@ public class BattleManager {
         checkFainted();
     }
 
-    // --- FIXED SIGNATURE TO ACCEPT ITEM ---
-    public boolean executeCapture(Item capsule) {
-        if (!wildBattle) return false;
-
-        // Use CaptureManager directly to calculate the math
-        boolean success = CaptureManager.attempt((Capsule) capsule, enemyRot, playerRot, playerTeam);
-
-        if (success) {
-            result = BattleResult.CAPTURED;
-        }
-        return success;
-    }
-
     public void executeEnemyTurn(int skillIndex) {
         if (result != BattleResult.ONGOING) return;
-
-        if (!StatusEffectManager.canAct(enemyRot)) {
-            endTurnCleanup();
-            return;
-        }
+        if (!StatusEffectManager.canAct(enemyRot)) { endTurnCleanup(); return; }
 
         Skill skill = enemyRot.getMoves().get(skillIndex);
         if (!enemyRot.useSkill(skillIndex)) return;
@@ -103,10 +77,19 @@ public class BattleManager {
         checkFainted();
     }
 
+    public boolean executeCapture(Item capsule) {
+        if (!wildBattle) return false;
+        boolean success = CaptureManager.attempt((Capsule) capsule, enemyRot, playerRot, playerTeam);
+        if (success) result = BattleResult.CAPTURED;
+        return success;
+    }
+
     public void endTurn() {
         if (result != BattleResult.ONGOING) return;
         endTurnCleanup();
     }
+
+    // ── Internal ──────────────────────────────────────────────────────────────
 
     private void endTurnCleanup() {
         StatusEffectManager.processTurnEnd(playerRot);
@@ -118,14 +101,45 @@ public class BattleManager {
         if (enemyRot.isFainted()) {
             System.out.println(enemyRot.getName() + " fainted! Player wins!");
             result = BattleResult.PLAYER_WIN;
+            resolveRewards();
         } else if (playerRot.isFainted()) {
             System.out.println(playerRot.getName() + " fainted! Enemy wins!");
             result = BattleResult.ENEMY_WIN;
         }
     }
 
-    public BattleResult getResult()    { return result; }
-    public boolean isOver()            { return result != BattleResult.ONGOING; }
-    public BrainRot getPlayerRot()     { return playerRot; }
-    public BrainRot getEnemyRot()      { return enemyRot; }
+    /**
+     * Single place where all post-battle state mutation happens.
+     * BattleReward.calculate() is pure — this method applies the results.
+     */
+    private void resolveRewards() {
+        reward = BattleReward.calculate(enemyRot);
+
+        // Apply XP to the winning BrainRot
+        reward.levelUps = playerRot.gainXp(reward.xp);
+
+        // Apply coins to the player
+        player.earnRotCoins(reward.coins);
+
+        // Apply scroll to player inventory
+        if (reward.hasScroll() && reward.scroll != null) {
+            reward.scrollAdded = player.getInventory().addItem(reward.scroll);
+        }
+
+        System.out.println("[BattleManager] Rewards resolved — "
+                + reward.xp + " XP, "
+                + reward.coins + " coins"
+                + (reward.hasScroll()
+                ? ", " + reward.scrollSkillName + " scroll"
+                + (reward.scrollAdded ? " added" : " (bag full)")
+                : ""));
+    }
+
+    // ── Getters ───────────────────────────────────────────────────────────────
+
+    public BattleResult         getResult()    { return result; }
+    public boolean              isOver()       { return result != BattleResult.ONGOING; }
+    public BrainRot             getPlayerRot() { return playerRot; }
+    public BrainRot             getEnemyRot()  { return enemyRot; }
+    public BattleReward.Result  getReward()    { return reward; }
 }

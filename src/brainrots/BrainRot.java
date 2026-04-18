@@ -9,6 +9,7 @@ import java.util.List;
 
 import static brainrots.Type.getType;
 import static brainrots.Tier.getTier;
+import static utils.Constants.MAX_LEVEL;
 
 /**
  * Represents a BrainRot creature with stats, type, moves, and status.
@@ -114,14 +115,19 @@ public class BrainRot {
      */
     public List<LevelUpResult> gainXp(int amount) {
         List<LevelUpResult> results = new ArrayList<>();
-        if (level >= ExperienceSystem.MAX_LEVEL) return results;
+        if (level >= MAX_LEVEL) return results;
 
         currentXp += amount;
-        while (level < ExperienceSystem.MAX_LEVEL && currentXp >= ExperienceSystem.xpToNextLevel(level)) {
-            currentXp -= ExperienceSystem.xpToNextLevel(level);
+        while (level < MAX_LEVEL && currentXp >= xpToNextLevel(level)) {
+            currentXp -= xpToNextLevel(level);
             results.add(levelUp());
         }
         return results;
+    }
+
+    private int xpToNextLevel(int level) {
+        if (level >= MAX_LEVEL) return Integer.MAX_VALUE;
+        return level * level * 5;
     }
 
     private LevelUpResult levelUp() {
@@ -178,7 +184,7 @@ public class BrainRot {
 
     public int getLevel()         { return level; }
     public int getCurrentXp()     { return currentXp; }
-    public int getXpToNextLevel() { return ExperienceSystem.xpToNextLevel(level); }
+    public int getXpToNextLevel() { return xpToNextLevel(level); }
 
     // ── UP (Use Points) — tracked per Skill ────────────────────────────────────
 
