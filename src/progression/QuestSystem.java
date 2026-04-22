@@ -578,7 +578,6 @@ public class QuestSystem {
 
     public String toFileFormat() {
         StringBuilder sb = new StringBuilder();
-        sb.append("[QUESTS]\n");
 
         // Counters line
         sb.append("counters:")
@@ -604,14 +603,19 @@ public class QuestSystem {
         return sb.toString();
     }
 
-    public void loadFromLines(List<String> lines) {
+    public void loadFromLines(ArrayList<String> lines) {
         if (lines.isEmpty()) return;
 
         int lineIdx = 0;
 
+        System.out.println("LOADING QUEST SYSTEM:");
+
         // Counters
         if (lineIdx < lines.size() && lines.get(lineIdx).startsWith("counters:")) {
             String[] c = lines.get(lineIdx).replace("counters:", "").split(";");
+            System.out.println("Line: ");
+            for (int i = 0; i < c.length; i++)
+                System.out.print(c[i] + " ");
             if (c.length >= 6) {
                 totalCoinsSpent   = parseInt(c[0]);
                 totalItemsUsed    = parseInt(c[1]);

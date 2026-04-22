@@ -5,6 +5,9 @@ import engine.GamePanel;
 import items.Item;
 import items.ItemRegistry;
 import overworld.Player;
+import progression.Quest;
+import progression.QuestSystem;
+import ui.QuestToast;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -62,18 +65,21 @@ public class DataManager {
         File currentFolder = new File(SAVES.getPath(), "/" + folderID);
         gp.GAMESTATE = "play";
 
-
         try {
             if (newFolder) {
                 currentFolder.mkdir();
             }
             File data = new File(currentFolder, "data.txt");
+            File quests = new File(currentFolder, "quests.txt");
             File img = new File(currentFolder, "screenshot.png");
 
             ImageIO.write(screenshotGamePanel(gp), "png", img);
 
             FileWriter fileWriter = new FileWriter(data);
             fileWriter.write(getData(gp));
+            fileWriter.close();
+            fileWriter = new FileWriter(quests);
+            fileWriter.write(QuestSystem.getInstance().toFileFormat());
 
             fileWriter.close();
         } catch (Exception e) {
@@ -88,10 +94,11 @@ public class DataManager {
                 "[PLAYER]\n" +
                         plr.name + ";" +
                         plr.worldX + ";" + plr.worldY + ";" +
-                        plr.getRotCoins() + ";" + plr.getDirection() + ";" + gp.CURRENT_PATH + "\n" + "[INVENTORY]\n";
+                        plr.getRotCoins() + ";" + plr.getDirection() + ";" + gp.CURRENT_PATH + "\n";
 
         ArrayList<String> names = new ArrayList<>();
 
+        format += "[INVENTORY]\n";
         int i = 0;
         for (Item item : plr.getInventory().getRawItems()) {
             if (names.contains(item.getName().toLowerCase())) {
@@ -131,6 +138,20 @@ public class DataManager {
         String line;
         String[] parts;
         System.out.println("CURRENT LOAD: " + CURRENT_LOAD);
+
+        ArrayList<String> lines = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader((new FileReader(new File(SAVES.getPath() + "/" + slotNo, "quests.txt"))))) {
+
+            while ((line = br.readLine()) != null) {
+                System.out.println("LOADING LINE: " + line);
+                lines.add(line);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        QuestSystem.reset();
+        QuestSystem.getInstance().loadFromLines(lines);
+
         try (BufferedReader br = new BufferedReader(new FileReader(new File(SAVES.getPath() + "/" + slotNo, "data.txt")))) {
 
             //READ FIRST PART
@@ -208,6 +229,8 @@ public class DataManager {
 
                 /*
                 0 = Name
+                0.5 = Level
+                0.75 = XP
                 1 = TYPE1
                 2 = TYPE2 (nullable)
                 3 = Tier
@@ -239,20 +262,22 @@ public class DataManager {
 
         BrainRot rot = new BrainRot(
                 attributes[0],                               // Name
-                attributes[1],                               // primaryType
-                attributes[2],                               // secondaryType
-                attributes[3],                               // tier
-                safeParseInt(attributes[4]),                 // MAX_HP
-                safeParseInt(attributes[5]),                 // currentHP
-                safeParseInt(attributes[6]),                 // BASE_ATK
-                safeParseInt(attributes[7]),                 // BASE_DEF
-                safeParseInt(attributes[8]),                 // BASE_SPEED
-                Double.parseDouble(attributes[9]),           // attackMod
-                Double.parseDouble(attributes[10]),          // defenseMod
-                Double.parseDouble(attributes[11]),          // speedMod
-                attributes[12],                              // status
-                safeParseInt(attributes[13]),                // statusTurns
-                safeParseInt(attributes[14]),                // turnCount
+                safeParseInt(attributes[1]),                 // Level
+                safeParseInt(attributes[2]),                 // currentXP
+                attributes[2],                               // primaryType
+                attributes[3],                               // secondaryType
+                attributes[4],                               // tier
+                safeParseInt(attributes[5]),                 // MAX_HP
+                safeParseInt(attributes[6]),                 // currentHP
+                safeParseInt(attributes[7]),                 // BASE_ATK
+                safeParseInt(attributes[8]),                 // BASE_DEF
+                safeParseInt(attributes[9]),                 // BASE_SPEED
+                Double.parseDouble(attributes[10]),           // attackMod
+                Double.parseDouble(attributes[11]),          // defenseMod
+                Double.parseDouble(attributes[12]),          // speedMod
+                attributes[13],                              // status
+                safeParseInt(attributes[14]),                // statusTurns
+                safeParseInt(attributes[15]),                // turnCount
                 skills,
                 moveUPs
         );
@@ -279,7 +304,7 @@ public class DataManager {
         );
         gamePanel.update();
         Graphics2D g2 = image.createGraphics();
-        gamePanel.printAll(g2); // Better than .paint() for capturing current state
+        gamePanel.printAll(g2);
         g2.dispose();
         return image;
     }

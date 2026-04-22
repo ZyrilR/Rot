@@ -333,13 +333,15 @@ public class BrainRot {
     /**
      * Deserialization constructor — mirrors the field order in toFileFormat().
      */
-    public BrainRot(String name, String primaryType, String secondaryType, String tier,
+    public BrainRot(String name, int level, int currentXp, String primaryType, String secondaryType, String tier,
                     int maxHp, int currentHp,
                     int baseAtk, int baseDef, int baseSpeed,
                     double attackMod, double defenseMod, double speedMod,
                     String status, int statusTurns, int turnCount,
                     String[] moves, int[] moveUPs) {
         this.name          = name;
+        this.level         = level;
+        this.currentXp = currentXp;
         this.primaryType   = getType(primaryType);
         this.secondaryType = getType(secondaryType);
         this.tier          = Tier.getTier(tier);
@@ -376,6 +378,8 @@ public class BrainRot {
     public String toFileFormat() {
         String format =
                 name            + ";" +
+                        level           + ";" +
+                        currentXp       + ";" +
                         primaryType     + ";" +
                         secondaryType   + ";" +
                         tier            + ";" +
