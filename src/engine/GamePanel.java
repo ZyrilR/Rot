@@ -67,7 +67,7 @@ public class GamePanel extends JPanel {
 
         // ── Seed the PC party with the player's starting team ────────────────
         testQuests();
-        seedTestParty();
+//        seedTestParty();
 
         // --- NEW: Force the player to the Starter Lab if they have no BrainRots! ---
         if (player.getPCSYSTEM().getPartySize() == 0) {
