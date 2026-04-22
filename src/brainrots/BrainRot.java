@@ -179,6 +179,11 @@ public class BrainRot {
         speed = Math.min(speed, StatGrowth.spdBuffCap());
 
         Skill unlocked = LevelUpLearnset.getSkillAt(name, level);
+
+        progression.QuestSystem.getInstance().onLevelUp(level);
+        if (level == 100 && tier == Tier.DIAMOND)
+            progression.QuestSystem.getInstance().onDiamondLevelUp();
+
         return new LevelUpResult(level, hpGain, atkGain, defGain, spdGain, unlocked);
     }
 
