@@ -51,6 +51,9 @@ public class QuestSystem {
 
     // Per-BrainRot win counters — key = BrainRot name uppercase
     private final Map<String, Integer> rotWins = new HashMap<>();
+    private int               shopPurchaseCount = 0;
+    private final Set<String> diamondOwnedNames = new HashSet<>();
+    private boolean           firstBattleWon    = false;
 
     // ── BrainRot name → quest ID map ─────────────────────────────────────────
     private static final Map<String, String> ROT_QUEST_ID = new LinkedHashMap<>();
@@ -173,11 +176,48 @@ public class QuestSystem {
                 14, false, 1,
                 RewardType.ITEM, 0, "FOCUS STANCE SCROLL");
 
-        reg("MAX_POTENTIAL",
-                "MAX POTENTIAL",
+        reg("FULLY_COOKED",
+                "FULLY COOKED",
                 "Raise any BrainRot to Level 100.",
                 15, false, 1,
                 RewardType.COINS, 5000, null);
+
+        // ── Progression badges ────────────────────────────────────────────────
+        reg("FIRST_STEPS",
+                "FIRST STEPS",
+                "Win your very first battle.",
+                16, false, 1,
+                RewardType.COINS, 300, null);
+
+        reg("GOLDEN_ERA",
+                "GOLDEN ERA",
+                "Obtain your first Gold tier BrainRot.",
+                17, false, 1,
+                RewardType.ITEM, 0, "SPEED CAPSULE");
+
+        reg("DIAMOND_COLLECTION",
+                "DIAMOND COLLECTION",
+                "Own all 8 unique BrainRots at Diamond tier.",
+                18, false, 8,
+                RewardType.ITEM, 0, "MASTER CAPSULE");
+
+        reg("PEAK_ROT",
+                "PEAK ROT",
+                "Raise a Diamond tier BrainRot to Level 100.",
+                19, false, 1,
+                RewardType.BRAINROT, 0, null);
+
+        reg("OUTLASTER",
+                "OUTLASTER",
+                "Win a battle that lasted more than 10 turns.",
+                20, false, 1,
+                RewardType.ITEM, 0, "SUPER STEW");
+
+        reg("LOYAL_CUSTOMER",
+                "LOYAL CUSTOMER",
+                "Purchase from the shop 30 times.",
+                21, false, 30,
+                RewardType.COINS, 2000, null);
 
         // Economy
         reg("VARIETY_PACK",
@@ -459,7 +499,7 @@ public class QuestSystem {
 
     public void onLevelUp(int newLevel) {
         if (newLevel >= 50)  complete("LEVEL_GRINDER");
-        if (newLevel >= 100) complete("MAX_POTENTIAL");
+        if (newLevel >= 100) complete("FULLY_COOKED");
     }
 
     // ── Shop hook ─────────────────────────────────────────────────────────────
@@ -487,6 +527,43 @@ public class QuestSystem {
         complete("ITEM_HOARDER");
     }
 
+    public void onFirstBattleWon() {
+        if (!firstBattleWon) {
+            firstBattleWon = true;
+            complete("FIRST_STEPS");
+        }
+    }
+
+    public void onGoldTierAcquired() {
+        complete("GOLDEN_ERA");
+    }
+
+    public void onDiamondTierAcquired(String rotName) {
+        diamondOwnedNames.add(rotName.toUpperCase());
+        Quest q = get("DIAMOND_COLLECTION");
+        if (q != null && !q.isCompleted()) {
+            q.loadState(false, diamondOwnedNames.size());
+            if (diamondOwnedNames.size() >= 8) complete("DIAMOND_COLLECTION");
+        }
+    }
+
+    public void onDiamondLevelUp() {
+        complete("PEAK_ROT");
+    }
+
+    public void onLongBattle(int turnCount) {
+        if (turnCount > 10) complete("OUTLASTER");
+    }
+
+    public void onShopPurchase() {
+        shopPurchaseCount++;
+        Quest q = get("LOYAL_CUSTOMER");
+        if (q != null && !q.isCompleted()) {
+            q.loadState(false, shopPurchaseCount);
+            if (shopPurchaseCount >= 30) complete("LOYAL_CUSTOMER");
+        }
+    }
+
     // ── Skill Collector check ─────────────────────────────────────────────────
 
     public void checkSkillCollector(java.util.List<BrainRot> party) {
@@ -510,7 +587,10 @@ public class QuestSystem {
                 .append(consecutiveLosses).append(";")
                 .append(captureCount).append(";")
                 .append(String.join(",", capturedNames)).append(";")
-                .append(String.join(",", categoriesUsed)).append("\n");
+                .append(String.join(",", categoriesUsed)).append(";")
+                .append(shopPurchaseCount).append(";")
+                .append(firstBattleWon ? "1" : "0").append(";")
+                .append(String.join(",", diamondOwnedNames)).append("\n");
 
         // Per-rot wins line
         sb.append("rotwins:");
@@ -541,6 +621,10 @@ public class QuestSystem {
                     Arrays.stream(c[4].split(",")).forEach(capturedNames::add);
                 if (!c[5].isEmpty())
                     Arrays.stream(c[5].split(",")).forEach(categoriesUsed::add);
+                if (c.length >= 7) shopPurchaseCount = parseInt(c[6]);
+                if (c.length >= 8) firstBattleWon    = c[7].equals("1");
+                if (c.length >= 9 && !c[8].isEmpty())
+                    Arrays.stream(c[8].split(",")).forEach(diamondOwnedNames::add);
             }
             lineIdx++;
         }

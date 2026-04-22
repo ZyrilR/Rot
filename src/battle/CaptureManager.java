@@ -60,8 +60,14 @@ public class CaptureManager {
         // DO NOT add to playerTeam directly here! BattleUI will route it safely through PCSystem.
         System.out.println(target.getName() + " was caught!");
 
-        // Fire achievement hooks
+        // Fire quest hooks
         QuestSystem.getInstance().onCapture(target, atFullHp);
+
+        if (target.getTier() == brainrots.Tier.GOLD)
+            QuestSystem.getInstance().onGoldTierAcquired();
+
+        if (target.getTier() == brainrots.Tier.DIAMOND)
+            QuestSystem.getInstance().onDiamondTierAcquired(target.getName());
 
         return true;
     }

@@ -5,6 +5,7 @@ import brainrots.LevelUpResult;
 import items.Item;
 import items.Capsule;
 import overworld.Player;
+import progression.QuestSystem;
 import skills.Skill;
 import skills.SkillEffect;
 
@@ -20,8 +21,9 @@ public class BattleManager {
     private final Player         player;
     private final boolean        wildBattle;
 
-    private BattleResult        result = BattleResult.ONGOING;
-    private BattleReward.Result reward = null;
+    private BattleResult        result    = BattleResult.ONGOING;
+    private BattleReward.Result reward    = null;
+    private int                 turnCount = 0;
 
     public BattleManager(BrainRot playerRot, BrainRot enemyRot,
                          List<BrainRot> playerTeam, Player player, boolean wildBattle) {
@@ -86,6 +88,7 @@ public class BattleManager {
 
     public void endTurn() {
         if (result != BattleResult.ONGOING) return;
+        turnCount++;
         endTurnCleanup();
     }
 
@@ -114,6 +117,8 @@ public class BattleManager {
      */
     private void resolveRewards() {
         reward = BattleReward.calculate(enemyRot);
+        QuestSystem.getInstance().onFirstBattleWon();
+        QuestSystem.getInstance().onLongBattle(turnCount);
 
         // Apply XP to the winning BrainRot
         reward.levelUps = playerRot.gainXp(reward.xp);
