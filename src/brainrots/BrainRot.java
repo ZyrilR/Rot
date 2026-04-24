@@ -57,7 +57,7 @@ public class BrainRot {
     private double speedMod   = 1.0;
 
     // Level and experience
-    private int level    = 1;
+    private int level    = 5;
     private int currentXp = 0;
 
     // Battle state
@@ -72,11 +72,13 @@ public class BrainRot {
     // ── Primary constructor ───────────────────────────────────────────────────
 
     public BrainRot(String name, Type primaryType, Type secondaryType, Tier tier,
+                    int level,
                     int maxHp, int attack, int defense, int speed) {
         this.name          = name;
         this.primaryType   = primaryType;
         this.secondaryType = secondaryType;
         this.tier          = tier;
+        this.level         = level;
 
         this.MAX_HP    = maxHp;
         this.currentHP = maxHp;

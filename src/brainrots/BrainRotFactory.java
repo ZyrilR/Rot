@@ -15,26 +15,28 @@ import static utils.Constants.getDescription;
 public class BrainRotFactory {
 
     /**
-     * Creates a BrainRot by registry name and desired tier.
+     * Creates a BrainRot by registry name and level. The tier (evolution stage) is
+     * derived from the level via {@link Tier#fromLevel(int)}.
      */
-    public static BrainRot create(String name, Tier tier) {
+    public static BrainRot create(String name, int level) {
+        Tier tier = Tier.fromLevel(level);
         return switch (name.toUpperCase()) {
-            case "TUNG TUNG TUNG SAHUR" -> makeTungTung(tier);
-            case "TRALALERO TRALALA"    -> makeTrala(tier);
-            case "BOMBARDINO CROCODILO" -> makeBombardino(tier);
-            case "LIRILI LARILA"        -> makeLirili(tier);
-            case "BRR BRR PATAPIM"      -> makePatapim(tier);
-            case "BONECA AMBALABU"      -> makeBoneca(tier);
-            case "UDIN DIN DIN DIN DUN" -> makeUdin(tier);
-            case "CAPUCCINO ASSASSINO"  -> makeCapuccino(tier);
+            case "TUNG TUNG TUNG SAHUR" -> makeTungTung(tier, level);
+            case "TRALALERO TRALALA"    -> makeTrala(tier, level);
+            case "BOMBARDINO CROCODILO" -> makeBombardino(tier, level);
+            case "LIRILI LARILA"        -> makeLirili(tier, level);
+            case "BRR BRR PATAPIM"      -> makePatapim(tier, level);
+            case "BONECA AMBALABU"      -> makeBoneca(tier, level);
+            case "UDIN DIN DIN DIN DUN" -> makeUdin(tier, level);
+            case "CAPUCCINO ASSASSINO"  -> makeCapuccino(tier, level);
             default -> throw new IllegalArgumentException("Unknown BrainRot: " + name);
         };
     }
 
     private static BrainRot build(String name,
-                                  Type primary, Type secondary, Tier tier,
+                                  Type primary, Type secondary, Tier tier, int level,
                                   int hp, int atk, int def, int spd, SkillType poolType) {
-        BrainRot rot = new BrainRot(name, primary, secondary, tier, hp, atk, def, spd);
+        BrainRot rot = new BrainRot(name, primary, secondary, tier, level, hp, atk, def, spd);
         assignStartingMoves(rot, name, poolType);
         return rot;
     }
@@ -45,7 +47,7 @@ public class BrainRotFactory {
     }
 
     // ---------- BrainRot creators ----------
-    private static BrainRot makeTungTung(Tier tier) {
+    private static BrainRot makeTungTung(Tier tier, int level) {
         int hp, atk, def, spd;
         switch (tier) {
             case GOLD    -> { hp = RandomUtil.range(80,120);  spd = RandomUtil.range(18,28); def = RandomUtil.range(30,50); atk = RandomUtil.range(45,80);  }
@@ -53,10 +55,10 @@ public class BrainRotFactory {
             default      -> { hp = RandomUtil.range(35,80);   spd = RandomUtil.range(8,18);  def = RandomUtil.range(15,30); atk = RandomUtil.range(20,45);  }
         }
         return build("TUNG TUNG TUNG SAHUR",
-                Type.FIGHTING, null, tier, hp, atk, def, spd, SkillType.FIGHTING);
+                Type.FIGHTING, null, tier, level, hp, atk, def, spd, SkillType.FIGHTING);
     }
 
-    private static BrainRot makeTrala(Tier tier) {
+    private static BrainRot makeTrala(Tier tier, int level) {
         int hp, atk, def, spd;
         switch (tier) {
             case GOLD    -> { hp = RandomUtil.range(70,110);  spd = RandomUtil.range(28,40); def = RandomUtil.range(20,35); atk = RandomUtil.range(50,85);  }
@@ -64,10 +66,10 @@ public class BrainRotFactory {
             default      -> { hp = RandomUtil.range(30,70);   spd = RandomUtil.range(15,28); def = RandomUtil.range(8,20);  atk = RandomUtil.range(25,50);  }
         }
         return build("TRALALERO TRALALA",
-                Type.WATER, Type.PSYCHIC, tier, hp, atk, def, spd, SkillType.WATER);
+                Type.WATER, Type.PSYCHIC, tier, level, hp, atk, def, spd, SkillType.WATER);
     }
 
-    private static BrainRot makeBombardino(Tier tier) {
+    private static BrainRot makeBombardino(Tier tier, int level) {
         int hp, atk, def, spd;
         switch (tier) {
             case GOLD    -> { hp = RandomUtil.range(85,130);  spd = RandomUtil.range(22,32); def = RandomUtil.range(30,55); atk = RandomUtil.range(50,85);  }
@@ -75,10 +77,10 @@ public class BrainRotFactory {
             default      -> { hp = RandomUtil.range(40,85);   spd = RandomUtil.range(12,22); def = RandomUtil.range(15,30); atk = RandomUtil.range(22,50);  }
         }
         return build("BOMBARDINO CROCODILO",
-                Type.WATER, Type.FLYING, tier, hp, atk, def, spd, SkillType.WATER);
+                Type.WATER, Type.FLYING, tier, level, hp, atk, def, spd, SkillType.WATER);
     }
 
-    private static BrainRot makeLirili(Tier tier) {
+    private static BrainRot makeLirili(Tier tier, int level) {
         int hp, atk, def, spd;
         switch (tier) {
             case GOLD    -> { hp = RandomUtil.range(100,150); spd = RandomUtil.range(12,22); def = RandomUtil.range(40,65); atk = RandomUtil.range(35,70); }
@@ -86,10 +88,10 @@ public class BrainRotFactory {
             default      -> { hp = RandomUtil.range(55,100);  spd = RandomUtil.range(5,12);  def = RandomUtil.range(20,40); atk = RandomUtil.range(15,35); }
         }
         return build("LIRILI LARILA",
-                Type.SAND, null, tier, hp, atk, def, spd, SkillType.SAND);
+                Type.SAND, null, tier, level, hp, atk, def, spd, SkillType.SAND);
     }
 
-    private static BrainRot makePatapim(Tier tier) {
+    private static BrainRot makePatapim(Tier tier, int level) {
         int hp, atk, def, spd;
         switch (tier) {
             case GOLD    -> { hp = RandomUtil.range(95,145);  spd = RandomUtil.range(15,24); def = RandomUtil.range(35,60); atk = RandomUtil.range(40,75);  }
@@ -97,10 +99,10 @@ public class BrainRotFactory {
             default      -> { hp = RandomUtil.range(50,95);   spd = RandomUtil.range(6,15);  def = RandomUtil.range(20,35); atk = RandomUtil.range(20,40);  }
         }
         return build("BRR BRR PATAPIM",
-                Type.GRASS, Type.ROCK, tier, hp, atk, def, spd, SkillType.GRASS);
+                Type.GRASS, Type.ROCK, tier, level, hp, atk, def, spd, SkillType.GRASS);
     }
 
-    private static BrainRot makeBoneca(Tier tier) {
+    private static BrainRot makeBoneca(Tier tier, int level) {
         int hp, atk, def, spd;
         switch (tier) {
             case GOLD    -> { hp = RandomUtil.range(95,145);  spd = RandomUtil.range(15,24); def = RandomUtil.range(35,60); atk = RandomUtil.range(40,75);  }
@@ -108,10 +110,10 @@ public class BrainRotFactory {
             default      -> { hp = RandomUtil.range(50,95);   spd = RandomUtil.range(6,15);  def = RandomUtil.range(20,35); atk = RandomUtil.range(20,40);  }
         }
         return build("BONECA AMBALABU",
-                Type.FIRE, Type.ROCK, tier, hp, atk, def, spd, SkillType.FIRE);
+                Type.FIRE, Type.ROCK, tier, level, hp, atk, def, spd, SkillType.FIRE);
     }
 
-    private static BrainRot makeUdin(Tier tier) {
+    private static BrainRot makeUdin(Tier tier, int level) {
         int hp, atk, def, spd;
         switch (tier) {
             case GOLD    -> { hp = RandomUtil.range(85,135);  spd = RandomUtil.range(18,28); def = RandomUtil.range(30,50); atk = RandomUtil.range(50,85);  }
@@ -119,10 +121,10 @@ public class BrainRotFactory {
             default      -> { hp = RandomUtil.range(40,85);   spd = RandomUtil.range(8,18);  def = RandomUtil.range(15,30); atk = RandomUtil.range(25,50);  }
         }
         return build("UDIN DIN DIN DIN DUN",
-                Type.FIGHTING, null, tier, hp, atk, def, spd, SkillType.FIGHTING);
+                Type.FIGHTING, null, tier, level, hp, atk, def, spd, SkillType.FIGHTING);
     }
 
-    private static BrainRot makeCapuccino(Tier tier) {
+    private static BrainRot makeCapuccino(Tier tier, int level) {
         int hp, atk, def, spd;
         switch (tier) {
             case GOLD    -> { hp = RandomUtil.range(65,105);  spd = RandomUtil.range(30,42); def = RandomUtil.range(20,35); atk = RandomUtil.range(55,90);  }
@@ -130,6 +132,6 @@ public class BrainRotFactory {
             default      -> { hp = RandomUtil.range(25,65);   spd = RandomUtil.range(18,30); def = RandomUtil.range(8,20);  atk = RandomUtil.range(30,55);  }
         }
         return build("CAPUCCINO ASSASSINO",
-                Type.DARK, Type.POISON, tier, hp, atk, def, spd, SkillType.DARK);
+                Type.DARK, Type.POISON, tier, level, hp, atk, def, spd, SkillType.DARK);
     }
 }

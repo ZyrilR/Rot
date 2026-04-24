@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Central registry listing all 8 BrainRot names.
- * Use BrainRotFactory.create(name, tier) to instantiate them.
+ * Use BrainRotFactory.create(name, level) to instantiate them.
  */
 public class BrainRotRegistry {
 
@@ -23,10 +23,11 @@ public class BrainRotRegistry {
     );
 
     /**
-     * Convenience: spawn a BrainRot by registry constant and tier.
+     * Convenience: spawn a BrainRot by registry constant and level.
+     * Tier is derived from level via {@link Tier#fromLevel(int)}.
      */
-    public static BrainRot spawn(String name, Tier tier) {
-        return BrainRotFactory.create(name, tier);
+    public static BrainRot spawn(String name, int level) {
+        return BrainRotFactory.create(name, level);
     }
 
     /**
