@@ -2,7 +2,6 @@ package battle;
 
 import brainrots.BrainRot;
 import brainrots.LevelUpResult;
-import brainrots.Tier;
 import items.Item;
 import items.ItemRegistry;
 import skills.Skill;
@@ -11,12 +10,20 @@ import utils.RandomUtil;
 import java.util.ArrayList;
 import java.util.List;
 
+import static utils.Constants.COIN_BASE;
+import static utils.Constants.COIN_PER_LEVEL;
+import static utils.Constants.SCROLL_DROP_PERCENT;
+import static utils.Constants.XP_PER_LEVEL;
+
 /**
  * Computes post-battle rewards (XP, coins, scroll drop).
- * Pure calculation only — no state mutation.
- * All application of rewards is handled by BattleManager.resolveRewards().
+ * {@link #calculate(BrainRot)} is a pure computation; the returned {@link Result}
+ * is later enriched by BattleManager with the applied level-ups and scroll-inventory outcome.
+ * Tunable economy constants live in {@link utils.Constants}.
  */
-public class BattleReward {
+public final class BattleReward {
+
+    private BattleReward() {} // utility class — not instantiable
 
     public static class Result {
         public final int    xp;
@@ -24,7 +31,7 @@ public class BattleReward {
         public final Item   scroll;
         public final String scrollSkillName;
 
-        // Set by BattleManager.resolveRewards() after application
+        // Set by BattleManager.resolveRewards() after application.
         public List<LevelUpResult> levelUps    = new ArrayList<>();
         public boolean             scrollAdded = false;
 
@@ -45,7 +52,7 @@ public class BattleReward {
     public static Result calculate(BrainRot enemy) {
         int    xp     = calculateXp(enemy);
         int    coins  = calculateCoins(enemy);
-        String skill  = rollScrollSkill(enemy);
+        String skill  = rollScrollName(enemy);
         Item   scroll = skill != null ? ItemRegistry.getItem(skill.toUpperCase() + " SCROLL") : null;
         return new Result(xp, coins, scroll, skill);
     }
@@ -53,37 +60,27 @@ public class BattleReward {
     // ── XP ────────────────────────────────────────────────────────────────────
 
     private static int calculateXp(BrainRot enemy) {
-        double tierMult = switch (enemy.getTier()) {
-            case GOLD    -> 1.5;
-            case DIAMOND -> 2.5;
-            default      -> 1.0;
-        };
-        return Math.max(1, (int)(enemy.getLevel() * 12 * tierMult));
+        return (int)(enemy.getLevel() * XP_PER_LEVEL * enemy.getTier().xpMultiplier());
     }
 
     // ── Coins ─────────────────────────────────────────────────────────────────
 
     private static int calculateCoins(BrainRot enemy) {
-        double tierMult = switch (enemy.getTier()) {
-            case GOLD    -> 2.0;
-            case DIAMOND -> 4.0;
-            default      -> 1.0;
-        };
-        // base: flat 50 + level scaling, so early game isn't punishing
-        int base = 50 + (enemy.getLevel() * 10);
-        return (int)(base * tierMult);
+        // Flat base + level scaling so early game isn't punishing.
+        int base = COIN_BASE + (enemy.getLevel() * COIN_PER_LEVEL);
+        return (int)(base * enemy.getTier().coinMultiplier());
     }
 
     // ── Scroll ────────────────────────────────────────────────────────────────
 
     /**
-     * 20% chance to drop a scroll based on a random move from the enemy's moveset.
-     * Returns the skill name, or null if no drop.
+     * Rolls the scroll drop. Returns the source skill name, or null if no drop
+     * occurred (failed chance roll, or the enemy has no moves to sample from).
      */
-    private static String rollScrollSkill(BrainRot enemy) {
-        if (!RandomUtil.chance(20.0)) return null;
+    private static String rollScrollName(BrainRot enemy) {
+        if (!RandomUtil.chance(SCROLL_DROP_PERCENT)) return null;
         List<Skill> moves = enemy.getMoves();
-        if (moves == null || moves.isEmpty()) return null;
+        if (moves.isEmpty()) return null;
         return moves.get(RandomUtil.range(0, moves.size() - 1)).getName();
     }
 }

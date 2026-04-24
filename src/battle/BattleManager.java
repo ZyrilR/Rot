@@ -108,9 +108,23 @@ public class BattleManager {
             result = BattleResult.PLAYER_WIN;
             resolveRewards();
         } else if (playerRot.isFainted()) {
-            System.out.println(playerRot.getName() + " fainted! Enemy wins!");
-            result = BattleResult.ENEMY_WIN;
+            if (hasHealthyReserves()) {
+                System.out.println(playerRot.getName() + " fainted! Awaiting replacement send-out...");
+                // Battle stays ONGOING; BattleUI will force a TEAM_SELECT.
+            } else {
+                System.out.println(playerRot.getName() + " fainted! Enemy wins!");
+                result = BattleResult.ENEMY_WIN;
+            }
         }
+    }
+
+    /** True if the player has at least one non-fainted BrainRot besides the active one. */
+    public boolean hasHealthyReserves() {
+        if (playerTeam == null) return false;
+        for (BrainRot rot : playerTeam) {
+            if (rot != null && rot != playerRot && !rot.isFainted()) return true;
+        }
+        return false;
     }
 
     private void resolveRewards() {

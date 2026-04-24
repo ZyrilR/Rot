@@ -23,4 +23,21 @@ public enum Tier {
         if (level >= GOLD_LEVEL)    return GOLD;
         return NORMAL;
     }
+
+    // Reward multipliers applied when an enemy of this tier is defeated.
+    public double xpMultiplier() {
+        return switch (this) {
+            case GOLD    -> 1.5;
+            case DIAMOND -> 2.5;
+            default      -> 1.0;
+        };
+    }
+
+    public double coinMultiplier() {
+        return switch (this) {
+            case GOLD    -> 2.0;
+            case DIAMOND -> 4.0;
+            default      -> 1.0;
+        };
+    }
 }

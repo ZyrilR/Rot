@@ -2,6 +2,7 @@ package ui;
 
 import battle.BattleManager;
 import battle.BattleReward;
+import battle.DamageCalculator;
 import brainrots.BrainRot;
 import brainrots.LevelUpResult;
 import items.Item;
@@ -68,6 +69,13 @@ public class BattleUI {
     private int animTick = 0;
     private int currentHurtFrame = 2;
 
+    // HP bar tween state — display HP lerps toward true HP.
+    private double playerDisplayHp = -1;
+    private double enemyDisplayHp  = -1;
+    private BrainRot lastPlayerRotForHp;
+    private static final double HP_TWEEN_STEP = 1.5; // HP per frame baseline
+    private static final double HP_TWEEN_FRAC = 0.08; // fraction of gap per frame
+
     public BattleUI(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
         this.kh = kh;
@@ -89,10 +97,15 @@ public class BattleUI {
         this.isInitialSendOut = true;
         this.messageQueue.clear();
         this.inputCooldown = INPUT_DELAY * 2;
+        this.playerDisplayHp = -1;
+        this.enemyDisplayHp  = -1;
+        this.lastPlayerRotForHp = null;
     }
 
     public void update() {
         if (gp.GAMESTATE.equalsIgnoreCase("INVENTORY")) return;
+
+        tickHpTween();
 
         // Rapid Hurt Animation Ping-Pong (Swaps between Frame 2 and 3 quickly!)
         animTick++;
@@ -121,6 +134,31 @@ public class BattleUI {
         }
     }
 
+    private void tickHpTween() {
+        if (battle == null) return;
+        BrainRot p = battle.getPlayerRot();
+        BrainRot e = battle.getEnemyRot();
+
+        // Reset player display HP on send-out (rot swap or first init).
+        if (p != null && (p != lastPlayerRotForHp || playerDisplayHp < 0)) {
+            playerDisplayHp = p.getCurrentHp();
+            lastPlayerRotForHp = p;
+        }
+        if (e != null && enemyDisplayHp < 0) {
+            enemyDisplayHp = e.getCurrentHp();
+        }
+
+        if (p != null) playerDisplayHp = lerpHp(playerDisplayHp, p.getCurrentHp());
+        if (e != null) enemyDisplayHp  = lerpHp(enemyDisplayHp,  e.getCurrentHp());
+    }
+
+    private double lerpHp(double current, int target) {
+        double diff = target - current;
+        if (Math.abs(diff) < 0.5) return target;
+        double step = Math.max(HP_TWEEN_STEP, Math.abs(diff) * HP_TWEEN_FRAC);
+        return diff > 0 ? Math.min(target, current + step) : Math.max(target, current - step);
+    }
+
     private void queueMessage(String line1, String line2) {
         messageQueue.add(new String[]{line1, line2});
     }
@@ -139,8 +177,9 @@ public class BattleUI {
     }
 
     private void updateMessage() {
-        if (dialogueTicks > 0) dialogueTicks--;
-        if (kh.enterPressed || dialogueTicks <= 0) {
+        // Battle dialogue is never skippable — wait out the full ticks.
+        if (dialogueTicks > 0) { dialogueTicks--; kh.enterPressed = false; return; }
+        if (dialogueTicks <= 0) {
             kh.enterPressed = false;
 
             if (!messageQueue.isEmpty()) {
@@ -296,7 +335,7 @@ public class BattleUI {
         if (kh.upPressed && partyCursor > 0) { partyCursor--; inputCooldown = INPUT_DELAY; }
         else if (kh.downPressed && partyCursor < size - 1) { partyCursor++; inputCooldown = INPUT_DELAY; }
 
-        if (kh.escPressed && battle.getPlayerRot() != null && !battle.getPlayerRot().getName().isEmpty() && !isInitialSendOut) {
+        if (kh.escPressed && battle.getPlayerRot() != null && !battle.getPlayerRot().getName().isEmpty() && !isInitialSendOut && !battle.getPlayerRot().isFainted()) {
             kh.escPressed = false;
             setPrompt();
             currentState = BattleState.MENU;
@@ -339,12 +378,20 @@ public class BattleUI {
         if (kh.enterPressed) {
             kh.enterPressed = false;
             if (confirmCursor == 0) { // YES
+                boolean wasForced = battle.getPlayerRot() != null && battle.getPlayerRot().isFainted();
                 BrainRot selected = gp.player.getPCSYSTEM().getPartyMember(partyCursor);
                 battle.setPlayerRot(selected);
                 queueMessage("Go! " + selected.getName() + "!", "");
 
                 if (isInitialSendOut) {
                     isInitialSendOut = false;
+                    playNextMessage(BattleState.MENU);
+                } else if (wasForced) {
+                    // Forced replacement after faint — enemy already attacked. Fresh turn.
+                    playerMovesFirst = selected.getSpeed() >= battle.getEnemyRot().getSpeed();
+                    if (playerMovesFirst) {
+                        queueMessage("What will", selected.getName() + " do?");
+                    }
                     playNextMessage(BattleState.MENU);
                 } else {
                     playerChosenIndex = -1;
@@ -472,6 +519,7 @@ public class BattleUI {
 
             if (damage > 0) {
                 queueMessage(defender.getName(), "took " + damage + " damage!");
+                queueEffectivenessMessage(skill, defender);
             } else if (damage < 0) {
                 queueMessage(defender.getName(), "recovered " + (-damage) + " HP!");
             }
@@ -479,6 +527,15 @@ public class BattleUI {
             if (defender.isFainted()) queueMessage(defender.getName() + " fainted!", "");
         }
         playNextMessage(BattleState.ANIMATION);
+    }
+
+    private void queueEffectivenessMessage(Skill skill, BrainRot defender) {
+        if (skill.getPower() <= 0) return;
+        double m = DamageCalculator.effectiveness(skill, defender);
+        if (m >= 2.0)      queueMessage("It's super", "ultra effective!");
+        else if (m > 1.0)  queueMessage("It's super", "effective!");
+        else if (m == 0.0) queueMessage("It has no effect", "on " + defender.getName() + "...");
+        else if (m < 1.0)  queueMessage("It's not very", "effective...");
     }
 
     private void executeTurnTwo() {
@@ -500,6 +557,7 @@ public class BattleUI {
 
                 if (damage > 0) {
                     queueMessage(defender.getName(), "took " + damage + " damage!");
+                    queueEffectivenessMessage(skill, defender);
                 } else if (damage < 0) {
                     queueMessage(defender.getName(), "recovered " + (-damage) + " HP!");
                 }
@@ -550,14 +608,22 @@ public class BattleUI {
             }
             playNextMessage(pendingReplacements.isEmpty() ? BattleState.FINISH : BattleState.LEVELUP_CHECK);
         } else {
+            if (battle.getPlayerRot().isFainted()) {
+                // Forced switch: player rot fainted but healthy reserves remain.
+                queueMessage(battle.getPlayerRot().getName() + " fainted!", "");
+                queueMessage("Choose a BrainRot", "to send out!");
+                playNextMessage(BattleState.TEAM_SELECT);
+                return;
+            }
             if (playerMovesFirst) setPrompt();
             currentState = playerMovesFirst ? BattleState.MENU : BattleState.ENEMY_AI;
         }
     }
 
     private void updateFinish() {
-        if (dialogueTicks > 0) dialogueTicks--;
-        if (kh.enterPressed || dialogueTicks <= 0) {
+        // Wait for any trailing dialogue to finish — not skippable.
+        if (dialogueTicks > 0) { dialogueTicks--; kh.enterPressed = false; return; }
+        if (dialogueTicks <= 0) {
             kh.enterPressed = false;
             gp.GAMESTATE = "play";
             gp.BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_OUT_TO_PLAY, 8);
@@ -917,15 +983,15 @@ public class BattleUI {
 
     private void drawEnemyHpBlock(Graphics2D g2) {
         BrainRot rot = battle.getEnemyRot();
-        drawHpFrame(g2, 40, 40, 320, 76, rot, false, hpFrame_enemy);
+        drawHpFrame(g2, 40, 40, 320, 76, rot, false, hpFrame_enemy, enemyDisplayHp);
     }
 
     private void drawPlayerHpBlock(Graphics2D g2) {
         BrainRot rot = battle.getPlayerRot();
-        drawHpFrame(g2, SCREEN_WIDTH - 360, SCREEN_HEIGHT - 250, 340, 96, rot, true, hpFrame_player);
+        drawHpFrame(g2, SCREEN_WIDTH - 360, SCREEN_HEIGHT - 250, 340, 96, rot, true, hpFrame_player, playerDisplayHp);
     }
 
-    private void drawHpFrame(Graphics2D g2, int x, int y, int w, int h, BrainRot rot, boolean isPlayer, BufferedImage frameImg) {
+    private void drawHpFrame(Graphics2D g2, int x, int y, int w, int h, BrainRot rot, boolean isPlayer, BufferedImage frameImg, double displayHp) {
         if (frameImg != null) {
             g2.drawImage(frameImg, x, y, w, h, null);
         } else {
@@ -944,7 +1010,8 @@ public class BattleUI {
         g2.setColor(new Color(80, 80, 80));
         g2.fillRect(barX, barY, barW, barH);
 
-        double hpFrac = Math.max(0, (double) rot.getCurrentHp() / rot.getMaxHp());
+        double shownHp = displayHp < 0 ? rot.getCurrentHp() : displayHp;
+        double hpFrac = Math.max(0, shownHp / rot.getMaxHp());
         Color hpC = hpFrac > 0.5 ? new Color(80, 220, 100) : hpFrac > 0.2 ? new Color(220, 200, 50) : new Color(220, 80, 60);
         g2.setColor(hpC);
         g2.fillRect(barX, barY, (int)(barW * hpFrac), barH);
@@ -952,7 +1019,7 @@ public class BattleUI {
         if (isPlayer) {
             g2.setFont(getCustomFont(Font.BOLD, 15f));
             g2.setColor(new Color(50, 50, 50));
-            String hpNum = rot.getCurrentHp() + " / " + rot.getMaxHp();
+            String hpNum = (int)Math.ceil(shownHp) + " / " + rot.getMaxHp();
             fm = g2.getFontMetrics();
             g2.drawString(hpNum, x + w - fm.stringWidth(hpNum) - 25, y + 78);
         }

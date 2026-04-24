@@ -64,7 +64,7 @@ public class NPC {
         }
 
         collisionOn = false;
-        gp.COLLISIONCHECKER.checkTileForNPC(this);
+        gp.TILECHECKER.checkTileForNPC(this);
 
         if (!collisionOn) {
             switch (direction) {

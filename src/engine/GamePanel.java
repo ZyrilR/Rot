@@ -8,7 +8,7 @@ import map.WorldLoader;
 import overworld.EncounterSystem;
 import overworld.Player;
 import storage.PCSystem;
-import tile.CollisionChecker;
+import tile.TileChecker;
 import tile.TileManager;
 import tile.TileTeleporter;
 import ui.*;
@@ -31,7 +31,7 @@ public class GamePanel extends JPanel {
     // ── Core handlers ─────────────────────────────────────────────────────────
     public KeyboardHandler KEYBOARDHANDLER      = new KeyboardHandler();
     public EncounterSystem encounterSystem      = new EncounterSystem();
-    public CollisionChecker COLLISIONCHECKER    = new CollisionChecker(this);
+    public TileChecker TILECHECKER    = new TileChecker(this);
     public Player player                        = new Player(this, KEYBOARDHANDLER);
 
     public String GAMESTATE               = "play";
@@ -69,7 +69,7 @@ public class GamePanel extends JPanel {
 
         // ── Seed the PC party with the player's starting team ────────────────
 //        testQuests();
-//        seedTestParty();
+        seedTestParty();
 
         // --- NEW: Force the player to the Starter Lab if they have no BrainRots! ---
 //        if (player.getPCSYSTEM().getPartySize() == 0) {
@@ -165,7 +165,7 @@ public class GamePanel extends JPanel {
             return;
         }
 
-        TileTeleporter tr = CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
+        TileTeleporter tr = TileChecker.getTeleporterTileInCurrentPosition(this, player);
         if (tr != null) {
             handleTeleport(tr);
         }
