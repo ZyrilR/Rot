@@ -197,9 +197,16 @@ public class InventoryUI {
     }
 
     private void applyItemToTarget(BrainRot target) {
-        if      (pendingItem instanceof Stew    s) applyStew(s, target);
+        if      (pendingItem instanceof Stew     s) applyStew(s, target);
         else if (pendingItem instanceof Antidote a) applyAntidote(a, target);
         else if (pendingItem instanceof Scroll   s) applyScroll(s, target);
+        else if (pendingItem instanceof UPBottle b) {
+            // move to skill-select overlay
+            pendingScrollTarget = target;
+            moveCursor = 0;
+            layout = Layout.MOVE_SWAP;
+            clearStatus();
+        }
     }
 
     private void applyStew(Stew stew, BrainRot target) {
@@ -308,6 +315,17 @@ public class InventoryUI {
                 } else {
                     setStatus("Could not swap move");
                 }
+            } else if (pendingItem instanceof UPBottle bottle) {
+                skills.Skill chosenSkill = pendingScrollTarget.getMoves().get(moveCursor);
+                if (bottle.isSkillFull(chosenSkill)) {
+                    setStatus(chosenSkill.getName() + " already at max UP!");
+                    inputCooldown = INPUT_DELAY;
+                    return; // stay in MOVE_SWAP so player can pick another
+                }
+                bottle.use(pendingScrollTarget, moveCursor);
+                consumePendingItem();
+                progression.QuestSystem.getInstance().onItemUsed("UP_BOTTLE");
+                setStatus(chosenSkill.getName() + " UP restored!");
             }
             pendingScrollTarget = null;
             returnToItemList();
@@ -694,14 +712,26 @@ public class InventoryUI {
 
         g2.setFont(base.deriveFont(Font.BOLD, 13f));
         g2.setColor(new Color(44, 44, 42));
-        String title = (pendingItem instanceof Scroll s)
-                ? "Learning: " + truncate(s.getSkillName(), g2.getFontMetrics(), panelW - 60)
-                : "Replace which move?";
+        String title;
+        String subtitle;
+        if (pendingItem instanceof Scroll s) {
+            title    = "Learning: " + truncate(s.getSkillName(), g2.getFontMetrics(), panelW - 60);
+            subtitle = "Choose a move to replace:";
+        } else if (pendingItem instanceof UPBottle b) {
+            String restoreLabel = (b.getMode() == UPBottle.RestoreMode.FULL)
+                    ? "Restore all UP"
+                    : "Restore " + b.getRestoreAmount() + " UP";
+            title    = restoreLabel;
+            subtitle = "Choose a skill to restore:";
+        } else {
+            title    = "Choose a move:";
+            subtitle = "";
+        }
         g2.drawString(title, panelX + 14, panelY + 22);
 
         g2.setFont(base.deriveFont(9f));
         g2.setColor(new Color(100, 96, 90));
-        g2.drawString("Choose a move to replace:", panelX + 14, panelY + 39);
+        g2.drawString(subtitle, panelX + 14, panelY + 39);
 
         g2.setColor(new Color(200, 195, 180));
         g2.drawLine(panelX + 10, panelY + 46, panelX + panelW - 10, panelY + 46);
@@ -743,8 +773,9 @@ public class InventoryUI {
             g2.drawString(mv.getType().name(), badgeX + padX, badgeTopY + 11);
 
             int nameX = panelX + 24 + badgeW + 8;
+            boolean upFull = (pendingItem instanceof UPBottle) && mv.getCurrentUP() >= mv.getMaxUP();
             g2.setFont(base.deriveFont(hov ? Font.BOLD : Font.PLAIN, 11f));
-            g2.setColor(new Color(44, 44, 42));
+            g2.setColor(upFull ? new Color(160, 155, 148) : new Color(44, 44, 42));
             g2.drawString(truncate(mv.getName(), g2.getFontMetrics(), panelW - 140), nameX, rowY + rowH / 2 + 5);
 
             String sp = "UP " + mv.getCurrentUP() + "/" + mv.getMaxUP();
@@ -809,6 +840,12 @@ public class InventoryUI {
                     && result != Scroll.ScrollResult.MOVESET_FULL;
         }
 
+        if (pendingItem instanceof UPBottle) {
+            // Grey out if all moves are already at max UP
+            return rot.getMoves().isEmpty()
+                    || rot.getMoves().stream().allMatch(s -> s.getCurrentUP() >= s.getMaxUP());
+        }
+
         return false;
     }
 
@@ -821,6 +858,9 @@ public class InventoryUI {
             if (cure.equals("DEBUFF")) return "No debuffs";
             return "Not " + capitalize(cure.toLowerCase());
         }
+
+        if (pendingItem instanceof UPBottle)
+            return "All UP full";
 
         if (pendingItem instanceof Scroll scroll) {
             Scroll.ScrollResult r = scroll.validate(rot);

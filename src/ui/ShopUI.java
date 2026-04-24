@@ -62,7 +62,9 @@ public class ShopUI {
                 // Antidotes
                 "CONFUSION CURE", "PARALYZE CURE", "BURN CURE", "SLEEP CURE", "DEBUFF TONIC",
                 // Capsules
-                "NORMAL CAPSULE", "RED CAPSULE", "BLUE CAPSULE", "SPEED CAPSULE", "HEAVY CAPSULE"
+                "NORMAL CAPSULE", "RED CAPSULE", "BLUE CAPSULE", "SPEED CAPSULE", "HEAVY CAPSULE",
+                // UP Bottles
+                "UP BOTTLE", "UP MEDIUM BOTTLE", "UP HIGH BOTTLE", "UP FULL BOTTLE"
         };
 
         for (String name : names) {
