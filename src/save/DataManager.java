@@ -242,9 +242,6 @@ public class DataManager {
             }
         }
 
-        System.out.println("HEALTH: " + safeParseInt(attributes[7]));
-        System.out.println("MAXHEALTH: " + safeParseInt(attributes[6]));
-
         BrainRot rot = new BrainRot(
                 attributes[0],                               // Name
                 safeParseInt(attributes[1]),                 // Level
