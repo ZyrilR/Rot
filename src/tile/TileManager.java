@@ -24,10 +24,9 @@ public class TileManager {
     private int map[][];
     private boolean[][] collisionMap;
 
-    private ArrayList<NPC> NPCs = new ArrayList<>();
     private ArrayList<TileTeleporter> teleporters = new ArrayList<>();
-
-    private ArrayList<Inventory> loots = new ArrayList<>();
+    private ArrayList<TileLoot> loots = new ArrayList<>();
+    private ArrayList<NPC> NPCs = new ArrayList<>();
 
     //TileSets
     public static ArrayList<Tile> BACKGROUND_TILES = new ArrayList<>();
@@ -171,6 +170,7 @@ public class TileManager {
             if (layerType.equalsIgnoreCase("interactive")) {
                 br.readLine();
                 String line;
+                String[] items;
                 while((line = br.readLine()) != null) {
                     System.out.println(line);
 
@@ -189,7 +189,7 @@ public class TileManager {
                                 party.add(BrainRotFactory.create(rot[0], Integer.parseInt(rot[1])));
                             }
 
-                            String[] items = parts[6].split(";");
+                            items = parts[6].split(";");
                             Inventory inventory = new Inventory(items.length);
                             for (String item : items)
                                 inventory.addItem(ItemRegistry.getItem(item));
@@ -211,6 +211,13 @@ public class TileManager {
                         case "TELEPORTER":
                             teleporters.add(new TileTeleporter(parts[0], parts[5], parts[1], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), parts[6].split(";")));
                             continue;
+                        case "BACKPACK":
+                            items = parts[5].split(";");
+                            Inventory inv = new Inventory(items.length);
+                            for (String item: items)
+                                inv.addItem(ItemRegistry.getItem(item));
+                            loots.add(new TileLoot(null, Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inv, parts[parts.length - 1].split(";")));
+                            break;
                         default:
                             break;
                     };
@@ -278,10 +285,12 @@ public class TileManager {
             }
         }
 
-        for (int i = 26; i <= 29; i++) {
-            INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/Interactives/" + i + ".png"), false));
+        for (int i = 26; i <= 34; i++) {
+            if (i >= 31 && i <= 34)
+                INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/Interactives/" + i + ".png"), true));
+            else
+                INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/Interactives/" + i + ".png"), false));
         }
-
     }
 
     public ArrayList<TileTeleporter> getTeleporters() {
@@ -290,4 +299,7 @@ public class TileManager {
 
     public String getLayerName() { return layerName; }
     public void setLayerName(String name) { this.layerName = name; }
+    public ArrayList<TileLoot> getLoots() {
+        return loots;
+    }
 }

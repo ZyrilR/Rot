@@ -23,8 +23,4 @@ public class TileInteractive extends Tile {
     public TileInteractive(Boolean collision, String role) {
         super(null, collision, role);
     }
-
-    public void interact(GamePanel gp) {
-
-    }
 }

@@ -4,6 +4,8 @@ import engine.GamePanel;
 import input.KeyboardHandler;
 import items.Inventory;
 import storage.PCSystem;
+import tile.CollisionChecker;
+import tile.TileLoot;
 import tile.TileManager;
 import tile.TileTeleporter;
 import utils.AssetManager;
@@ -11,6 +13,7 @@ import utils.AssetManager;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import static utils.Constants.*;
 
@@ -236,6 +239,14 @@ public class Player {
                     return;
                 }
             }
+        }
+
+        TileLoot tl = CollisionChecker.getTileLootInFront(gp);
+        System.out.println("PRESSED E: " + tl);
+        if (tl != null) {
+            System.out.println("YESSSS");
+            tl.interact(gp);
+            gp.player.getInventory().appendInventory(tl.getInventory());
         }
     }
 

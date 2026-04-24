@@ -268,6 +268,28 @@ public class CollisionChecker {
         return null;
     }
 
+    public static TileLoot getTileLootInFront(GamePanel gp) {
+        Player player = gp.player;
+        int centerX = player.worldX + player.solidArea.x + player.solidArea.width / 2;
+        int centerY = player.worldY + player.solidArea.y + player.solidArea.height / 2;
+
+        int row = centerY / TILE_SIZE;
+        int col = centerX / TILE_SIZE;
+
+        switch (player.getDirection()) {
+            case "up"    -> row -= 1;
+            case "down"  -> row += 1;
+            case "left"  -> col -= 1;
+            case "right" -> col += 1;
+        }
+
+        for (TileLoot tl : gp.getWorldInteractiveLayer().getLoots()) {
+            if (tl.getX() == col && tl.getY() == row)
+                return tl;
+        }
+        return null;
+    }
+
     public static TileTeleporter getTeleporterTileInCurrentPosition(GamePanel gp, Player player) {
         int centerX = player.worldX + player.solidArea.x + player.solidArea.width / 2;
         int centerY = player.worldY + player.solidArea.y + player.solidArea.height / 2;

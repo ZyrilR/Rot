@@ -79,4 +79,8 @@ public class Inventory {
     public void reset() {
         items = new ArrayList<>();
     }
+
+    public void appendInventory(Inventory inventory) {
+        items.addAll(inventory.getRawItems());
+    }
 }

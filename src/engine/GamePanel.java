@@ -70,9 +70,9 @@ public class GamePanel extends JPanel {
 //        seedTestParty();
 
         // --- NEW: Force the player to the Starter Lab if they have no BrainRots! ---
-        if (player.getPCSYSTEM().getPartySize() == 0) {
-            GAMESTATE = "starter";
-        }
+//        if (player.getPCSYSTEM().getPartySize() == 0) {
+//            GAMESTATE = "starter";
+//        }
     }
 
     // ── Test seed ─────────────────────────────────────────────────────────────
@@ -180,8 +180,8 @@ public class GamePanel extends JPanel {
                 if (KEYBOARDHANDLER.ePressed) {
                     KEYBOARDHANDLER.ePressed = false;
                     player.checkInteraction();
-                    SHOPUI.open();
-                    GAMESTATE = "SHOP";
+//                    SHOPUI.open();
+//                    GAMESTATE = "SHOP";
                 }
 
                 // Open menu with ESC key
