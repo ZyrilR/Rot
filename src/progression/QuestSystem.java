@@ -515,7 +515,11 @@ public class QuestSystem {
         totalItemsUsed++;
         increment("ITEM_ADDICT");
 
-        categoriesUsed.add(category.toUpperCase());
+        // VARIETY_PACK only tracks the core 4 categories
+        String cat = category.toUpperCase();
+        if (cat.equals("STEW") || cat.equals("ANTIDOTE") || cat.equals("SCROLL") || cat.equals("CAPSULE")) {
+            categoriesUsed.add(cat);
+        }
         Quest vp = get("VARIETY_PACK");
         if (vp != null && !vp.isCompleted()) {
             vp.loadState(false, categoriesUsed.size());

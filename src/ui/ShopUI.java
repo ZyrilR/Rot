@@ -2,82 +2,35 @@ package ui;
 
 import engine.GamePanel;
 import items.Item;
-import items.ItemRegistry;
+import overworld.ShopSystem;
 import utils.AssetManager;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Comparator;
 
 import static utils.Constants.*;
 
-/**
- * Renders and manages the in-game shop UI overlay.
- *
- * Layout:
- *   Title bar  — "BrainRot Market"  |  coin icon + balance
- *   Left panel — item image card + detail card (name, description, price)
- *   Right panel— scrollable item list sorted by price
- *   Status bar — feedback left, nav hints right
- *
- * Controls:
- *   W / S   — move cursor
- *   ENTER   — purchase
- *   ESC     — close
- */
 public class ShopUI {
 
-    // ── Injected refs ─────────────────────────────────────────────────────────
-    private final GamePanel gp;
+    private final GamePanel  gp;
+    private final ShopSystem shopSystem = ShopSystem.getInstance();
 
-    // ── Shop inventory ────────────────────────────────────────────────────────
-    private final ArrayList<Item> shopItems = new ArrayList<>();
-
-    // ── State ─────────────────────────────────────────────────────────────────
-    private int selectedIndex = 0;
-    private int scrollOffset  = 0;
-
-    // ── Input / status ────────────────────────────────────────────────────────
+    private int    selectedIndex = 0;
+    private int    scrollOffset  = 0;
     private int    inputCooldown = 0;
     private String statusMessage = "";
     private int    statusTimer   = 0;
 
-    // ── Image caches ──────────────────────────────────────────────────────────
     private BufferedImage coinIcon   = null;
     private boolean       iconLoaded = false;
     private final java.util.Map<String, BufferedImage> imgCache = new java.util.HashMap<>();
 
-    // ── Constructor ───────────────────────────────────────────────────────────
     public ShopUI(GamePanel gp) {
         this.gp = gp;
-        buildShopInventory();
-    }
-
-    // ── Inventory setup ───────────────────────────────────────────────────────
-    private void buildShopInventory() {
-        String[] names = {
-                // Stews
-                "MILD STEW", "MODERATE STEW", "SUPER STEW",
-                // Antidotes
-                "CONFUSION CURE", "PARALYZE CURE", "BURN CURE", "SLEEP CURE", "DEBUFF TONIC",
-                // Capsules
-                "NORMAL CAPSULE", "RED CAPSULE", "BLUE CAPSULE", "SPEED CAPSULE", "HEAVY CAPSULE"
-        };
-
-        for (String name : names) {
-            Item item = ItemRegistry.getItem(name);
-            if (item != null) shopItems.add(item);
-            else System.out.println("[ShopUI] Warning: item not found: " + name);
-        }
-
-        // Sort by price ascending
-        shopItems.sort(Comparator.comparingInt(Item::getPrice));
-
-        System.out.println("[ShopUI] Shop loaded: " + shopItems.size() + " items.");
     }
 
     // ── Coin icon (lazy load) ─────────────────────────────────────────────────
+
     private BufferedImage coinIcon() {
         if (!iconLoaded) {
             coinIcon   = AssetManager.loadImage("/res/Templates/Items/7.png");
@@ -87,11 +40,13 @@ public class ShopUI {
     }
 
     // ── Accessors ─────────────────────────────────────────────────────────────
+
     private Item selectedItem() {
-        return shopItems.isEmpty() ? null : shopItems.get(selectedIndex);
+        return shopSystem.getItem(selectedIndex);
     }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
+
     public void open() {
         selectedIndex = 0;
         scrollOffset  = 0;
@@ -102,9 +57,12 @@ public class ShopUI {
     }
 
     // ── Update ────────────────────────────────────────────────────────────────
+
     public void update() {
         if (inputCooldown > 0) { inputCooldown--; return; }
         if (statusTimer   > 0) { statusTimer--; if (statusTimer == 0) statusMessage = ""; }
+
+        int total = shopSystem.getItemCount();
 
         if (gp.KEYBOARDHANDLER.upPressed && selectedIndex > 0) {
             selectedIndex--;
@@ -113,7 +71,7 @@ public class ShopUI {
             return;
         }
 
-        if (gp.KEYBOARDHANDLER.downPressed && selectedIndex < shopItems.size() - 1) {
+        if (gp.KEYBOARDHANDLER.downPressed && selectedIndex < total - 1) {
             selectedIndex++;
             clampScroll(computeVisibleCount());
             inputCooldown = INPUT_DELAY;
@@ -135,34 +93,23 @@ public class ShopUI {
     }
 
     // ── Purchase ──────────────────────────────────────────────────────────────
+
     private void attemptPurchase() {
         Item item = selectedItem();
         if (item == null) return;
 
-        int price = item.getPrice();
+        ShopSystem.PurchaseResult result = shopSystem.purchase(selectedIndex, gp.player);
 
-        if (gp.player.getRotCoins() < price) {
-            setStatus("Not enough coins! Need " + price);
-            statusTimer   = STATUS_TICKS;
-            return;
+        switch (result) {
+            case SUCCESS          -> setStatus("Bought " + item.getName() + " for " + item.getPrice() + "!");
+            case NOT_ENOUGH_COINS -> setStatus("Not enough coins! Need " + item.getPrice());
+            case INVENTORY_FULL   -> setStatus("Inventory is full!");
         }
-
-        if (!gp.player.getInventory().addItem(item)) {
-            setStatus("Inventory is full!");
-            statusTimer   = STATUS_TICKS;
-            return;
-        }
-
-        gp.player.spendRotCoins(price);
-        progression.QuestSystem.getInstance().onCoinsSpent(price);
-        progression.QuestSystem.getInstance().onShopPurchase();
-        setStatus("Bought " + item.getName() + " for " + price + "!");
-        statusTimer   = STATUS_TICKS;
-        System.out.println("[ShopUI] Purchased: " + item.getName()
-                + " | Remaining: " + gp.player.getRotCoins());
+        statusTimer = STATUS_TICKS;
     }
 
     // ── Scroll helpers ────────────────────────────────────────────────────────
+
     private void clampScroll(int visCount) {
         if (selectedIndex < scrollOffset) scrollOffset = selectedIndex;
         if (selectedIndex >= scrollOffset + visCount) scrollOffset = selectedIndex - visCount + 1;
@@ -183,13 +130,13 @@ public class ShopUI {
     // ══════════════════════════════════════════════════════════════════════════
     // DRAW
     // ══════════════════════════════════════════════════════════════════════════
+
     public void draw(Graphics2D g2) {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         Font base = (AssetManager.pokemonGb != null)
                 ? AssetManager.pokemonGb : new Font("Arial", Font.PLAIN, 13);
 
-        // Dim overlay
         g2.setColor(new Color(0, 0, 0, 180));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -202,9 +149,8 @@ public class ShopUI {
 
         int bodyY      = winY + 52;
         int statusBarY = winY + winH - STATUS_BAR_H - 8;
-
-        int leftW = (int)(winW * LEFT_SPLIT / 100.0);
-        int divX  = winX + leftW;
+        int leftW      = (int)(winW * LEFT_SPLIT / 100.0);
+        int divX       = winX + leftW;
 
         g2.setColor(new Color(200, 195, 180));
         g2.drawLine(divX, bodyY, divX, statusBarY - 4);
@@ -215,6 +161,7 @@ public class ShopUI {
     }
 
     // ── Title bar ─────────────────────────────────────────────────────────────
+
     private void drawTitleBar(Graphics2D g2, Font base, int winX, int winY, int winW) {
         g2.setColor(new Color(44, 44, 42));
         g2.fillRoundRect(winX + 8, winY + 8, winW - 16, 36, 8, 8);
@@ -223,15 +170,14 @@ public class ShopUI {
         g2.setColor(new Color(241, 239, 232));
         g2.drawString("BrainRot Market", winX + 28, winY + 32);
 
-        // Coin balance — right side
         String coinText = String.valueOf(gp.player.getRotCoins());
         g2.setFont(base.deriveFont(Font.BOLD, 12f));
-        FontMetrics numFm = g2.getFontMetrics();
-        int numW     = numFm.stringWidth(coinText);
-        int iconSize = 24, iconGap = 4;
-        int blockW   = iconSize + iconGap + numW;
-        int blockX   = winX + winW - 18 - blockW;
-        int blockCY  = winY + 28;
+        FontMetrics numFm    = g2.getFontMetrics();
+        int         numW     = numFm.stringWidth(coinText);
+        int         iconSize = 24, iconGap = 4;
+        int         blockW   = iconSize + iconGap + numW;
+        int         blockX   = winX + winW - 18 - blockW;
+        int         blockCY  = winY + 28;
 
         BufferedImage icon = coinIcon();
         if (icon != null) {
@@ -249,7 +195,8 @@ public class ShopUI {
         g2.drawLine(winX + 8, winY + 46, winX + winW - 8, winY + 46);
     }
 
-    // ── Left panel — image + detail card ─────────────────────────────────────
+    // ── Left panel ────────────────────────────────────────────────────────────
+
     private void drawLeftPanel(Graphics2D g2, Font base,
                                int winX, int bodyY, int leftW, int statusBarY) {
         Item sel = selectedItem();
@@ -321,11 +268,12 @@ public class ShopUI {
         g2.setClip(prevClip);
     }
 
-    // ── Right panel — scrollable item list ────────────────────────────────────
+    // ── Right panel ───────────────────────────────────────────────────────────
+
     private void drawRightPanel(Graphics2D g2, Font base,
                                 int winX, int winW, int bodyY,
                                 int divX, int statusBarY) {
-        int totalCount = shopItems.size();
+        int totalCount = shopSystem.getItemCount();
 
         int listX       = divX + OUTER_PAD;
         int listW       = winX + winW - listX - OUTER_PAD;
@@ -335,7 +283,6 @@ public class ShopUI {
         int listAreaH   = listAreaBot - firstRowY;
         int visCount    = Math.max(1, listAreaH / ROW_H);
 
-        // Label + counter
         g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(120, 116, 108));
         g2.drawString("ITEMS", listX, labelY);
@@ -353,13 +300,15 @@ public class ShopUI {
             return;
         }
 
+        clampScroll(visCount);
+
         Shape prevClip = g2.getClip();
         g2.setClip(listX - 6, firstRowY, listW + 12, listAreaH);
 
         int endIdx = Math.min(scrollOffset + visCount, totalCount);
 
         for (int i = scrollOffset; i < endIdx; i++) {
-            Item    item    = shopItems.get(i);
+            Item    item    = shopSystem.getItem(i);
             int     rowTop  = firstRowY + (i - scrollOffset) * ROW_H;
             int     textY   = rowTop + ROW_H - 10;
             boolean hovered = (i == selectedIndex);
@@ -380,23 +329,22 @@ public class ShopUI {
             }
 
             // Item name
-            g2.setFont(base.deriveFont(hovered ? Font.BOLD : Font.PLAIN, 11f));
-            g2.setColor(new Color(44, 44, 42));
-            String priceStr = String.valueOf(item.getPrice());
-            int iconSize  = 20, iconGap = 4;
+            int iconSize = 20, iconGap = 4;
             g2.setFont(base.deriveFont(9f));
-            int priceW = g2.getFontMetrics().stringWidth(priceStr) + iconSize + iconGap + 8;
+            String priceStr = String.valueOf(item.getPrice());
+            int    priceW   = g2.getFontMetrics().stringWidth(priceStr) + iconSize + iconGap + 8;
             g2.setFont(base.deriveFont(hovered ? Font.BOLD : Font.PLAIN, 11f));
             int nameMaxW = listW - priceW - 20;
+            g2.setColor(new Color(44, 44, 42));
             g2.drawString(truncate(item.getName(), g2.getFontMetrics(), nameMaxW), listX + 16, textY);
 
             // Price — coin icon + number, right-aligned
             g2.setFont(base.deriveFont(11f));
             FontMetrics pFm  = g2.getFontMetrics();
-            int numW         = pFm.stringWidth(priceStr);
-            int blockW       = iconSize + iconGap + numW;
-            int blockX       = listX + listW - blockW - 6;
-            int iconY        = textY - iconSize + 4;
+            int         numW  = pFm.stringWidth(priceStr);
+            int         blockW = iconSize + iconGap + numW;
+            int         blockX = listX + listW - blockW - 6;
+            int         iconY  = textY - iconSize + 4;
 
             BufferedImage icon = coinIcon();
             if (icon != null) g2.drawImage(icon, blockX, iconY, iconSize, iconSize, null);
@@ -426,6 +374,7 @@ public class ShopUI {
     }
 
     // ── Status bar ────────────────────────────────────────────────────────────
+
     private void drawStatusBar(Graphics2D g2, Font base,
                                int winX, int winY, int winW,
                                int statusBarY, int statusBarH) {
@@ -435,7 +384,6 @@ public class ShopUI {
         g2.fillRoundRect(barX, statusBarY, barW, statusBarH, 5, 5);
 
         String hint = "WS Move  ENTER Buy  ESC Close";
-
         g2.setFont(base.deriveFont(8f));
         g2.setColor(new Color(120, 116, 108));
         FontMetrics hfm = g2.getFontMetrics();
@@ -453,6 +401,7 @@ public class ShopUI {
     }
 
     // ── Shared draw helpers ───────────────────────────────────────────────────
+
     private void drawWindow(Graphics2D g2, int x, int y, int w, int h) {
         int arc = 16;
         g2.setColor(new Color(245, 242, 235));
@@ -513,13 +462,11 @@ public class ShopUI {
     private BufferedImage loadItemImage(Item item) {
         String path = item.getAssetPath();
         if (path == null || path.isEmpty()) return null;
-        String key = path.startsWith("/") ? path : "/" + path;
-        return imgCache.computeIfAbsent(key, AssetManager::loadImage);
+        return imgCache.computeIfAbsent(path, AssetManager::loadImage);
     }
 
     private void setStatus(String msg) {
         statusMessage = "[ " + msg + " ]";
-        statusTimer   = STATUS_TICKS;
-        System.out.println("[InventoryUI] " + msg);
+        System.out.println("[ShopUI] " + msg);
     }
 }
