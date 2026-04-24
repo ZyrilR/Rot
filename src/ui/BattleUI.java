@@ -24,8 +24,9 @@ import static utils.Constants.*;
 public class BattleUI {
 
     private enum BattleState {
-        INITIALIZING, MENU, SKILL_SELECT, TEAM_SELECT, TEAM_CONFIRM,
-        BAG_OPEN, ANIMATION, ENEMY_AI, CLEANUP, FINISH, MESSAGE
+        INITIALIZING, MENU, SKILL_SELECT, TEAM_SELECT, TEAM_CONFIRM, // Added TEAM_CONFIRM
+        BAG_OPEN, ANIMATION, ENEMY_AI, CLEANUP, FINISH, MESSAGE,
+        LEVELUP_CHECK, LEVELUP_REPLACE_CONFIRM, LEVELUP_REPLACE_SELECT
     }
     private enum MenuOption { FIGHT, BAG, TEAM, RUN }
 
@@ -39,7 +40,7 @@ public class BattleUI {
     private MenuOption menuCursor = MenuOption.FIGHT;
     private int skillCursor = 0;
     private int partyCursor = 0;
-    private int confirmCursor = 0;
+    private int confirmCursor = 0; // 0 = YES, 1 = NO
     private int inputCooldown = 0;
 
     private boolean playerMovesFirst = true;
@@ -54,6 +55,14 @@ public class BattleUI {
     private int dialogueTicks = 0;
 
     private final Queue<String[]> messageQueue = new LinkedList<>();
+
+    // Queue of { rot, newSkill } pairs awaiting a player replace decision after level-ups.
+    private final Queue<Object[]> pendingReplacements = new LinkedList<>();
+    private BrainRot replaceTargetRot;
+    private Skill    replaceCandidateSkill;
+    private int      replaceSlotCursor = 0;
+
+    private final Map<String, BufferedImage> spriteCache = new HashMap<>();
     private BufferedImage hpFrame_player, hpFrame_enemy, dialogueBoxFrame, playerBackSprite;
 
     // --- ANIMATION VARIABLES ---
@@ -107,6 +116,9 @@ public class BattleUI {
             case CLEANUP -> updateCleanup();
             case FINISH -> updateFinish();
             case MESSAGE -> updateMessage();
+            case LEVELUP_CHECK -> updateLevelupCheck();
+            case LEVELUP_REPLACE_CONFIRM -> updateLevelupReplaceConfirm();
+            case LEVELUP_REPLACE_SELECT -> updateLevelupReplaceSelect();
         }
     }
 
@@ -349,6 +361,78 @@ public class BattleUI {
         }
     }
 
+    // ── Level-up move replacement flow ────────────────────────────────────────
+
+    private void updateLevelupCheck() {
+        if (pendingReplacements.isEmpty()) {
+            playNextMessage(BattleState.FINISH);
+            return;
+        }
+        Object[] next = pendingReplacements.poll();
+        replaceTargetRot       = (BrainRot) next[0];
+        replaceCandidateSkill  = (Skill) next[1];
+        replaceSlotCursor      = 0;
+        confirmCursor          = 0; // YES by default
+
+        dialogueLine1 = replaceTargetRot.getName() + " already has 4 moves,";
+        dialogueLine2 = "do you wish to replace a move?";
+        dialogueTicks = 0;
+        currentState  = BattleState.LEVELUP_REPLACE_CONFIRM;
+        inputCooldown = INPUT_DELAY;
+    }
+
+    private void updateLevelupReplaceConfirm() {
+        if (kh.upPressed || kh.downPressed) {
+            confirmCursor = (confirmCursor == 0) ? 1 : 0;
+            inputCooldown = INPUT_DELAY;
+        }
+        if (kh.enterPressed) {
+            kh.enterPressed = false;
+            if (confirmCursor == 0) { // YES → pick a slot
+                dialogueLine1 = "Choose a move to forget";
+                dialogueLine2 = "for " + replaceCandidateSkill.getName() + ".";
+                currentState  = BattleState.LEVELUP_REPLACE_SELECT;
+            } else { // NO → discard
+                queueMessage(replaceTargetRot.getName() + " did not learn",
+                        replaceCandidateSkill.getName() + ".");
+                playNextMessage(BattleState.LEVELUP_CHECK);
+            }
+            inputCooldown = INPUT_DELAY;
+        }
+    }
+
+    private void updateLevelupReplaceSelect() {
+        int moveCount = replaceTargetRot.getMoves().size();
+
+        if (kh.upPressed && replaceSlotCursor >= 2) { replaceSlotCursor -= 2; inputCooldown = INPUT_DELAY; }
+        else if (kh.downPressed && replaceSlotCursor < moveCount - 2) { replaceSlotCursor += 2; inputCooldown = INPUT_DELAY; }
+        else if (kh.leftPressed && replaceSlotCursor % 2 != 0) { replaceSlotCursor--; inputCooldown = INPUT_DELAY; }
+        else if (kh.rightPressed && replaceSlotCursor % 2 == 0 && replaceSlotCursor + 1 < moveCount) {
+            replaceSlotCursor++; inputCooldown = INPUT_DELAY;
+        }
+
+        if (kh.escPressed) {
+            kh.escPressed = false;
+            dialogueLine1 = replaceTargetRot.getName() + " already has 4 moves,";
+            dialogueLine2 = "do you wish to replace a move?";
+            currentState  = BattleState.LEVELUP_REPLACE_CONFIRM;
+            inputCooldown = INPUT_DELAY;
+            return;
+        }
+
+        if (kh.enterPressed) {
+            kh.enterPressed = false;
+            Skill forgotten = replaceTargetRot.getMoves().get(replaceSlotCursor);
+            replaceTargetRot.replaceMove(replaceSlotCursor, replaceCandidateSkill);
+            queueMessage(replaceTargetRot.getName() + " forgot",
+                    forgotten.getName() + "!");
+            queueMessage(replaceTargetRot.getName() + " learned",
+                    replaceCandidateSkill.getName() + "!");
+            playNextMessage(BattleState.LEVELUP_CHECK);
+            inputCooldown = INPUT_DELAY;
+        }
+    }
+
     private void updateEnemyAI() {
         enemyChosenIndex = Math.max(0, battle.getEnemyRot().getMoves().size() - 1);
         currentState = playerMovesFirst ? BattleState.ANIMATION : BattleState.MENU;
@@ -445,18 +529,27 @@ public class BattleUI {
                     queueMessage("Loot drop!", reward.scrollSkillName + " Scroll" + (reward.scrollAdded ? " found!" : " [Bag full]"));
                 }
 
+                BrainRot playerRot = battle.getPlayerRot();
                 for (LevelUpResult lu : reward.levelUps) {
-                    queueMessage(battle.getPlayerRot().getName() + " grew to",
+                    queueMessage(playerRot.getName() + " grew to",
                             "level " + lu.newLevel + "!");
                     if (lu.skillUnlocked != null) {
-                        queueMessage(battle.getPlayerRot().getName() + " learned",
-                                lu.skillUnlocked.getName() + "!");
+                        if (playerRot.getMoves().size() < 4) {
+                            playerRot.addMove(lu.skillUnlocked);
+                            queueMessage(playerRot.getName() + " learned",
+                                    lu.skillUnlocked.getName() + "!");
+                        } else {
+                            // Defer to replace prompt.
+                            pendingReplacements.add(new Object[]{ playerRot, lu.skillUnlocked });
+                            queueMessage(playerRot.getName() + " wants to learn",
+                                    lu.skillUnlocked.getName() + "!");
+                        }
                     }
                 }
             } else {
                 queueMessage("Battle Finished!", "Result: " + battle.getResult().name());
             }
-            playNextMessage(BattleState.FINISH);
+            playNextMessage(pendingReplacements.isEmpty() ? BattleState.FINISH : BattleState.LEVELUP_CHECK);
         } else {
             if (playerMovesFirst) setPrompt();
             currentState = playerMovesFirst ? BattleState.MENU : BattleState.ENEMY_AI;
@@ -618,6 +711,45 @@ public class BattleUI {
 
         if (currentState == BattleState.MENU) drawMenu(g2, boxY);
         else if (currentState == BattleState.SKILL_SELECT) drawSkillSelect(g2, boxY);
+        else if (currentState == BattleState.LEVELUP_REPLACE_CONFIRM) drawLevelupConfirm(g2, boxY);
+        else if (currentState == BattleState.LEVELUP_REPLACE_SELECT) drawLevelupReplaceSelect(g2, boxY);
+    }
+
+    private void drawLevelupConfirm(Graphics2D g2, int boxY) {
+        int menuW = 160, menuH = 126;
+        int menuX = SCREEN_WIDTH - menuW - 10;
+        int menuY = boxY;
+
+        drawUIPanel(g2, menuX, menuY, menuW, menuH, "");
+
+        g2.setFont(new Font("Arial", Font.BOLD, 20));
+        g2.setColor(new Color(50, 50, 50));
+        g2.drawString("YES", menuX + 60, menuY + 50);
+        g2.drawString("NO", menuX + 60, menuY + 95);
+
+        int cx = menuX + 35;
+        int cy = menuY + (confirmCursor == 0 ? 36 : 81);
+        drawCursor(g2, cx, cy);
+    }
+
+    private void drawLevelupReplaceSelect(Graphics2D g2, int boxY) {
+        int menuW = 480;
+        int menuX = SCREEN_WIDTH - menuW - 10;
+        int menuY = boxY;
+        int menuH = 126;
+
+        drawUIPanel(g2, menuX, menuY, menuW, menuH, "");
+
+        g2.setFont(new Font("Arial", Font.BOLD, 18));
+        g2.setColor(new Color(50, 50, 50));
+
+        List<Skill> moves = replaceTargetRot.getMoves();
+        for (int i = 0; i < moves.size(); i++) {
+            int dx = menuX + 40 + (i % 2 == 1 ? 230 : 0);
+            int dy = menuY + 50 + (i >= 2 ? 40 : 0);
+            g2.drawString(moves.get(i).getName(), dx, dy);
+            if (i == replaceSlotCursor) drawCursor(g2, dx - 25, dy - 14);
+        }
     }
 
     private void drawFullTeamScreen(Graphics2D g2) {
@@ -882,6 +1014,25 @@ public class BattleUI {
         int textY1 = boxY + 55;
         int textY2 = boxY + 95;
         int maxTextWidth = SCREEN_WIDTH - 70;
+        boolean menuOpen = (currentState == BattleState.MENU ||
+                currentState == BattleState.SKILL_SELECT ||
+                currentState == BattleState.LEVELUP_REPLACE_CONFIRM ||
+                currentState == BattleState.LEVELUP_REPLACE_SELECT);
+
+        if (menuOpen || currentState == BattleState.TEAM_SELECT || currentState == BattleState.TEAM_CONFIRM) {
+            g2.drawString(dialogueLine1, 35, boxY + 55);
+            g2.drawString(dialogueLine2, 35, boxY + 95);
+        } else {
+            FontMetrics fm = g2.getFontMetrics();
+            int boxX = 10;
+            int boxW = SCREEN_WIDTH - 20;
+            int boxH = 126;
+
+            boolean hasLine2 = dialogueLine2 != null && !dialogueLine2.isEmpty();
+
+            if (hasLine2) {
+                int totalTextHeight = fm.getHeight() * 2;
+                int startY = boxY + (boxH - totalTextHeight) / 2 + fm.getAscent();
 
         if (dialogueLine1 != null && !dialogueLine1.isEmpty()) {
             drawFittingString(g2, dialogueLine1, textX, textY1, maxTextWidth, 22f, Font.BOLD);
