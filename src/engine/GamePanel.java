@@ -81,9 +81,9 @@ public class GamePanel extends JPanel {
     private void seedTestParty() {
         // [YOUR ORIGINAL SEED LOGIC REMAINS UNCHANGED HERE]
         PCSystem PCSYSTEM = player.getPCSYSTEM();
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", Tier.NORMAL));
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    Tier.GOLD));
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", Tier.DIAMOND));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", 5));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    Tier.GOLD_LEVEL));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", Tier.DIAMOND_LEVEL));
 
         player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
         player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));

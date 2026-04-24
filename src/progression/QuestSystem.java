@@ -383,7 +383,7 @@ public class QuestSystem {
             case BRAINROT -> {
                 String[] names = BrainRotRegistry.ALL.toArray(new String[0]);
                 String name = names[RandomUtil.range(0, names.length - 1)];
-                BrainRot rot = BrainRotFactory.create(name, Tier.DIAMOND);
+                BrainRot rot = BrainRotFactory.create(name, Tier.DIAMOND_LEVEL);
                 gp.player.getPCSYSTEM().addBrainRot(rot);
                 System.out.println("[Quest] Reward claimed: " + rot.getName() + " DIAMOND");
             }

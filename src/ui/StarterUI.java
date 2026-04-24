@@ -2,7 +2,6 @@ package ui;
 
 import brainrots.BrainRot;
 import brainrots.BrainRotFactory;
-import brainrots.Tier;
 import engine.GamePanel;
 import ui.BlackFadeEffect;
 import input.KeyboardHandler;
@@ -69,7 +68,7 @@ public class StarterUI {
         Collections.shuffle(poolList);
 
         for (int i = 0; i < 3; i++) {
-            starterRots[i] = BrainRotFactory.create(poolList.get(i), Tier.NORMAL);
+            starterRots[i] = BrainRotFactory.create(poolList.get(i), 5);
         }
     }
 
