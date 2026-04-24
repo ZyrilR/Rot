@@ -58,6 +58,31 @@ public class ItemRegistry {
                 "A restorative brew that resets all lowered stats back to normal.",
                 "/res/Items/Antidote/DEBUFF.png", "DEBUFF", 700));
 
+        // ── UP Bottles ────────────────────────────────────────────────────────────
+        registerItem(new UPBottle(
+                "UP BOTTLE",
+                "Restores 3 UP to one selected skill.",
+                "/res/Items/UP_Bottle/UP_Bottle.png",
+                UPBottle.RestoreMode.FIXED, 3, 300));
+
+        registerItem(new UPBottle(
+                "UP MEDIUM BOTTLE",
+                "Restores 5 UP to one selected skill.",
+                "/res/Items/UP_Bottle/UP_Medium_Bottle.png",
+                UPBottle.RestoreMode.FIXED, 5, 500));
+
+        registerItem(new UPBottle(
+                "UP HIGH BOTTLE",
+                "Restores 10 UP to one selected skill.",
+                "/res/Items/UP_Bottle/UP_High_Bottle.png",
+                UPBottle.RestoreMode.FIXED, 10, 800));
+
+        registerItem(new UPBottle(
+                "UP FULL BOTTLE",
+                "Fully restores UP to one selected skill.",
+                "/res/Items/UP_Bottle/UP_Full_Bottle.png",
+                UPBottle.RestoreMode.FULL, 0, 1500));
+
         // ── Capsules ──────────────────────────────────────────────────────────
         registerItem(new Capsule(
                 "NORMAL CAPSULE",
