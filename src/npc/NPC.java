@@ -1,6 +1,7 @@
 package npc;
 
 import engine.GamePanel;
+import items.Inventory;
 import overworld.Player;
 import utils.AssetManager;
 
@@ -26,12 +27,20 @@ public class NPC {
     public int spriteNum = 0;
     public ArrayList<BufferedImage> sprites = new ArrayList<>();
     public ArrayList<String> dialogues = new ArrayList<>();
+    public Inventory inventory;
 
     public NPC(String name, int folderId, int x, int y) {
         this.name = name;
         worldX = x * TILE_SIZE;
         worldY = y * TILE_SIZE;
         loadSprites(folderId + 1);
+    }
+    public NPC(String name, int folderId, int x, int y, Inventory inventory) {
+        this.name = name;
+        worldX = x * TILE_SIZE;
+        worldY = y * TILE_SIZE;
+        loadSprites(folderId + 1);
+        this.inventory = inventory;
     }
 
     public void loadSprites(int folderId) {

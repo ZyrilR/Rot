@@ -66,15 +66,14 @@ public class GamePanel extends JPanel {
         CURRENT_PATH = ROUTE131.getPath();
 
         // ── Seed the PC party with the player's starting team ────────────────
-        testQuests();
-        seedTestParty();
+//        testQuests();
+//        seedTestParty();
 
         // --- NEW: Force the player to the Starter Lab if they have no BrainRots! ---
         if (player.getPCSYSTEM().getPartySize() == 0) {
             GAMESTATE = "starter";
         }
     }
-
 
     // ── Test seed ─────────────────────────────────────────────────────────────
 

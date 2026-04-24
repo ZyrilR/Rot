@@ -4,20 +4,22 @@ import brainrots.BrainRot;
 import brainrots.BrainRotFactory;
 import brainrots.Tier;
 import engine.GamePanel;
+import items.Inventory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TrainerNPC extends NPC {
 
-    private final List<BrainRot> party = new ArrayList<>();
+    private ArrayList<BrainRot> party = new ArrayList<>();
     private boolean defeated = false;
 
     public TrainerNPC(String name, int folderId, int x, int y) {
         super(name, folderId, x, y);
-        // Give each trainer a default lead BrainRot at NORMAL tier.
-        // Replace with a configured team when setting up specific trainers.
-        party.add(BrainRotFactory.create("LIRILI LARILA", Tier.NORMAL));
+    }
+    public TrainerNPC(String name, int folderId, int x, int y, Inventory inventory, ArrayList<BrainRot> party) {
+        super(name, folderId, x, y, inventory);
+        this.party = party;
     }
 
     /** Returns the first non-fainted BrainRot in this trainer's party. */

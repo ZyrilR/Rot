@@ -110,8 +110,6 @@ public class WorldLoader {
 
             int numOfLayers = Integer.parseInt(parts[0]);
 
-            Pattern overlayCollisionPattern = Pattern.compile("(?i)overlay.*collision_(\\d+)");
-
             for (int i = 0; i < numOfLayers; i++) {
                 line = br.readLine();
 
@@ -121,43 +119,25 @@ public class WorldLoader {
                 boolean isCollidable = layer[0].toLowerCase().contains("collision");
                 tm.loadTiles(folderPath + layer[0] + ".txt", tile_row, tile_col, isCollidable, layer[1]);
 
-                // Detect ramp layers
-                if (layer[0].toLowerCase().contains("ramp")) {
-                    tm.setRampLayer(true);
-                    rampLayers.add(tm);
-                }
-
-                // Detect overlay-collision layers (e.g. overlay-collision_1)
-                Matcher matcher = overlayCollisionPattern.matcher(layer[0]);
-                if (matcher.find()) {
-                    tm.setOverlayCollisionLevel(Integer.parseInt(matcher.group(1)));
-                }
-
                 //check what kind of layer
                 String nameLower = layer[0].toLowerCase();
-                boolean isOverlay = nameLower.contains("overlay") && !nameLower.contains("collision");
 
-                if (isOverlay) {
-                    // Overlay layers draw on top of the player
-                    overlayLayer.add(tm);
-                } else {
-                    switch (layer[1].toUpperCase()) {
-                        case "BACKGROUND":
-                            backgroundLayer.add(tm);
-                            break;
-                        case "DECORATION":
-                            decorationLayer.add(tm);
-                            break;
-                        case "BUILDING":
-                            buildingLayer.add(tm);
-                            break;
-                        case "INTERACTIVE":
-                            interactiveLayer = tm;
-                            break;
-                        default:
-                            System.out.println("NOT A LAYER!");
-                            break;
-                    }
+                switch (layer[1].toUpperCase()) {
+                    case "BACKGROUND":
+                        backgroundLayer.add(tm);
+                        break;
+                    case "DECORATION":
+                        decorationLayer.add(tm);
+                        break;
+                    case "BUILDING":
+                        buildingLayer.add(tm);
+                        break;
+                    case "INTERACTIVE":
+                        interactiveLayer = tm;
+                        break;
+                    default:
+                        System.out.println("NOT A LAYER!");
+                        break;
                 }
             }
         } catch (IOException e) {

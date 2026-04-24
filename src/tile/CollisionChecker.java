@@ -65,12 +65,6 @@ public class CollisionChecker {
     private void checkCollisionAt(Player player, int r1, int c1, int r2, int c2) {
         // 1. Check Background Layer
         for (TileManager tm : gp.getWorldBackgroundLayer()) {
-            // Skip overlay-collision layers that don't match the player's ground level
-            int overlayLevel = tm.getOverlayCollisionLevel();
-            if (overlayLevel != -1 && overlayLevel != player.groundLevel) {
-                continue;
-            }
-
             if (isTileSolid(tm, r1, c1) || isTileSolid(tm, r2, c2)) {
                 player.collisionOn = true;
                 return;

@@ -1,10 +1,14 @@
 package tile;
 
+import brainrots.BrainRot;
+import brainrots.BrainRotFactory;
 import engine.GamePanel;
+import items.Inventory;
 import npc.*;
 
 import java.awt.*;
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 import static utils.AssetManager.loadImage;
@@ -15,13 +19,14 @@ public class TileManager {
     //layerType : {BACKGROUND, DECORATION, BUILDING, INTERACTIVE}
     private String layerType;
     private String layerName;
+
     private int map[][];
     private boolean[][] collisionMap;
+
     private ArrayList<NPC> NPCs = new ArrayList<>();
     private ArrayList<TileTeleporter> teleporters = new ArrayList<>();
 
-    private boolean isRampLayer = false;
-    private int overlayCollisionLevel = -1; // -1 = not an overlay-collision layer
+    private ArrayList<Inventory> loots = new ArrayList<>();
 
     //TileSets
     public static ArrayList<Tile> BACKGROUND_TILES = new ArrayList<>();
@@ -173,16 +178,31 @@ public class TileManager {
                     NPC npc1 = null;
 
                     switch (parts[1].toUpperCase()) {
-                        case "TRAINERNPC" -> npc1 = new TrainerNPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
-                        case "MARKETNPC" -> npc1 = new MarketNPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
-                        case "NPC" -> npc1 = new NPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
-                        case "GYMLEADER" -> npc1 = new GymLeader(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
-                        case "GYMMASTER" -> npc1 = new GymMaster(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
-                        //0    1     2         3 4         5            6
-                        //Name|Role|TileNumber|x|y|from~name~to~name|Dialogues
-                        //ToRoute132|Teleporter|28|49|13|ROUTE131~TOROUTE132~ROUTE132~TOROUTE131|You are about to enter;Route 132
-                        case "TELEPORTER" -> teleporters.add(new TileTeleporter(parts[0], parts[5], parts[1], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), parts[6].split(";")));
-                        default -> npc1 = null;
+                        case "TRAINERNPC", "GYMLEADER", "GYMMASTER":
+
+                            ArrayList<BrainRot> party = new ArrayList<>();
+                            String[] brainrots = parts[5].split(";");
+//                            party.add(BrainRotFactory.create())
+
+                            npc1 = switch(parts[1].toUpperCase()) {
+                                case "TRAINERNPC" -> new TrainerNPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                                case "GYMLEADER" -> new GymLeader(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                                case "MARKETNPC" -> new GymMaster(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                                default -> null;
+                            };
+
+                            break;
+                        case "MARKETNPC":
+                            npc1 = new MarketNPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                            break;
+                        case "NPC":
+                            npc1 = new NPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                            break;
+                        case "TELEPORTER":
+                            teleporters.add(new TileTeleporter(parts[0], parts[5], parts[1], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), parts[6].split(";")));
+                            break;
+                        default:
+                            break;
                     };
                     String[] dialogues = new String[]{};
                     if (parts.length <= 4)
@@ -258,12 +278,6 @@ public class TileManager {
     public ArrayList<TileTeleporter> getTeleporters() {
         return teleporters;
     }
-
-    public boolean isRampLayer() { return isRampLayer; }
-    public void setRampLayer(boolean ramp) { this.isRampLayer = ramp; }
-
-    public int getOverlayCollisionLevel() { return overlayCollisionLevel; }
-    public void setOverlayCollisionLevel(int level) { this.overlayCollisionLevel = level; }
 
     public String getLayerName() { return layerName; }
     public void setLayerName(String name) { this.layerName = name; }

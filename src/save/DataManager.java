@@ -14,6 +14,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 import static storage.PCSystem.*;
@@ -21,27 +22,6 @@ import static utils.Constants.*;
 import static utils.Directories.*;
 
 public class DataManager {
-
-    /*
-    Format:
-    player_name;x;y;rotCoins;direction
-    [INVENTORY]
-    item_name;qty
-    [PCSYSTEM]
-    ==PARTY==
-    [1] attributes
-        [n] separated by semicolon
-    [2] skills
-        [n] separated by comma
-            [m] separated by semicolon
-    ==STORED==
-    [1] name
-    [2] attributes
-        [n] separated by semicolon
-    [3] skills
-        [n] separated by comma
-            [m] separated by semicolon
-    */
 
     public static void saveCurrentLoad(GamePanel gp) {
         saveData(gp, CURRENT_LOAD, false);
@@ -60,7 +40,6 @@ public class DataManager {
         }
 
     }
-
     private static void saveData(GamePanel gp, int folderID, boolean newFolder) {
         File currentFolder = new File(SAVES.getPath(), "/" + folderID);
         gp.GAMESTATE = "play";
