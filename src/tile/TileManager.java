@@ -268,7 +268,7 @@ public class TileManager {
             System.out.println("ADDED: Decorations " + i + DECORATION_TILES.size());
         }
 
-        int[] NON_COLLIDABLE = new int[]{92, 94, 2, 107, 64};
+        int[] NON_COLLIDABLE = new int[]{92, 94, 2, 107, 64, 45};
 
         for (int i = 1; i <= 127; i++) {
             if (contains(NON_COLLIDABLE, i))
