@@ -16,7 +16,7 @@ public class TrainerNPC extends NPC {
         super(name, folderId, x, y);
         // Give each trainer a default lead BrainRot at NORMAL tier.
         // Replace with a configured team when setting up specific trainers.
-        party.add(BrainRotFactory.create("LIRILI LARILA", 5));
+        party.add(BrainRotFactory.createEnemy("LIRILI LARILA", 5));
     }
 
     /** Returns the first non-fainted BrainRot in this trainer's party. */
@@ -25,7 +25,7 @@ public class TrainerNPC extends NPC {
             if (!rot.isFainted()) return rot;
         }
         // Fallback: give a fresh BrainRot so the battle can still start
-        BrainRot fallback = BrainRotFactory.create("LIRILI LARILA", 5);
+        BrainRot fallback = BrainRotFactory.createEnemy("LIRILI LARILA", 5);
         party.add(fallback);
         return fallback;
     }

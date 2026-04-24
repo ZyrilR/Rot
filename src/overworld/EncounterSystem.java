@@ -96,7 +96,7 @@ public class EncounterSystem {
 
     private BrainRot spawnRandomWildBrainRot() {
         int index = (int)(Math.random() * WILD_BRAINROT_NAMES.length);
-        return brainrots.BrainRotFactory.create(WILD_BRAINROT_NAMES[index], 5);
+        return brainrots.BrainRotFactory.createEnemy(WILD_BRAINROT_NAMES[index], 5);
     }
 
     // FIX: Check the Player's PCSystem party

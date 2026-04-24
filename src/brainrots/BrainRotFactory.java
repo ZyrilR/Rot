@@ -37,13 +37,32 @@ public class BrainRotFactory {
                                   Type primary, Type secondary, Tier tier, int level,
                                   int hp, int atk, int def, int spd, SkillType poolType) {
         BrainRot rot = new BrainRot(name, primary, secondary, tier, level, hp, atk, def, spd);
-        assignStartingMoves(rot, name, poolType);
+        assignStartingMoves(rot, name, poolType, level);
         return rot;
     }
 
-    private static void assignStartingMoves(BrainRot rot, String name, SkillType poolType) {
-        List<Skill> moves = SkillPool.getStartingMoves(name, poolType);
+    private static void assignStartingMoves(BrainRot rot, String name, SkillType poolType, int level) {
+        List<Skill> moves = SkillPool.getStartingMoves(name, poolType, level);
         for (Skill s : moves) rot.addMove(s);
+    }
+
+    /**
+     * Creates an enemy BrainRot (wild encounter or trainer) with a randomized moveset
+     * drawn from pools that match the rot's primary/secondary types and signature pool.
+     * Move count is level-gated (2 moves at 1–9, 3 at 10–14, 4 at 15+).
+     */
+    public static BrainRot createEnemy(String name, int level) {
+        BrainRot rot = create(name, level);
+        rot.getMoves().clear();
+        SkillType primary   = toSkillType(rot.getPrimaryType());
+        SkillType secondary = toSkillType(rot.getSecondaryType());
+        List<Skill> moves = SkillPool.getRandomMoves(rot.getName(), primary, secondary, level);
+        for (Skill s : moves) rot.addMove(s);
+        return rot;
+    }
+
+    private static SkillType toSkillType(Type t) {
+        return t == null ? null : SkillType.valueOf(t.name());
     }
 
     // ---------- BrainRot creators ----------
