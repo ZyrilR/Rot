@@ -4,6 +4,7 @@ import brainrots.BrainRot;
 import brainrots.BrainRotFactory;
 import engine.GamePanel;
 import items.Inventory;
+import items.ItemRegistry;
 import npc.*;
 
 import java.awt.*;
@@ -182,12 +183,21 @@ public class TileManager {
 
                             ArrayList<BrainRot> party = new ArrayList<>();
                             String[] brainrots = parts[5].split(";");
-//                            party.add(BrainRotFactory.create())
+
+                            for (String brainrot : brainrots) {
+                                String[] rot = brainrot.split(":");
+                                party.add(BrainRotFactory.create(rot[0], Integer.parseInt(rot[1])));
+                            }
+
+                            String[] items = parts[6].split(";");
+                            Inventory inventory = new Inventory(items.length);
+                            for (String item : items)
+                                inventory.addItem(ItemRegistry.getItem(item));
 
                             npc1 = switch(parts[1].toUpperCase()) {
-                                case "TRAINERNPC" -> new TrainerNPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
-                                case "GYMLEADER" -> new GymLeader(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
-                                case "MARKETNPC" -> new GymMaster(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                                case "TRAINERNPC" -> new TrainerNPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[7]));
+                                case "GYMLEADER" -> new GymLeader(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[7]));
+                                case "MARKETNPC" -> new GymMaster(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[7]));
                                 default -> null;
                             };
 
@@ -200,13 +210,12 @@ public class TileManager {
                             break;
                         case "TELEPORTER":
                             teleporters.add(new TileTeleporter(parts[0], parts[5], parts[1], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), parts[6].split(";")));
-                            break;
+                            continue;
                         default:
                             break;
                     };
-                    String[] dialogues = new String[]{};
-                    if (parts.length <= 4)
-                        dialogues = parts[4].split(";");
+                    String[] dialogues = parts[parts.length - 1].split(";");
+
                     if (npc1 != null)
                         npc1.setDialogue(dialogues);
 

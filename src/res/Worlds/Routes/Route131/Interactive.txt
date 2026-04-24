@@ -80,4 +80,4 @@ ToCave131|Teleporter|30|33|4|CAVE131~TOROUTE131~DOWN|You are about to enter;Cave
 ToRoute130_1|Teleporter|29|0|28|ROUTE130~TOROUTE131_1~RIGHT|You are about to enter;Route 130
 ToRoute130_2|Teleporter|29|0|47|ROUTE130~TOROUTE131_2~RIGHT|You are about to enter;Route130
 ToRoute132|Teleporter|28|49|13|Route132~ToRoute131~LEFT|You are about to enter;Route 132
-Jackman|TrainerNPC|2|13|12|BrrBrrPatapim:4;LiriliLarila:3#NORMAL CAPSULE#236|Hohoooo!;Very unlucky to encounter me!;You are about to get beaten!
+Jackman|TrainerNPC|2|13|12|BRR BRR PATAPIM:4;LIRILI LARILA:3|NORMAL CAPSULE;RED CAPSULE|236|Hohoooo!;Very unlucky to encounter me!;You are about to get beaten!

@@ -119,9 +119,6 @@ public class WorldLoader {
                 boolean isCollidable = layer[0].toLowerCase().contains("collision");
                 tm.loadTiles(folderPath + layer[0] + ".txt", tile_row, tile_col, isCollidable, layer[1]);
 
-                //check what kind of layer
-                String nameLower = layer[0].toLowerCase();
-
                 switch (layer[1].toUpperCase()) {
                     case "BACKGROUND":
                         backgroundLayer.add(tm);

@@ -13,13 +13,15 @@ public class TrainerNPC extends NPC {
 
     private ArrayList<BrainRot> party = new ArrayList<>();
     private boolean defeated = false;
+    private int rotCoins;
 
     public TrainerNPC(String name, int folderId, int x, int y) {
         super(name, folderId, x, y);
     }
-    public TrainerNPC(String name, int folderId, int x, int y, Inventory inventory, ArrayList<BrainRot> party) {
+    public TrainerNPC(String name, int folderId, int x, int y, Inventory inventory, ArrayList<BrainRot> party, int rotCoins) {
         super(name, folderId, x, y, inventory);
         this.party = party;
+        this.rotCoins = rotCoins;
     }
 
     /** Returns the first non-fainted BrainRot in this trainer's party. */
@@ -27,10 +29,7 @@ public class TrainerNPC extends NPC {
         for (BrainRot rot : party) {
             if (!rot.isFainted()) return rot;
         }
-        // Fallback: give a fresh BrainRot so the battle can still start
-        BrainRot fallback = BrainRotFactory.create("LIRILI LARILA", Tier.NORMAL);
-        party.add(fallback);
-        return fallback;
+        return null;
     }
 
     public void addToParty(BrainRot rot) { party.add(rot); }
