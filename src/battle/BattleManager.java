@@ -49,7 +49,8 @@ public class BattleManager {
         System.out.println(playerRot.getName() + " used " + skill.getName() + "!");
 
         if (skill.getPower() > 0) {
-            int dmg = DamageCalculator.calculate(skill, playerRot, enemyRot);
+            // FIX: Added player.gp so the Damage Calculator can check for Plot Armor!
+            int dmg = DamageCalculator.calculate(skill, playerRot, enemyRot, player.gp);
             enemyRot.takeDamage(dmg);
             System.out.println(enemyRot.getName() + " took " + dmg + " damage! ("
                     + enemyRot.getCurrentHp() + "/" + enemyRot.getMaxHp() + " HP)");
@@ -69,7 +70,8 @@ public class BattleManager {
         System.out.println(enemyRot.getName() + " used " + skill.getName() + "!");
 
         if (skill.getPower() > 0) {
-            int dmg = DamageCalculator.calculate(skill, enemyRot, playerRot);
+            // FIX: Added player.gp so the Damage Calculator can check for Plot Armor!
+            int dmg = DamageCalculator.calculate(skill, enemyRot, playerRot, player.gp);
             playerRot.takeDamage(dmg);
             System.out.println(playerRot.getName() + " took " + dmg + " damage! ("
                     + playerRot.getCurrentHp() + "/" + playerRot.getMaxHp() + " HP)");
@@ -111,10 +113,6 @@ public class BattleManager {
         }
     }
 
-    /**
-     * Single place where all post-battle state mutation happens.
-     * BattleReward.calculate() is pure — this method applies the results.
-     */
     private void resolveRewards() {
         reward = BattleReward.calculate(enemyRot);
         QuestSystem.getInstance().onFirstBattleWon();

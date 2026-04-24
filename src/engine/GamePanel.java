@@ -1,27 +1,19 @@
 package engine;
 
-import brainrots.BrainRotFactory;
-import brainrots.Tier;
+import brainrots.BrainRot;
 import input.KeyboardHandler;
 import map.WorldLoader;
 import overworld.EncounterSystem;
 import overworld.Player;
-import storage.PCSystem;
 import tile.CollisionChecker;
 import tile.TileManager;
 import tile.TileTeleporter;
 import ui.*;
+import utils.Directories;
 
 import javax.swing.JPanel;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.util.ArrayList;
-
-import items.ItemRegistry;
-import utils.RandomUtil;
-import utils.Directories;
 
 import static utils.Constants.*;
 import static utils.Directories.*;
@@ -36,7 +28,6 @@ public class GamePanel extends JPanel {
     public String GAMESTATE               = "play";
     public DialogueBox DIALOGUEBOX        = new DialogueBox(this);
 
-    // --- INTEGRATED OUR CUSTOM UI ---
     public BlackFadeEffect BLACKFADEEFFECT = new BlackFadeEffect();
     public BattleUI BATTLEUI               = new BattleUI(this, KEYBOARDHANDLER);
     public StarterUI STARTERUI             = new StarterUI(this, KEYBOARDHANDLER);
@@ -58,202 +49,144 @@ public class GamePanel extends JPanel {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true);
-        this.setFocusable(true);this.requestFocusInWindow();
+        this.setFocusable(true);
+        this.requestFocusInWindow();
         this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(KEYBOARDHANDLER);
 
-        world.loadMap(ROUTE131.getPath(), true);
         CURRENT_PATH = ROUTE131.getPath();
+        world.loadMap(ROUTE131.getPath(), true);
 
-        // ── Seed the PC party with the player's starting team ────────────────
-        testQuests();
-        seedTestParty();
-
-        // --- NEW: Force the player to the Starter Lab if they have no BrainRots! ---
         if (player.getPCSYSTEM().getPartySize() == 0) {
             GAMESTATE = "starter";
+        } else {
+            GAMESTATE = "play";
         }
-    }
 
-
-    // ── Test seed ─────────────────────────────────────────────────────────────
-
-    private void seedTestParty() {
-        // [YOUR ORIGINAL SEED LOGIC REMAINS UNCHANGED HERE]
-        PCSystem PCSYSTEM = player.getPCSYSTEM();
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", Tier.NORMAL));
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    Tier.GOLD));
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", Tier.DIAMOND));
-
-        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
-        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
-        player.getInventory().addItem(ItemRegistry.getItem("NORMAL CAPSULE"));
-        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
-        player.getInventory().addItem(ItemRegistry.getItem("Focus Stance Scroll"));
-
-        for (brainrots.BrainRot rot : PCSYSTEM.getParty()) {
-            java.util.List<brainrots.LevelUpResult> results = rot.gainXp(RandomUtil.range(100,10000));
-        }
-        System.out.println("[DEV] XP awarded.");
-    }
-
-    private void testQuests() {
-        // [YOUR ORIGINAL QUEST TEST LOGIC REMAINS UNCHANGED HERE]
-        progression.QuestSystem qs = progression.QuestSystem.getInstance();
-        qs.complete("SPEED_DEMON");
-        System.out.println("[DEV] Quests force-completed for testing.");
     }
 
     // ── Layer accessors ───────────────────────────────────────────────────────
-    public ArrayList<TileManager> getWorldBackgroundLayer() {
-        return world.getBackgroundLayer();
-    }
-    public ArrayList<TileManager> getWorldBuildingLayer() {
-        return world.getBuildingLayer();
-    }
-    public TileManager getWorldInteractiveLayer() {
-        return world.getInteractiveLayer();
-    }
+    public ArrayList<TileManager> getWorldBackgroundLayer() { return world.getBackgroundLayer(); }
+    public ArrayList<TileManager> getWorldBuildingLayer()   { return world.getBuildingLayer(); }
+    public TileManager getWorldInteractiveLayer()           { return world.getInteractiveLayer(); }
 
     // ── Game loop ─────────────────────────────────────────────────────────────
     public void update() {
+        BLACKFADEEFFECT.update();
+
         switch (GAMESTATE.toUpperCase()) {
-
-            // --- INTEGRATED OUR STARTER LAB STATE ---
-            case "STARTER":
-                STARTERUI.update();
-                break;
-
-            case "PLAY":
-                // --- INTEGRATED OUR FADE EFFECT ---
-                if (!BLACKFADEEFFECT.isFadeOutComplete()) {
-                    BLACKFADEEFFECT.update();
-                }
-
-                // Update player movement
-                player.update();
-
-                // Check trainer line-of-sight every tick
-                encounterSystem.checkTrainerLook(player, world.getInteractiveLayer().getNPCs(), this);
-
-                // --- INTEGRATED OUR BATTLE FADE TRANSITION ---
-                if (encounterSystem.getActiveBattle() != null && !GAMESTATE.equalsIgnoreCase("battle_fade") && !GAMESTATE.equalsIgnoreCase("battle")) {
-                    GAMESTATE = "battle_fade";
-                    BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_IN_TO_BLACK, 10);
-                }
-
-                //Check if theres a TileTeleporter in current position
-                TileTeleporter tr = CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
-                if (tr != null) {
-
-                    //If there is, then open dialogue
-                    if (!tr.isInteracted) {
-                        TileTeleporter tile = CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
-                        tr.interact(this);
-                    }
-
-                    //If dialogue is done
-                    if (!DIALOGUEBOX.isPlaying) {
-                        String link = tr.getLinkTo();
-                        world.loadMap(Directories.getPath(link), true);
-                        CURRENT_PATH = Directories.getPath(link);
-                        DARKNESSOVERLAY.setActive(CURRENT_PATH.toLowerCase().contains("cave"));
-                        int[] coordinates = new int[2];
-                        for (TileTeleporter tile : getWorldInteractiveLayer().getTeleporters()) {
-                            if (tile != null) {
-                                if (tile.getName().equalsIgnoreCase(tr.getLinkToTeleporterName())) {
-                                    coordinates = tile.getCoordinates().clone();
-                                    switch(tile.getDirection().toUpperCase()) {
-                                        case "LEFT" -> coordinates[0] -= 1;
-                                        case "RIGHT" -> coordinates[0] += 1;
-                                        case "DOWN" -> coordinates[1] += 1;
-                                        case "UP" -> coordinates[1] -= 1;
-                                    }
-                                }
-                            }
-                        }
-                        player.teleport(coordinates);
-                    }
-
-                }
-
-                // E key: interact with the NPC or object the player is facing
-                if (KEYBOARDHANDLER.ePressed) {
-                    KEYBOARDHANDLER.ePressed = false;
-                    player.checkInteraction();
-                    SHOPUI.open();
-                    GAMESTATE = "SHOP";
-                }
-
-                // Open menu with ESC key
-                if (KEYBOARDHANDLER.escPressed) {
-                    KEYBOARDHANDLER.escPressed = false;
-                    MENUUI.open();
-                    GAMESTATE = "MENU";
-                    System.out.println("[GamePanel] Menu opened via ESC key.");
-                }
-
-                if (KEYBOARDHANDLER.mPressed && !CURRENT_PATH.toLowerCase().contains("cave")) {
-                    KEYBOARDHANDLER.mPressed = false;
-                    MAPUI.open();
-                    GAMESTATE = "map";
-                    System.out.println("[GamePanel] Map opened via M key.");
-                }
-
-                break;
-
-            // --- INTEGRATED OUR BATTLE STATES ---
-            case "BATTLE_FADE":
-                BLACKFADEEFFECT.update();
+            case "STARTER" -> STARTERUI.update();
+            case "PLAY"    -> updatePlayState();
+            case "BATTLE_FADE" -> {
                 if (BLACKFADEEFFECT.isFullyBlack()) {
                     BATTLEUI.setBattle(encounterSystem.getActiveBattle());
                     GAMESTATE = "battle";
                     BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_OUT_TO_PLAY, 10);
                 }
-                break;
-
-            case "BATTLE":
+            }
+            case "BATTLE" -> {
                 BATTLEUI.update();
-                BLACKFADEEFFECT.update();
-                break;
-
-            case "DIALOGUE":
-                DIALOGUEBOX.update();
-                break;
-
-            case "SHOP":
-                SHOPUI.update();
-                break;
-
-            case "PC":
-                PCUI.update();
-                break;
-
-            case "MENU":
-                MENUUI.update();
-                break;
-
-            case "INVENTORY":
+                if (encounterSystem.getActiveBattle() == null) GAMESTATE = "play";
+            }
+            case "DIALOGUE"  -> DIALOGUEBOX.update();
+            case "SHOP"      -> SHOPUI.update();
+            case "PC"        -> PCUI.update();
+            case "MENU"      -> MENUUI.update();
+            case "QUESTS"    -> QUESTUI.update();
+            case "MAP"       -> MAPUI.update();
+            case "INVENTORY" -> {
                 INVENTORYUI.update();
-                // --- INTEGRATED BATTLE-ITEM RETURN LOGIC ---
-                if (encounterSystem.getActiveBattle() != null && INVENTORYUI.getSelectedItemForBattle() != null) {
+                if (encounterSystem.getActiveBattle() != null && (INVENTORYUI.getSelectedItemForBattle() != null || KEYBOARDHANDLER.escPressed)) {
                     GAMESTATE = "battle";
                 }
-                if (KEYBOARDHANDLER.escPressed && encounterSystem.getActiveBattle() != null) {
-                    GAMESTATE = "battle";
+            }
+        }
+    }
+
+    private void updatePlayState() {
+        player.update();
+        encounterSystem.checkTrainerLook(player, world.getInteractiveLayer().getNPCs(), this);
+
+        // BUG FIX: Removed checkWildEncounter from here!
+        // It belongs in your Player.java class when the player moves to a new tile.
+
+        if (encounterSystem.getActiveBattle() != null) {
+            GAMESTATE = "battle_fade";
+            BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_IN_TO_BLACK, 10);
+            return;
+        }
+
+        TileTeleporter tr = CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
+        if (tr != null) {
+            handleTeleport(tr);
+        }
+
+        if (KEYBOARDHANDLER.ePressed) {
+            KEYBOARDHANDLER.ePressed = false;
+            player.checkInteraction();
+        }
+
+        if (KEYBOARDHANDLER.escPressed) {
+            KEYBOARDHANDLER.escPressed = false;
+            MENUUI.open();
+            GAMESTATE = "MENU";
+        }
+
+        if (KEYBOARDHANDLER.mPressed && !CURRENT_PATH.toLowerCase().contains("cave")) {
+            KEYBOARDHANDLER.mPressed = false;
+            MAPUI.open();
+            GAMESTATE = "map";
+        }
+    }
+
+    private void handleTeleport(TileTeleporter tr) {
+        // 1. Identification
+        Directories currentMapData = Directories.getByPath(CURRENT_PATH);
+        String targetPath = Directories.getPath(tr.getLinkTo());
+
+        // 2. Progression Check (Strictly enforcing your requirements)
+        if (!targetPath.equalsIgnoreCase(CURRENT_PATH)) {
+            int totalRots = player.getPCSYSTEM().getPartySize() + player.getPCSYSTEM().getPCCount();
+            BrainRot lead = player.getPCSYSTEM().getPartyMember(0);
+
+            if (totalRots < currentMapData.getReqRots() || (lead != null && lead.getLevel() < currentMapData.getReqLevel())) {
+                ArrayList<String> warning = new ArrayList<>();
+                warning.add("The path ahead is blocked!");
+                warning.add("Mastery of " + currentMapData.name() + " required:");
+                warning.add("- Own " + currentMapData.getReqRots() + " BrainRots (You: " + totalRots + ")");
+                warning.add("- Partner Lv. " + currentMapData.getReqLevel() + " (You: " + (lead != null ? lead.getLevel() : 0) + ")");
+                DIALOGUEBOX.startDialogue("System", warning);
+
+                // Push back
+                player.worldX -= (player.getDirection().equals("right") ? TILE_SIZE : 0);
+                player.worldX += (player.getDirection().equals("left") ? TILE_SIZE : 0);
+                player.worldY -= (player.getDirection().equals("down") ? TILE_SIZE : 0);
+                player.worldY += (player.getDirection().equals("up") ? TILE_SIZE : 0);
+                return;
+            }
+        }
+
+        if (!tr.isInteracted) tr.interact(this);
+
+        if (!DIALOGUEBOX.isPlaying) {
+            CURRENT_PATH = targetPath;
+            world.loadMap(CURRENT_PATH, true);
+            DARKNESSOVERLAY.setActive(CURRENT_PATH.toLowerCase().contains("cave"));
+
+            int[] coords = new int[2];
+            for (TileTeleporter tile : getWorldInteractiveLayer().getTeleporters()) {
+                if (tile != null && tile.getName().equalsIgnoreCase(tr.getLinkToTeleporterName())) {
+                    coords = tile.getCoordinates().clone();
+                    switch(tile.getDirection().toUpperCase()) {
+                        case "LEFT"  -> coords[0] -= 1;
+                        case "RIGHT" -> coords[0] += 1;
+                        case "DOWN"  -> coords[1] += 1;
+                        case "UP"    -> coords[1] -= 1;
+                    }
                 }
-                break;
-
-            case "QUESTS":
-                QUESTUI.update();
-                break;
-
-            case "MAP":
-                MAPUI.update();
-                break;
-
-            default:
-                break;
+            }
+            player.teleport(coords);
+            tr.isInteracted = false;
         }
     }
 
@@ -266,64 +199,44 @@ public class GamePanel extends JPanel {
         g2.setColor(Color.BLACK);
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        // --- INTEGRATED OUR CUSTOM RENDER PATHS ---
         if (GAMESTATE.equalsIgnoreCase("STARTER")) {
             STARTERUI.draw(g2);
-        } else if (GAMESTATE.equalsIgnoreCase("BATTLE") || (GAMESTATE.equalsIgnoreCase("INVENTORY") && encounterSystem.getActiveBattle() != null)) {
-            BATTLEUI.draw(g2);
-            if (GAMESTATE.equalsIgnoreCase("INVENTORY")) {
-                INVENTORYUI.draw(g2);
+        }
+        // FIX: Removed "BATTLE_FADE" from here!
+        // We only draw the BattleUI when we are actually IN the battle state.
+        else if (GAMESTATE.equalsIgnoreCase("BATTLE") ||
+                (GAMESTATE.equalsIgnoreCase("INVENTORY") && encounterSystem.getActiveBattle() != null)) {
+
+            // Only draw if the battle manager is actually created
+            if (encounterSystem.getActiveBattle() != null) {
+                BATTLEUI.draw(g2);
+                if (GAMESTATE.equalsIgnoreCase("INVENTORY")) INVENTORYUI.draw(g2);
             }
         } else {
-            // World bottom layers
+            // FIX: During "BATTLE_FADE", it now falls into this block.
+            // This keeps the Overworld visible WHILE the screen smoothly fades to black!
             world.draw(g2);
-
-            // Player
             player.draw(g2);
-
-            // Overlay layers (drawn on top of the player)
             world.drawOverlay(g2);
-
-            // ── Cave darkness — after world, before UI ────────────────────────────
-            DARKNESSOVERLAY.draw(
-                    g2,
-                    player.screenX + TILE_SIZE / 2,
-                    player.screenY + TILE_SIZE / 2
-            );
+            DARKNESSOVERLAY.draw(g2, player.screenX + TILE_SIZE / 2, player.screenY + TILE_SIZE / 2);
         }
 
-        // ── UI overlays ───────────────────────────────────────────────────────
+        // Draw UI overlays depending on the state
         switch (GAMESTATE.toLowerCase()) {
-            case "dialogue":
-                DIALOGUEBOX.draw(g2);
-                break;
-            case "shop":
-                SHOPUI.draw(g2);
-                break;
-            case "menu":
-                MENUUI.draw(g2);
-                break;
-            case "pc":
-                PCUI.draw(g2);
-                break;
-            case "inventory":
-                if (encounterSystem.getActiveBattle() == null) {
-                    INVENTORYUI.draw(g2);
-                }
-                break;
-            case "quests":
-                QUESTUI.draw(g2);
-                break;
-            case "map":
-                MAPUI.draw(g2);
-                break;
+            case "dialogue"  -> DIALOGUEBOX.draw(g2);
+            case "shop"      -> SHOPUI.draw(g2);
+            case "menu"      -> MENUUI.draw(g2);
+            case "pc"        -> PCUI.draw(g2);
+            case "inventory" -> { if (encounterSystem.getActiveBattle() == null) INVENTORYUI.draw(g2); }
+            case "quests"    -> QUESTUI.draw(g2);
+            case "map"       -> MAPUI.draw(g2);
         }
 
         QUESTTOAST.update();
         QUESTTOAST.draw(g2);
 
-        // --- INTEGRATED UNIVERSAL BLACK FADE ---
-        if (GAMESTATE.equalsIgnoreCase("BATTLE_FADE") || !BLACKFADEEFFECT.isFadeOutComplete()) {
+        // Top-most layer: The Fade Effect smoothly draws over EVERYTHING
+        if (!BLACKFADEEFFECT.isFadeOutComplete()) {
             BLACKFADEEFFECT.draw(g2);
         }
 

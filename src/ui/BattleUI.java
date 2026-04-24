@@ -15,10 +15,8 @@ import utils.Constants;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 import static utils.Constants.*;
@@ -26,7 +24,7 @@ import static utils.Constants.*;
 public class BattleUI {
 
     private enum BattleState {
-        INITIALIZING, MENU, SKILL_SELECT, TEAM_SELECT, TEAM_CONFIRM, // Added TEAM_CONFIRM
+        INITIALIZING, MENU, SKILL_SELECT, TEAM_SELECT, TEAM_CONFIRM,
         BAG_OPEN, ANIMATION, ENEMY_AI, CLEANUP, FINISH, MESSAGE
     }
     private enum MenuOption { FIGHT, BAG, TEAM, RUN }
@@ -41,7 +39,7 @@ public class BattleUI {
     private MenuOption menuCursor = MenuOption.FIGHT;
     private int skillCursor = 0;
     private int partyCursor = 0;
-    private int confirmCursor = 0; // 0 = YES, 1 = NO
+    private int confirmCursor = 0;
     private int inputCooldown = 0;
 
     private boolean playerMovesFirst = true;
@@ -56,9 +54,11 @@ public class BattleUI {
     private int dialogueTicks = 0;
 
     private final Queue<String[]> messageQueue = new LinkedList<>();
-
-    private final Map<String, BufferedImage> spriteCache = new HashMap<>();
     private BufferedImage hpFrame_player, hpFrame_enemy, dialogueBoxFrame, playerBackSprite;
+
+    // --- ANIMATION VARIABLES ---
+    private int idleTick = 0;
+    private int currentIdleFrame = 1;
 
     public BattleUI(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
@@ -85,7 +85,16 @@ public class BattleUI {
 
     public void update() {
         if (gp.GAMESTATE.equalsIgnoreCase("INVENTORY")) return;
-        if (inputCooldown > 0) { inputCooldown--; return; }
+        if (inputCooldown > 0) inputCooldown--;
+
+        // Idle Animation Ping-Pong (Swaps between Frame 1 and 2 every 30 ticks)
+        idleTick++;
+        if (idleTick >= 30) {
+            idleTick = 0;
+            currentIdleFrame = (currentIdleFrame == 1) ? 2 : 1;
+        }
+
+        if (inputCooldown > 0) return;
 
         switch (currentState) {
             case INITIALIZING -> updateInitializing();
@@ -111,7 +120,7 @@ public class BattleUI {
             String[] msg = messageQueue.poll();
             dialogueLine1 = msg[0];
             dialogueLine2 = msg[1];
-            dialogueTicks = 90;
+            dialogueTicks = 90; // 1.5 seconds per message
             stateAfterMessage = nextState;
             currentState = BattleState.MESSAGE;
         } else {
@@ -498,9 +507,36 @@ public class BattleUI {
         queueMessage(l1, l2);
     }
 
+    // ── UTILITIES ─────────────────────────────────────────────────────────────
+
+    private Font getCustomFont(int style, float size) {
+        if (AssetManager.pokemonGb != null) {
+            return AssetManager.pokemonGb.deriveFont(style, size);
+        }
+        return new Font("Arial", style, (int)size);
+    }
+
+    private void drawFittingString(Graphics2D g2, String text, int x, int y, int maxWidth, float startSize, int fontStyle) {
+        float currentSize = startSize;
+        g2.setFont(getCustomFont(fontStyle, currentSize));
+        FontMetrics fm = g2.getFontMetrics();
+
+        while (fm.stringWidth(text) > maxWidth && currentSize > 10f) {
+            currentSize -= 1f;
+            g2.setFont(getCustomFont(fontStyle, currentSize));
+            fm = g2.getFontMetrics();
+        }
+        g2.drawString(text, x, y);
+    }
+
     // ── DRAWING LOGIC ─────────────────────────────────────────────────────────
 
     public void draw(Graphics2D g2) {
+
+        if (this.battle == null) {
+            return;
+        }
+
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setColor(new Color(100, 180, 100));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -514,15 +550,47 @@ public class BattleUI {
         g2.fillOval(480, 200, 240, 60);
         g2.fillOval(40, 440, 300, 70);
 
+        // --- ANIMATION STATE MACHINE (READS TEXT TO FIND FRAME) ---
+        int pFrame = currentIdleFrame;
+        int eFrame = currentIdleFrame;
+
+        if (currentState == BattleState.MESSAGE) {
+            // Null checks to prevent crashes if text is empty!
+            String l1 = (dialogueLine1 != null) ? dialogueLine1.toLowerCase() : "";
+            String l2 = (dialogueLine2 != null) ? dialogueLine2.toLowerCase() : "";
+
+            String pName = (battle.getPlayerRot() != null) ? battle.getPlayerRot().getName().toLowerCase() : "";
+            String eName = (battle.getEnemyRot() != null) ? battle.getEnemyRot().getName().toLowerCase() : "";
+
+            // Attacking logic (Wind-up -> Attack)
+            if (l1.contains("used") && !l1.startsWith("used ")) {
+                if (!pName.isEmpty() && l1.startsWith(pName)) pFrame = (dialogueTicks > 45) ? 4 : 5;
+                if (!eName.isEmpty() && l1.startsWith(eName)) eFrame = (dialogueTicks > 45) ? 4 : 5;
+            }
+
+            // Hurt logic
+            if (l2.contains("took") || l2.contains("damage")) {
+                if (!pName.isEmpty() && l1.startsWith(pName)) pFrame = 3;
+                if (!eName.isEmpty() && l1.startsWith(eName)) eFrame = 3;
+            }
+
+            // Item used logic
+            if (l1.startsWith("used ")) {
+                pFrame = 4;
+            }
+        }
+
         boolean showTrainer = (currentState == BattleState.INITIALIZING || isInitialSendOut);
 
-        BufferedImage enemySprite  = getSprite(battle.getEnemyRot());
+        // ENEMY SPRITE (Front)
+        BufferedImage enemySprite = AssetManager.getBrainRotSprite(battle.getEnemyRot().getName(), battle.getEnemyRot().getTier().name(), false, eFrame);
         if (enemySprite != null) g2.drawImage(enemySprite, 500, 40, 200, 200, null);
 
         if (showTrainer) {
             if (playerBackSprite != null) g2.drawImage(playerBackSprite, 80, 240, 220, 220, null);
         } else {
-            BufferedImage playerSprite = getSprite(battle.getPlayerRot());
+            // PLAYER SPRITE (Back)
+            BufferedImage playerSprite = AssetManager.getBrainRotSprite(battle.getPlayerRot().getName(), battle.getPlayerRot().getTier().name(), true, pFrame);
             if (playerSprite != null) g2.drawImage(playerSprite, 60, 220, 260, 260, null);
         }
 
@@ -576,12 +644,9 @@ public class BattleUI {
             if (rot.isFainted() || rot == battle.getPlayerRot()) g2.setColor(new Color(150, 150, 150));
             else g2.setColor(new Color(50, 50, 50));
 
-            g2.setFont(new Font("Arial", Font.BOLD, 14));
-            String name = rot.getName();
-            if (name.length() > 18) name = name.substring(0, 18) + "..";
-            g2.drawString(name, rowX, rowY);
+            drawFittingString(g2, rot.getName(), rowX, rowY, panelW - 140, 14f, Font.BOLD);
 
-            g2.setFont(new Font("Arial", Font.BOLD, 12));
+            g2.setFont(getCustomFont(Font.BOLD, 12f));
             String hpStr = rot.getCurrentHp() + "/" + rot.getMaxHp() + " HP";
             g2.drawString(hpStr, rowX + panelW - 105, rowY + 16);
 
@@ -599,16 +664,17 @@ public class BattleUI {
 
         if (selectedRot != null) {
             int midX = pad + panelW + gap;
-            BufferedImage spr = getSprite(selectedRot);
+            // TEAM SCREEN uses Front Idle Sprites
+            BufferedImage spr = AssetManager.getBrainRotSprite(selectedRot.getName(), selectedRot.getTier().name(), false, currentIdleFrame);
             if (spr != null) g2.drawImage(spr, midX + 15, pad + 50, 90, 90, null);
 
-            g2.setFont(new Font("Arial", Font.BOLD, 16));
             g2.setColor(new Color(40, 40, 40));
 
             String[] nameParts = selectedRot.getName().split(" ");
             int ny = pad + 60;
             String currentLine = "";
 
+            g2.setFont(getCustomFont(Font.BOLD, 16f));
             for(String part : nameParts) {
                 String testLine = currentLine.isEmpty() ? part : currentLine + " " + part;
                 if(g2.getFontMetrics().stringWidth(testLine) > panelW - 120) {
@@ -623,13 +689,13 @@ public class BattleUI {
 
             ny += 25;
 
-            g2.setFont(new Font("Arial", Font.PLAIN, 14));
+            g2.setFont(getCustomFont(Font.PLAIN, 14f));
             g2.drawString("Type: " + selectedRot.getPrimaryType().name(), midX + 115, ny);
             ny += 20;
             g2.drawString("Lv " + selectedRot.getLevel(), midX + 115, ny);
             ny += 25;
 
-            g2.setFont(new Font("Arial", Font.BOLD, 13));
+            g2.setFont(getCustomFont(Font.BOLD, 13f));
             g2.drawString("HP: " + selectedRot.getCurrentHp() + "/" + selectedRot.getMaxHp(), midX + 115, ny);
             ny += 8;
             g2.setColor(new Color(80, 80, 80));
@@ -638,7 +704,7 @@ public class BattleUI {
             g2.setColor(new Color(220, 80, 60));
             g2.fillRect(midX + 115, ny, (int)(90 * mHpFrac), 8);
 
-            g2.setFont(new Font("Arial", Font.PLAIN, 13));
+            g2.setFont(getCustomFont(Font.PLAIN, 13f));
             String desc = Constants.getDescription(selectedRot.getName());
 
             int dy = Math.max(ny + 30, pad + 160);
@@ -669,17 +735,10 @@ public class BattleUI {
                 g2.fillRoundRect(sx, sy, panelW/2 - 25, 80, 8, 8);
 
                 g2.setColor(new Color(50, 50, 50));
-                g2.setFont(new Font("Arial", Font.BOLD, 12));
 
-                String[] mName = m.getName().split(" ");
-                if (mName.length > 1) {
-                    g2.drawString(mName[0], sx + 10, sy + 20);
-                    g2.drawString(mName[1], sx + 10, sy + 35);
-                } else {
-                    g2.drawString(m.getName(), sx + 10, sy + 25);
-                }
+                drawFittingString(g2, m.getName(), sx + 10, sy + 25, (panelW/2) - 45, 12f, Font.BOLD);
 
-                g2.setFont(new Font("Arial", Font.PLAIN, 11));
+                g2.setFont(getCustomFont(Font.PLAIN, 11f));
                 g2.drawString("Type: " + m.getType().name(), sx + 10, sy + 50);
                 g2.drawString("UP: " + m.getCurrentUP() + "/" + m.getMaxUP(), sx + 10, sy + 65);
             }
@@ -698,7 +757,7 @@ public class BattleUI {
 
             drawUIPanel(g2, menuX, menuY, menuW, menuH, "");
 
-            g2.setFont(new Font("Arial", Font.BOLD, 20));
+            g2.setFont(getCustomFont(Font.BOLD, 20f));
             g2.setColor(new Color(50, 50, 50));
             g2.drawString("YES", menuX + 60, menuY + 50);
             g2.drawString("NO", menuX + 60, menuY + 95);
@@ -718,7 +777,7 @@ public class BattleUI {
         g2.setStroke(new BasicStroke(1));
 
         if (!title.isEmpty()) {
-            g2.setFont(new Font("Arial", Font.BOLD, 18));
+            g2.setFont(getCustomFont(Font.BOLD, 18f));
             g2.setColor(new Color(50, 50, 50));
             FontMetrics fm = g2.getFontMetrics();
             int tx = x + (w - fm.stringWidth(title)) / 2;
@@ -744,12 +803,10 @@ public class BattleUI {
             drawUIPanel(g2, x, y, w, h, "");
         }
 
-        Font baseFont = new Font("Arial", Font.BOLD, 15);
-        g2.setFont(baseFont);
         g2.setColor(new Color(50, 50, 50));
-        g2.drawString(rot.getName(), x + 20, y + 28);
+        drawFittingString(g2, rot.getName(), x + 20, y + 28, w - 90, 15f, Font.BOLD);
 
-        g2.setFont(baseFont.deriveFont(Font.BOLD, 14f));
+        g2.setFont(getCustomFont(Font.BOLD, 14f));
         String lvStr = "Lv " + rot.getLevel();
         FontMetrics fm = g2.getFontMetrics();
         g2.drawString(lvStr, x + w - fm.stringWidth(lvStr) - 20, y + 28);
@@ -764,12 +821,11 @@ public class BattleUI {
         g2.fillRect(barX, barY, (int)(barW * hpFrac), barH);
 
         if (isPlayer) {
-            g2.setFont(baseFont);
+            g2.setFont(getCustomFont(Font.BOLD, 15f));
             g2.setColor(new Color(50, 50, 50));
             String hpNum = rot.getCurrentHp() + " / " + rot.getMaxHp();
             fm = g2.getFontMetrics();
             g2.drawString(hpNum, x + w - fm.stringWidth(hpNum) - 25, y + 78);
-
         }
     }
 
@@ -781,7 +837,7 @@ public class BattleUI {
 
         drawUIPanel(g2, menuX, menuY, menuW, menuH, "");
 
-        g2.setFont(new Font("Arial", Font.BOLD, 20));
+        g2.setFont(getCustomFont(Font.BOLD, 20f));
         g2.setColor(new Color(50, 50, 50));
 
         g2.drawString("FIGHT", menuX + 50, menuY + 50);
@@ -804,8 +860,6 @@ public class BattleUI {
 
         drawUIPanel(g2, menuX, menuY, menuW, menuH, "");
 
-        g2.setFont(new Font("Arial", Font.BOLD, 18));
-
         List<Skill> moves = battle.getPlayerRot().getMoves();
         for (int i = 0; i < moves.size(); i++) {
             int dx = menuX + 40 + (i % 2 == 1 ? 230 : 0);
@@ -817,74 +871,30 @@ public class BattleUI {
                 g2.setColor(new Color(50, 50, 50));
             }
 
-            g2.drawString(moves.get(i).getName(), dx, dy);
+            drawFittingString(g2, moves.get(i).getName(), dx, dy, 200, 18f, Font.BOLD);
+
             if (i == skillCursor) drawCursor(g2, dx - 25, dy - 14);
         }
     }
 
     private void drawDialogueText(Graphics2D g2, int boxY) {
-        g2.setFont(new Font("Arial", Font.BOLD, 22));
         g2.setColor(new Color(50, 50, 50));
 
-        boolean menuOpen = (currentState == BattleState.MENU ||
-                currentState == BattleState.SKILL_SELECT);
+        int textX = 35;
+        int textY1 = boxY + 55;
+        int textY2 = boxY + 95;
+        int maxTextWidth = SCREEN_WIDTH - 70;
 
-        if (menuOpen || currentState == BattleState.TEAM_SELECT || currentState == BattleState.TEAM_CONFIRM) {
-            g2.drawString(dialogueLine1, 35, boxY + 55);
-            g2.drawString(dialogueLine2, 35, boxY + 95);
-        } else {
-            FontMetrics fm = g2.getFontMetrics();
-            int boxX = 10;
-            int boxW = SCREEN_WIDTH - 20;
-            int boxH = 126;
-
-            boolean hasLine2 = dialogueLine2 != null && !dialogueLine2.isEmpty();
-
-            if (hasLine2) {
-                int totalTextHeight = fm.getHeight() * 2;
-                int startY = boxY + (boxH - totalTextHeight) / 2 + fm.getAscent();
-
-                int x1 = boxX + (boxW - fm.stringWidth(dialogueLine1)) / 2;
-                g2.drawString(dialogueLine1, x1, startY);
-
-                int x2 = boxX + (boxW - fm.stringWidth(dialogueLine2)) / 2;
-                g2.drawString(dialogueLine2, x2, startY + fm.getHeight() + 5);
-            } else {
-                int x1 = boxX + (boxW - fm.stringWidth(dialogueLine1)) / 2;
-                int y1 = boxY + (boxH - fm.getHeight()) / 2 + fm.getAscent();
-                g2.drawString(dialogueLine1, x1, y1);
-            }
+        if (dialogueLine1 != null && !dialogueLine1.isEmpty()) {
+            drawFittingString(g2, dialogueLine1, textX, textY1, maxTextWidth, 22f, Font.BOLD);
+        }
+        if (dialogueLine2 != null && !dialogueLine2.isEmpty()) {
+            drawFittingString(g2, dialogueLine2, textX, textY2, maxTextWidth, 22f, Font.BOLD);
         }
     }
 
     private void drawCursor(Graphics2D g2, int x, int y) {
         g2.setColor(new Color(50, 50, 50));
         g2.fillPolygon(new int[]{x, x+12, x}, new int[]{y, y+8, y+16}, 3);
-    }
-
-    private BufferedImage getSprite(BrainRot rot) {
-        if (rot == null) return null;
-        String key = rot.getName() + "_" + rot.getTier().name();
-        if (spriteCache.containsKey(key)) return spriteCache.get(key);
-
-        String path = "/res/InteractiveTiles/Brainrots/" + toFolderName(rot.getName())
-                + "/" + rot.getTier().name() + "_1.png";
-        BufferedImage img = AssetManager.loadImage(path);
-        spriteCache.put(key, img);
-        return img;
-    }
-
-    private String toFolderName(String name) {
-        return switch (name.toUpperCase()) {
-            case "TUNG TUNG TUNG SAHUR"  -> "TungTungTungSahur";
-            case "TRALALERO TRALALA"      -> "TralaleroTralala";
-            case "BOMBARDINO CROCODILO"   -> "BombardinoCrocodilo";
-            case "LIRILI LARILA"          -> "LiriliLarila";
-            case "BRR BRR PATAPIM"        -> "BrrBrrPatapim";
-            case "BONECA AMBALABU"        -> "BonecaAmbalabu";
-            case "UDIN DIN DIN DIN DUN"   -> "OdindindinDun";
-            case "CAPUCCINO ASSASSINO"    -> "CapuccinoAssasino";
-            default                       -> name.replace(" ", "");
-        };
     }
 }

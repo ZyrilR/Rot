@@ -118,7 +118,7 @@ public class DialogueBox {
     }
 
     public void draw(Graphics2D g2) {
-        // 1. Box position & size
+        // 1. Box position & size (Spans across the bottom of the screen)
         int x = TILE_SIZE;
         int y = TILE_SIZE * 8;
         int width = SCREEN_WIDTH - (TILE_SIZE * 2);
@@ -129,7 +129,7 @@ public class DialogueBox {
         g2.setColor(Color.WHITE);
         g2.fillRoundRect(x, y, width, height, arc, arc);
 
-        // 3. Three-layered border
+        // 3. Three-layered border (Kept exactly as you designed it)
         g2.setColor(new Color(80, 80, 80));
         g2.setStroke(new BasicStroke(6));
         g2.drawRoundRect(x, y, width, height, arc, arc);
@@ -149,23 +149,30 @@ public class DialogueBox {
                 ? AssetManager.pokemonGb
                 : new Font("Arial", Font.PLAIN, 18);
 
+        // THE LEFT ALIGNMENT LOCK
+        // textX acts as a strict left margin (35 pixels from the box's left edge)
         int textX = x + 35;
         int textY = y + 50;
 
-        // 5. NPC name
+        // 5. NPC name (Left-aligned)
         if (npcName != null && !npcName.isEmpty()) {
             g2.setColor(new Color(40, 40, 40));
             g2.setFont(dialogueFont.deriveFont(Font.BOLD, 22f));
             g2.drawString(npcName + ":", textX, textY);
+
+            // Push the dialogue text down below the name
             textY += 35;
         }
 
-        // 6. Typewriter text
+        // 6. Typewriter text (Strictly left-aligned)
         g2.setColor(new Color(64, 64, 64));
         g2.setFont(dialogueFont.deriveFont(18f));
 
         for (String line : displayedText.split("\n")) {
+            // Because we use textX here, every new line snaps to the left margin!
             g2.drawString(line, textX, textY);
+
+            // Push the next line down
             textY += 40;
         }
     }

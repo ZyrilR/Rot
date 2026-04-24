@@ -52,4 +52,47 @@ public class AssetManager {
             pokemonSolid = new Font("Arial", Font.BOLD, 24);
         }
     }
+
+    // --- ADD THIS TO ASSET MANAGER ---
+    private static final java.util.Map<String, java.awt.image.BufferedImage> brainRotSprites = new java.util.HashMap<>();
+
+    public static java.awt.image.BufferedImage getBrainRotSprite(String name, String tier, boolean isBack, int frame) {
+        String sideModifier = isBack ? "_BACK" : "";
+        String key = name + "_" + tier + sideModifier + "_" + frame;
+
+        // 1. FAST CACHE RETURN
+        if (brainRotSprites.containsKey(key)) {
+            return brainRotSprites.get(key);
+        }
+
+        // 2. ATTEMPT TO LOAD FROM FOLDER
+        String path = "/res/InteractiveTiles/Brainrots/" + toFolderName(name)
+                + "/" + tier + sideModifier + "_" + frame + ".png";
+
+        java.awt.image.BufferedImage img = loadImage(path);
+
+        // 3. THE BUG FIX: If an animation frame (like 2 or 3) is missing, fall back to Frame 1!
+        if (img == null && frame != 1) {
+            img = getBrainRotSprite(name, tier, isBack, 0);
+        }
+
+        // 4. CACHE IT NO MATTER WHAT (Even if null) so the game never lags trying to read a missing file again!
+        brainRotSprites.put(key, img);
+
+        return img;
+    }
+
+    private static String toFolderName(String name) {
+        return switch (name.toUpperCase()) {
+            case "TUNG TUNG TUNG SAHUR"  -> "TungTungTungSahur";
+            case "TRALALERO TRALALA"      -> "TralaleroTralala";
+            case "BOMBARDINO CROCODILO"   -> "BombardinoCrocodilo";
+            case "LIRILI LARILA"          -> "LiriliLarila";
+            case "BRR BRR PATAPIM"        -> "BrrBrrPatapim";
+            case "BONECA AMBALABU"        -> "BonecaAmbalabu";
+            case "UDIN DIN DIN DIN DUN"   -> "OdindindinDun";
+            case "CAPUCCINO ASSASSINO"    -> "CapuccinoAssasino";
+            default                       -> name.replace(" ", "");
+        };
+    }
 }
