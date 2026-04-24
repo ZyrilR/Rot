@@ -14,32 +14,19 @@ import java.util.regex.Pattern;
 import static utils.Constants.*;
 
 public class WorldLoader {
-
-    /*
-    WORLD IS MULTILAYERED:
-    Only 1 Background Layer Exists
-    Flexible Amount Of Decorative Tiles
-    Flexible Amount Of Building Tiles
-    Only 1 Interactive Layer (Interactive Tiles should not Collide in a single Tile)
-     */
-
     private ArrayList<TileManager> backgroundLayer = new ArrayList<>();
     private ArrayList<TileManager> decorationLayer = new ArrayList<>();
     private ArrayList<TileManager> buildingLayer = new ArrayList<>();
-    private ArrayList<TileManager> overlayLayer = new ArrayList<>();
-    private ArrayList<TileManager> rampLayers = new ArrayList<>();
     private TileManager interactiveLayer;
+
+    private GamePanel gp;
 
     private void resetLayers() {
         backgroundLayer.clear();
         decorationLayer.clear();
         buildingLayer.clear();
-        overlayLayer.clear();
-        rampLayers.clear();
         interactiveLayer = null;
     }
-
-    private GamePanel gp;
 
     public WorldLoader(GamePanel gp) {
         this.gp = gp;
@@ -71,13 +58,6 @@ public class WorldLoader {
         if (interactiveLayer != null)
             interactiveLayer.draw(graphics2D, gp);
 
-    }
-
-    public void drawOverlay(Graphics2D graphics2D) {
-        for (TileManager tm : overlayLayer) {
-            if (tm != null)
-                tm.draw(graphics2D, gp);
-        }
     }
 
     public void loadMap(String folderPath, boolean initWorldSettings) {
@@ -151,21 +131,10 @@ public class WorldLoader {
     public ArrayList<TileManager> getBuildingLayer() {
         return buildingLayer;
     }
-
     public ArrayList<TileManager> getDecorationLayer() {
         return decorationLayer;
     }
-
     public ArrayList<TileManager> getBackgroundLayer() {
         return backgroundLayer;
     }
-
-    public ArrayList<TileManager> getOverlayLayer() {
-        return overlayLayer;
-    }
-
-    public ArrayList<TileManager> getRampLayers() {
-        return rampLayers;
-    }
-
 }

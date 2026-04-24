@@ -266,7 +266,6 @@ public class GamePanel extends JPanel {
             // This keeps the Overworld visible WHILE the screen smoothly fades to black!
             world.draw(g2);
             player.draw(g2);
-            world.drawOverlay(g2);
             DARKNESSOVERLAY.draw(g2, player.screenX + TILE_SIZE / 2, player.screenY + TILE_SIZE / 2);
         }
 
