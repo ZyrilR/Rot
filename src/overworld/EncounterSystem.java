@@ -44,22 +44,18 @@ public class EncounterSystem {
                 int tileNum = decoLayer.getMap()[gridY][gridX];
 
                 if (tileNum == 2) { // Tall Grass
-                    if (Math.random() < 0.12) { // Slightly increased frequency for farming
+                    if (Math.random() < 0.12) { // 12% chance to encounter
                         BrainRot leader = getLeadBrainRot(gp);
                         if (leader == null) return;
 
                         // 1. Get Map Settings via Enum
                         Directories currentMap = Directories.getByPath(gp.CURRENT_PATH);
-                        int baseMapLevel = currentMap.getBaseLevel();
-                        int pLvl = leader.getLevel();
 
-                        // 2. Dynamic Progression: Map cap grows as player gains strength
-                        int dynamicCap = baseMapLevel + (pLvl / 5);
+                        // 2. Use the new Min and Max Range!
+                        int minLvl = currentMap.getMinLevel();
+                        int maxLvl = currentMap.getMaxLevel();
 
-                        // 3. Fairness Rule: Wild Level <= Player Level AND capped by map dynamic limit
-                        int maxLvl = Math.min(pLvl, dynamicCap);
-                        int minLvl = Math.max(1, maxLvl - 3);
-
+                        // 3. Roll random level between min and max
                         int wildLevel = utils.RandomUtil.range(minLvl, maxLvl);
 
                         startWildBattle(player, spawnRandomWildBrainRot(wildLevel), gp);

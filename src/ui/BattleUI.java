@@ -57,8 +57,8 @@ public class BattleUI {
     private BufferedImage hpFrame_player, hpFrame_enemy, dialogueBoxFrame, playerBackSprite;
 
     // --- ANIMATION VARIABLES ---
-    private int idleTick = 0;
-    private int currentIdleFrame = 1;
+    private int animTick = 0;
+    private int currentHurtFrame = 2;
 
     public BattleUI(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
@@ -85,16 +85,15 @@ public class BattleUI {
 
     public void update() {
         if (gp.GAMESTATE.equalsIgnoreCase("INVENTORY")) return;
-        if (inputCooldown > 0) inputCooldown--;
 
-        // Idle Animation Ping-Pong (Swaps between Frame 1 and 2 every 30 ticks)
-        idleTick++;
-        if (idleTick >= 30) {
-            idleTick = 0;
-            currentIdleFrame = (currentIdleFrame == 1) ? 2 : 1;
+        // Rapid Hurt Animation Ping-Pong (Swaps between Frame 2 and 3 quickly!)
+        animTick++;
+        if (animTick >= 10) {
+            animTick = 0;
+            currentHurtFrame = (currentHurtFrame == 2) ? 3 : 2;
         }
 
-        if (inputCooldown > 0) return;
+        if (inputCooldown > 0) { inputCooldown--; return; }
 
         switch (currentState) {
             case INITIALIZING -> updateInitializing();
@@ -120,7 +119,7 @@ public class BattleUI {
             String[] msg = messageQueue.poll();
             dialogueLine1 = msg[0];
             dialogueLine2 = msg[1];
-            dialogueTicks = 90; // 1.5 seconds per message
+            dialogueTicks = 90;
             stateAfterMessage = nextState;
             currentState = BattleState.MESSAGE;
         } else {
@@ -550,12 +549,11 @@ public class BattleUI {
         g2.fillOval(480, 200, 240, 60);
         g2.fillOval(40, 440, 300, 70);
 
-        // --- ANIMATION STATE MACHINE (READS TEXT TO FIND FRAME) ---
-        int pFrame = currentIdleFrame;
-        int eFrame = currentIdleFrame;
+        // --- ANIMATION STATE MACHINE ---
+        int pFrame = 1; // 1 is now exclusively the static IDLE frame
+        int eFrame = 1;
 
         if (currentState == BattleState.MESSAGE) {
-            // Null checks to prevent crashes if text is empty!
             String l1 = (dialogueLine1 != null) ? dialogueLine1.toLowerCase() : "";
             String l2 = (dialogueLine2 != null) ? dialogueLine2.toLowerCase() : "";
 
@@ -568,10 +566,10 @@ public class BattleUI {
                 if (!eName.isEmpty() && l1.startsWith(eName)) eFrame = (dialogueTicks > 45) ? 4 : 5;
             }
 
-            // Hurt logic
+            // Hurt logic (Loops rapidly between 2 and 3)
             if (l2.contains("took") || l2.contains("damage")) {
-                if (!pName.isEmpty() && l1.startsWith(pName)) pFrame = 3;
-                if (!eName.isEmpty() && l1.startsWith(eName)) eFrame = 3;
+                if (!pName.isEmpty() && l1.startsWith(pName)) pFrame = currentHurtFrame;
+                if (!eName.isEmpty() && l1.startsWith(eName)) eFrame = currentHurtFrame;
             }
 
             // Item used logic
@@ -664,8 +662,8 @@ public class BattleUI {
 
         if (selectedRot != null) {
             int midX = pad + panelW + gap;
-            // TEAM SCREEN uses Front Idle Sprites
-            BufferedImage spr = AssetManager.getBrainRotSprite(selectedRot.getName(), selectedRot.getTier().name(), false, currentIdleFrame);
+            // TEAM SCREEN uses Front Idle Sprite (Frame 1)
+            BufferedImage spr = AssetManager.getBrainRotSprite(selectedRot.getName(), selectedRot.getTier().name(), false, 1);
             if (spr != null) g2.drawImage(spr, midX + 15, pad + 50, 90, 90, null);
 
             g2.setColor(new Color(40, 40, 40));
