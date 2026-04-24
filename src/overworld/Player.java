@@ -35,7 +35,7 @@ public class Player {
     private boolean isWalking = false;
 
     //Player Handler
-    GamePanel gp;
+    public GamePanel gp;
     public KeyboardHandler kh;
 
     //Handle Sprite Images

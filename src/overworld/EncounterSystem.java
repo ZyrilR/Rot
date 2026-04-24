@@ -3,10 +3,10 @@ package overworld;
 import battle.BattleManager;
 import brainrots.BrainRot;
 import engine.GamePanel;
-import items.Inventory;
 import npc.NPC;
 import npc.TrainerNPC;
 import tile.TileManager;
+import utils.Directories;
 import java.util.List;
 import static utils.Constants.*;
 
@@ -23,7 +23,6 @@ public class EncounterSystem {
 
     // ── Team Management ───────────────────────────────────────────────────────
 
-    // FIX: Get team directly from the Player's PC System
     public List<BrainRot> getPlayerTeam(GamePanel gp) {
         return gp.player.getPCSYSTEM().getParty();
     }
@@ -35,7 +34,6 @@ public class EncounterSystem {
     // ── Wild Encounters ───────────────────────────────────────────────────────
 
     public void checkWildEncounter(Player player, GamePanel gp) {
-        // SAFETY: Don't trigger if already in a battle
         if (activeBattle != null) return;
 
         int gridX = player.worldX / TILE_SIZE;
@@ -46,16 +44,21 @@ public class EncounterSystem {
                 int tileNum = decoLayer.getMap()[gridY][gridX];
 
                 if (tileNum == 2) { // Tall Grass
-                    if (Math.random() < 0.10) {
-                        // Check for healthy team BEFORE starting
+                    if (Math.random() < 0.12) { // 12% chance to encounter
                         BrainRot leader = getLeadBrainRot(gp);
-                        if (leader == null) {
-                            System.out.println("No healthy BrainRots! Stay safe!");
-                            return;
-                        }
+                        if (leader == null) return;
 
-                        BrainRot wildRot = spawnRandomWildBrainRot();
-                        startWildBattle(player, wildRot, gp);
+                        // 1. Get Map Settings via Enum
+                        Directories currentMap = Directories.getByPath(gp.CURRENT_PATH);
+
+                        // 2. Use the new Min and Max Range!
+                        int minLvl = currentMap.getMinLevel();
+                        int maxLvl = currentMap.getMaxLevel();
+
+                        // 3. Roll random level between min and max
+                        int wildLevel = utils.RandomUtil.range(minLvl, maxLvl);
+
+                        startWildBattle(player, spawnRandomWildBrainRot(wildLevel), gp);
                     }
                     break;
                 }
@@ -68,24 +71,25 @@ public class EncounterSystem {
     public void startWildBattle(Player player, BrainRot wildRot, GamePanel gp) {
         BrainRot playerRot = getLeadBrainRot(gp);
         if (playerRot == null) return;
+
         activeBattle = new BattleManager(
                 playerRot, wildRot,
                 gp.player.getPCSYSTEM().getParty(),
                 player,
                 true);
-        System.out.println("Wild battle started against " + wildRot.getName() + "!");
+        System.out.println("Wild battle: " + wildRot.getName() + " Lv." + wildRot.getLevel());
     }
 
     public void startTrainerBattle(Player player, TrainerNPC trainer, GamePanel gp) {
         BrainRot playerRot = getLeadBrainRot(gp);
         if (playerRot == null) return;
-        BrainRot trainerRot = trainer.getLeadBrainRot();
+
         activeBattle = new BattleManager(
-                playerRot, trainerRot,
+                playerRot, trainer.getLeadBrainRot(),
                 gp.player.getPCSYSTEM().getParty(),
                 player,
                 false);
-        System.out.println("Trainer battle started against " + trainer.name + "!");
+        System.out.println("Trainer battle: " + trainer.name);
     }
 
     public void clearBattle() {
@@ -94,21 +98,27 @@ public class EncounterSystem {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private BrainRot spawnRandomWildBrainRot() {
+    private BrainRot spawnRandomWildBrainRot(int level) {
         int index = (int)(Math.random() * WILD_BRAINROT_NAMES.length);
-        return brainrots.BrainRotFactory.create(WILD_BRAINROT_NAMES[index], 5);
+        BrainRot wild = brainrots.BrainRotFactory.create(WILD_BRAINROT_NAMES[index], brainrots.Tier.NORMAL);
+
+        // Simulated XP gain to reach the dynamic level
+        if (level > 1) {
+            for (int i = 1; i < level; i++) {
+                wild.gainXp(wild.getXpToNextLevel());
+            }
+        }
+        wild.restoreForBattle();
+        return wild;
     }
 
-    // FIX: Check the Player's PCSystem party
     private BrainRot getLeadBrainRot(GamePanel gp) {
-        List<BrainRot> party = gp.player.getPCSYSTEM().getParty();
-        for (BrainRot rot : party) {
+        for (BrainRot rot : gp.player.getPCSYSTEM().getParty()) {
             if (rot != null && !rot.isFainted()) return rot;
         }
         return null;
     }
 
-    // Trainer Look logic remains the same, just ensure it uses getLeadBrainRot(gp)
     public void checkTrainerLook(Player player, List<NPC> npcs, GamePanel gp) {
         for (NPC npc : npcs) {
             if (!(npc instanceof TrainerNPC trainer) || trainer.hasBeenDefeated()) continue;

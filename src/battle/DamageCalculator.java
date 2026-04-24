@@ -2,58 +2,61 @@ package battle;
 
 import brainrots.BrainRot;
 import brainrots.Type;
+import engine.GamePanel;
 import skills.Skill;
 import skills.SkillType;
-import utils.MathUtil;
 
 /**
  * Computes damage dealt by a skill from attacker to defender.
- * Formula: damage = (power * attack / defense) * typeMultiplier
+ * Includes "Tutorial Plot Armor" for new players.
  */
 public class DamageCalculator {
 
-    /**
-     * Calculates and returns the final damage value.
-     */
-    public static int calculate(Skill skill, BrainRot attacker, BrainRot defender) {
-        if (skill.getPower() <= 0) return 0; // non-damaging skill
+    public static int calculate(Skill skill, BrainRot attacker, BrainRot defender, GamePanel gp) {
+        if (skill.getPower() <= 0) return 0;
 
-        double base = (double) skill.getPower() * attacker.getAttack() / defender.getDefense();
+        double raw = ((double) skill.getPower() * attacker.getAttack()) / (defender.getDefense() + 15);
+        double baseDamage = (raw * 0.85) + 5;
+
         double typeMultiplier = getTypeMultiplier(skill.getType(), defender.getPrimaryType(), defender.getSecondaryType());
-        double randomFactor   = 0.85 + Math.random() * 0.15; // 85–100% variance
+        double randomFactor = 0.90 + (Math.random() * 0.10);
 
-        int damage = (int)(base * typeMultiplier * randomFactor);
+        int finalDamage = (int)(baseDamage * typeMultiplier * randomFactor);
+        finalDamage = Math.max(1, finalDamage);
 
-        // Defense cannot reduce damage below 20% of the unmitigated value
-        int rawDamage = (int)(skill.getPower() * attacker.getAttack() * typeMultiplier * randomFactor);
-        int minDamage = Math.max(1, (int)(rawDamage * 0.20));
-        damage = MathUtil.clamp(damage, minDamage, 9999);
+        // ── TUTORIAL PLOT ARMOR (THE "ALWAYS WIN" RULE) ──
+        // Check if player is on the beginner map
+        if (gp != null && gp.CURRENT_PATH.contains("Route131")) {
+            int totalRots = gp.player.getPCSYSTEM().getPartySize() + gp.player.getPCSYSTEM().getPCCount();
 
-        if (typeMultiplier > 1.0) System.out.println("It's super effective!");
-        if (typeMultiplier < 1.0) System.out.println("It's not very effective...");
+            // If the player only owns their Starter BrainRot...
+            if (totalRots == 1) {
+                // Figure out who is attacking
+                boolean isPlayerAttacking = gp.player.getPCSYSTEM().getParty().contains(attacker);
 
-        return damage;
+                if (isPlayerAttacking) {
+                    // 1. Player hits 50% harder!
+                    finalDamage = (int)(finalDamage * 1.5);
+                } else {
+                    // 2. Enemy hits 50% weaker!
+                    finalDamage = (int)(finalDamage * 0.5);
+
+                    // 3. Focus Sash Effect: Enemy CANNOT deal the killing blow!
+                    if (finalDamage >= defender.getCurrentHp()) {
+                        finalDamage = Math.max(0, defender.getCurrentHp() - 1);
+                        System.out.println("Tutorial Armor saved you from fainting!");
+                    }
+                }
+            }
+        }
+
+        return finalDamage;
     }
 
-    /**
-     * Kato gihimo ni Chrisnel!!!!!!!!! ILY
-     *
-     * Type effectiveness chart.
-     * Constraints: no type has more than 2 advantages
-     *
-     * FIGHTING > ROCK
-     * ROCK     > FIRE
-     * FIRE     > GRASS
-     * GRASS    > WATER
-     * WATER    > FIRE
-     * PSYCHIC  > FIGHTING
-     * DARK     > PSYCHIC
-     * FLYING   > GRASS
-     * SAND     > FIRE
-     */
     private static double getTypeMultiplier(SkillType attackType, Type defPrimary, Type defSecondary) {
         double multiplier = 1.0;
         multiplier *= singleMatchup(attackType, defPrimary);
+
         if (defSecondary != null) {
             multiplier *= singleMatchup(attackType, defSecondary);
         }
@@ -61,6 +64,8 @@ public class DamageCalculator {
     }
 
     private static double singleMatchup(SkillType atk, Type def) {
+        if (def == null) return 1.0;
+
         return switch (atk) {
             case FIGHTING -> (def == Type.ROCK)     ? 1.5 : 1.0;
             case ROCK     -> (def == Type.FIRE)     ? 1.5 : 1.0;
