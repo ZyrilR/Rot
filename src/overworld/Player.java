@@ -242,9 +242,7 @@ public class Player {
         }
 
         TileLoot tl = CollisionChecker.getTileLootInFront(gp);
-        System.out.println("PRESSED E: " + tl);
         if (tl != null) {
-            System.out.println("YESSSS");
             tl.interact(gp);
             gp.player.getInventory().appendInventory(tl.getInventory());
         }

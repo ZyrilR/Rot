@@ -100,7 +100,7 @@ public class EncounterSystem {
 
     private BrainRot spawnRandomWildBrainRot(int level) {
         int index = (int)(Math.random() * WILD_BRAINROT_NAMES.length);
-        BrainRot wild = brainrots.BrainRotFactory.create(WILD_BRAINROT_NAMES[index], brainrots.Tier.NORMAL);
+        BrainRot wild = brainrots.BrainRotFactory.create(WILD_BRAINROT_NAMES[index], level);
 
         // Simulated XP gain to reach the dynamic level
         if (level > 1) {

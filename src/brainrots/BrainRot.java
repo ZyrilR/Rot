@@ -348,6 +348,8 @@ public class BrainRot {
         this.secondaryType = getType(secondaryType);
         this.tier          = Tier.getTier(tier);
 
+        System.out.println("MAXHP: " + maxHp);
+        System.out.println("HP: " + currentHp);
         this.MAX_HP    = maxHp;
         this.currentHP = currentHp;
 

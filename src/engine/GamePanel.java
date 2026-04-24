@@ -1,19 +1,28 @@
 package engine;
 
 import brainrots.BrainRot;
+import brainrots.BrainRotFactory;
+import brainrots.Tier;
 import input.KeyboardHandler;
 import map.WorldLoader;
 import overworld.EncounterSystem;
 import overworld.Player;
+import storage.PCSystem;
 import tile.CollisionChecker;
 import tile.TileManager;
 import tile.TileTeleporter;
 import ui.*;
-import utils.Directories;
 
 import javax.swing.JPanel;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.ArrayList;
+
+import items.ItemRegistry;
+import utils.RandomUtil;
+import utils.Directories;
 
 import static utils.Constants.*;
 import static utils.Directories.*;
@@ -28,6 +37,7 @@ public class GamePanel extends JPanel {
     public String GAMESTATE               = "play";
     public DialogueBox DIALOGUEBOX        = new DialogueBox(this);
 
+    // --- INTEGRATED OUR CUSTOM UI ---
     public BlackFadeEffect BLACKFADEEFFECT = new BlackFadeEffect();
     public BattleUI BATTLEUI               = new BattleUI(this, KEYBOARDHANDLER);
     public StarterUI STARTERUI             = new StarterUI(this, KEYBOARDHANDLER);
@@ -54,21 +64,60 @@ public class GamePanel extends JPanel {
         this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(KEYBOARDHANDLER);
 
-        CURRENT_PATH = ROUTE131.getPath();
         world.loadMap(ROUTE131.getPath(), true);
+        CURRENT_PATH = ROUTE131.getPath();
 
-        if (player.getPCSYSTEM().getPartySize() == 0) {
-            GAMESTATE = "starter";
-        } else {
-            GAMESTATE = "play";
+        // ── Seed the PC party with the player's starting team ────────────────
+//        testQuests();
+//        seedTestParty();
+
+        // --- NEW: Force the player to the Starter Lab if they have no BrainRots! ---
+//        if (player.getPCSYSTEM().getPartySize() == 0) {
+//            GAMESTATE = "starter";
+//        } else {
+//            GAMESTATE = "play";
+//        }
+    }
+
+
+    // ── Test seed ─────────────────────────────────────────────────────────────
+
+    private void seedTestParty() {
+        // [YOUR ORIGINAL SEED LOGIC REMAINS UNCHANGED HERE]
+        PCSystem PCSYSTEM = player.getPCSYSTEM();
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", 15));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    25));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", 30));
+
+        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+        player.getInventory().addItem(ItemRegistry.getItem("NORMAL CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+        player.getInventory().addItem(ItemRegistry.getItem("Focus Stance Scroll"));
+
+        for (brainrots.BrainRot rot : PCSYSTEM.getParty()) {
+            java.util.List<brainrots.LevelUpResult> results = rot.gainXp(RandomUtil.range(100,10000));
         }
+        System.out.println("[DEV] XP awarded.");
+    }
 
+    private void testQuests() {
+        // [YOUR ORIGINAL QUEST TEST LOGIC REMAINS UNCHANGED HERE]
+        progression.QuestSystem qs = progression.QuestSystem.getInstance();
+        qs.complete("SPEED_DEMON");
+        System.out.println("[DEV] Quests force-completed for testing.");
     }
 
     // ── Layer accessors ───────────────────────────────────────────────────────
-    public ArrayList<TileManager> getWorldBackgroundLayer() { return world.getBackgroundLayer(); }
-    public ArrayList<TileManager> getWorldBuildingLayer()   { return world.getBuildingLayer(); }
-    public TileManager getWorldInteractiveLayer()           { return world.getInteractiveLayer(); }
+    public ArrayList<TileManager> getWorldBackgroundLayer() {
+        return world.getBackgroundLayer();
+    }
+    public ArrayList<TileManager> getWorldBuildingLayer() {
+        return world.getBuildingLayer();
+    }
+    public TileManager getWorldInteractiveLayer() {
+        return world.getInteractiveLayer();
+    }
 
     // ── Game loop ─────────────────────────────────────────────────────────────
     public void update() {

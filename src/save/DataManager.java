@@ -204,6 +204,9 @@ public class DataManager {
     }
 
     private static BrainRot getRot(String[] parts) {
+
+        System.out.println(parts[0]);
+
         String[] attributes = parts[0].split(";");
 
                 /*
@@ -239,24 +242,28 @@ public class DataManager {
             }
         }
 
+        System.out.println("HEALTH: " + safeParseInt(attributes[7]));
+        System.out.println("MAXHEALTH: " + safeParseInt(attributes[6]));
+
         BrainRot rot = new BrainRot(
                 attributes[0],                               // Name
                 safeParseInt(attributes[1]),                 // Level
                 safeParseInt(attributes[2]),                 // currentXP
-                attributes[2],                               // primaryType
-                attributes[3],                               // secondaryType
-                attributes[4],                               // tier
-                safeParseInt(attributes[5]),                 // MAX_HP
-                safeParseInt(attributes[6]),                 // currentHP
-                safeParseInt(attributes[7]),                 // BASE_ATK
-                safeParseInt(attributes[8]),                 // BASE_DEF
-                safeParseInt(attributes[9]),                 // BASE_SPEED
-                Double.parseDouble(attributes[10]),           // attackMod
-                Double.parseDouble(attributes[11]),          // defenseMod
-                Double.parseDouble(attributes[12]),          // speedMod
-                attributes[13],                              // status
-                safeParseInt(attributes[14]),                // statusTurns
-                safeParseInt(attributes[15]),                // turnCount
+                attributes[3],                               // primaryType
+                attributes[4],                               // secondaryType
+                attributes[5],                               // tier
+
+                safeParseInt(attributes[6]),                 // MAX_HP
+                safeParseInt(attributes[7]),                 // currentHP
+                safeParseInt(attributes[8]),                 // BASE_ATK
+                safeParseInt(attributes[9]),                 // BASE_DEF
+                safeParseInt(attributes[10]),                 // BASE_SPEED
+                Double.parseDouble(attributes[11]),           // attackMod
+                Double.parseDouble(attributes[12]),          // defenseMod
+                Double.parseDouble(attributes[13]),          // speedMod
+                attributes[14],                              // status
+                safeParseInt(attributes[15]),                // statusTurns
+                safeParseInt(attributes[16]),                // turnCount
                 skills,
                 moveUPs
         );
