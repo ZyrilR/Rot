@@ -15,9 +15,8 @@ import utils.Constants;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Queue;
 
 import static utils.Constants.*;
 
@@ -1033,6 +1032,8 @@ public class BattleUI {
             if (hasLine2) {
                 int totalTextHeight = fm.getHeight() * 2;
                 int startY = boxY + (boxH - totalTextHeight) / 2 + fm.getAscent();
+            }
+        }
 
         if (dialogueLine1 != null && !dialogueLine1.isEmpty()) {
             drawFittingString(g2, dialogueLine1, textX, textY1, maxTextWidth, 22f, Font.BOLD);
@@ -1046,4 +1047,5 @@ public class BattleUI {
         g2.setColor(new Color(50, 50, 50));
         g2.fillPolygon(new int[]{x, x+12, x}, new int[]{y, y+8, y+16}, 3);
     }
+
 }

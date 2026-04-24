@@ -177,9 +177,6 @@ public class Player {
                 moveProgress = 0;
                 setIsMoving(false);
 
-                // 2. CHECK FOR RAMP (ground level change)
-                checkRamp();
-
                 // 3. CHECK FOR TALL GRASS ENCOUNTERS
                 checkGrass();
 
@@ -245,28 +242,6 @@ public class Player {
         if (tl != null) {
             tl.interact(gp);
             gp.player.getInventory().appendInventory(tl.getInventory());
-        }
-    }
-
-    private void checkRamp() {
-        int gridX = worldX / TILE_SIZE;
-        int gridY = worldY / TILE_SIZE;
-
-        for (TileManager ramp : gp.world.getRampLayers()) {
-            if (gridY >= 0 && gridY < MAX_WORLD_ROW && gridX >= 0 && gridX < MAX_WORLD_COL) {
-                int tileNum = ramp.getMap()[gridY][gridX];
-                if (tileNum != 0) {
-                    // Player stepped on a ramp tile — determine direction
-                    // Moving down (higher Y) = going downhill = -1
-                    // Moving up (lower Y) = going uphill = +1
-                    switch (direction) {
-                        case "up"   -> groundLevel += 1;
-                        case "down" -> groundLevel -= 1;
-                    }
-                    System.out.println("[Ramp] Ground level changed to: " + groundLevel);
-                    return;
-                }
-            }
         }
     }
 
