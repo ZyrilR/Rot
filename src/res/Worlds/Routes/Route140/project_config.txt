@@ -1,0 +1,5 @@
+4,50,75,34,26
+Background:BACKGROUND
+Decoration:DECORATION
+Building:BUILDING
+Interactive:INTERACTIVE
