@@ -2,11 +2,19 @@ package utils;
 
 public enum Directories {
     // FORMAT: Path, Min Level, Max Level, Rots Needed to Leave, Level Needed to Leave
+
+    //ROUTES
     ROUTE131("/res/Worlds/Routes/Route131/", 1, 10, 5, 15),
     ROUTE132("/res/Worlds/Routes/Route132/", 10, 25, 8, 30),
     ROUTE130("/res/Worlds/Routes/Route130/", 25, 35, 8, 20),
+
+    //CAVES
     CAVE131("/res/Worlds/Caves/Cave131/", 30, 45, 8, 20),
-    MARKET("/res/Rooms/Market/", 0, 0, 0, 0),
+
+    //ROOMS
+    FLYINGGYMFLOOR1("/res/Worlds/Rooms/FlyingGymFloor1/", 0, 0, 0, 0),
+    FLYINGGYMFLOOR2("/res/Worlds/Rooms/FlyingGymFloor2/", 0, 0, 0, 0),
+
     SAVES("src/res/Saves/", 0, 0, 0, 0); // Kept exactly the same for DataManager!
 
     private final String path;

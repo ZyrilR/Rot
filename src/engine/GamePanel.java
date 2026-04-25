@@ -69,7 +69,7 @@ public class GamePanel extends JPanel {
 
         // ── Seed the PC party with the player's starting team ────────────────
 //        testQuests();
-//        seedTestParty();
+        seedTestParty();
 
         // --- NEW: Force the player to the Starter Lab if they have no BrainRots! ---
         if (player.getPCSYSTEM().getPartySize() == 0) {
@@ -87,6 +87,9 @@ public class GamePanel extends JPanel {
         PCSystem PCSYSTEM = player.getPCSYSTEM();
         PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", 15));
         PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    25));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", 30));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", 30));
+        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", 30));
         PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", 30));
 
         player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));

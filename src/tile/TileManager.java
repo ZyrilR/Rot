@@ -239,9 +239,9 @@ public class TileManager {
 
     public static void loadTiles() {
         //Tiles
-        for (int i = 1; i <= 561; i++) {
+        for (int i = 1; i <= 1676; i++) {
             BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/" + i + ".png")));
-            System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
+//            System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
         }
 
         //Decorations
@@ -265,7 +265,7 @@ public class TileManager {
                 tile = new Tile(loadImage("/res/Decorations/" + i + ".png"), false, "Background");
 
             DECORATION_TILES.add(tile);
-            System.out.println("ADDED: Decorations " + i + DECORATION_TILES.size());
+//            System.out.println("ADDED: Decorations " + i + DECORATION_TILES.size());
         }
 
         int[] NON_COLLIDABLE = new int[]{92, 94, 2, 107, 64, 45};
@@ -275,13 +275,13 @@ public class TileManager {
                 BUILDING_TILES.add(new Tile(loadImage("/res/Buildings/" + i + ".png"), false));
             else
                 BUILDING_TILES.add(new Tile(loadImage("/res/Buildings/" + i + ".png"), true));
-            System.out.println("ADDED: Building 1 " + i + BACKGROUND_TILES.size());
+//            System.out.println("ADDED: Building 1 " + i + BACKGROUND_TILES.size());
         }
 
         for (int i = 1; i <= 5; i++) {
             for (int j = 1; j <= 5; j++) {
                 INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/" + i + "/" + j + ".png"), true));
-                System.out.println("ADDED: Sprite " + i + " " + j + INTERACTIVE_TILES.size());
+//                System.out.println("ADDED: Sprite " + i + " " + j + INTERACTIVE_TILES.size());
             }
         }
 
