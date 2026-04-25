@@ -72,11 +72,11 @@ public class GamePanel extends JPanel {
 //        seedTestParty();
 
         // --- NEW: Force the player to the Starter Lab if they have no BrainRots! ---
-//        if (player.getPCSYSTEM().getPartySize() == 0) {
-//            GAMESTATE = "starter";
-//        } else {
-//            GAMESTATE = "play";
-//        }
+        if (player.getPCSYSTEM().getPartySize() == 0) {
+            GAMESTATE = "starter";
+        } else {
+            GAMESTATE = "play";
+        }
     }
 
 
@@ -96,7 +96,7 @@ public class GamePanel extends JPanel {
         player.getInventory().addItem(ItemRegistry.getItem("Focus Stance Scroll"));
 
         for (brainrots.BrainRot rot : PCSYSTEM.getParty()) {
-            java.util.List<brainrots.LevelUpResult> results = rot.gainXp(RandomUtil.range(100,10000));
+            rot.gainXp(RandomUtil.range(100,10000));
         }
         System.out.println("[DEV] XP awarded.");
     }

@@ -169,8 +169,9 @@ public class BrainRot {
             BASE_ATK = 115;
         }
 
-        // THE FIX: Full heal on Level Up!
-        currentHP = MAX_HP;
+        // THE FIX: Heal 50% of Max HP on Level Up!
+        int healAmount = MAX_HP / 2;
+        currentHP = Math.min(MAX_HP, currentHP + healAmount);
 
         // Recalculate live values from new bases (preserves any active modifiers)
         attack  = (int)(BASE_ATK   * attackMod);
