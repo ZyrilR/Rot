@@ -26,29 +26,29 @@ public class DamageCalculator {
 
         // ── TUTORIAL PLOT ARMOR (THE "ALWAYS WIN" RULE) ──
         // Check if player is on the beginner map
-        if (gp != null && gp.CURRENT_PATH.contains("Route131")) {
-            int totalRots = gp.player.getPCSYSTEM().getPartySize() + gp.player.getPCSYSTEM().getPCCount();
-
-            // If the player only owns their Starter BrainRot...
-            if (totalRots == 1) {
-                // Figure out who is attacking
-                boolean isPlayerAttacking = gp.player.getPCSYSTEM().getParty().contains(attacker);
-
-                if (isPlayerAttacking) {
-                    // 1. Player hits 50% harder!
-                    finalDamage = (int)(finalDamage * 1.5);
-                } else {
-                    // 2. Enemy hits 50% weaker!
-                    finalDamage = (int)(finalDamage * 0.5);
-
-                    // 3. Focus Sash Effect: Enemy CANNOT deal the killing blow!
-                    if (finalDamage >= defender.getCurrentHp()) {
-                        finalDamage = Math.max(0, defender.getCurrentHp() - 1);
-                        System.out.println("Tutorial Armor saved you from fainting!");
-                    }
-                }
-            }
-        }
+//        if (gp != null && gp.CURRENT_PATH.contains("Route131")) {
+//            int totalRots = gp.player.getPCSYSTEM().getPartySize() + gp.player.getPCSYSTEM().getPCCount();
+//
+//            // If the player only owns their Starter BrainRot...
+//            if (totalRots == 1) {
+//                // Figure out who is attacking
+//                boolean isPlayerAttacking = gp.player.getPCSYSTEM().getParty().contains(attacker);
+//
+//                if (isPlayerAttacking) {
+//                    // 1. Player hits 50% harder!
+//                    finalDamage = (int)(finalDamage * 1.5);
+//                } else {
+//                    // 2. Enemy hits 50% weaker!
+//                    finalDamage = (int)(finalDamage * 0.5);
+//
+//                    // 3. Focus Sash Effect: Enemy CANNOT deal the killing blow!
+//                    if (finalDamage >= defender.getCurrentHp()) {
+//                        finalDamage = Math.max(0, defender.getCurrentHp() - 1);
+//                        System.out.println("Tutorial Armor saved you from fainting!");
+//                    }
+//                }
+//            }
+//        }
 
         return finalDamage;
     }
