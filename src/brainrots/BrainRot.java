@@ -15,11 +15,11 @@ import static utils.Constants.MAX_LEVEL;
  * Represents a BrainRot creature with stats, type, moves, and status.
  *
  * Stat structure:
- *   currentHP  / MAX_HP    — hit points
- *   attack     / BASE_ATK  — current (modified) attack   / permanent base
- *   defense    / BASE_DEF  — current (modified) defense  / permanent base
- *   speed      / BASE_SPEED— current (modified) speed    / permanent base
- *   Each Skill tracks its own UP (Use Points) that decrements by 1 per use
+ * currentHP  / MAX_HP    — hit points
+ * attack     / BASE_ATK  — current (modified) attack   / permanent base
+ * defense    / BASE_DEF  — current (modified) defense  / permanent base
+ * speed      / BASE_SPEED— current (modified) speed    / permanent base
+ * Each Skill tracks its own UP (Use Points) that decrements by 1 per use
  *
  * attack, defense, and speed reflect live battle values and are updated
  * whenever modifyAttack / modifyDefense / modifySpeed is called.
@@ -167,8 +167,8 @@ public class BrainRot {
             BASE_ATK = 115;
         }
 
-        // Keep current HP healed by the gained amount
-        currentHP += hpGain;
+        // THE FIX: Full heal on Level Up!
+        currentHP = MAX_HP;
 
         // Recalculate live values from new bases (preserves any active modifiers)
         attack  = (int)(BASE_ATK   * attackMod);

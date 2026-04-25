@@ -29,6 +29,16 @@ public class BattleUI {
     }
     private enum MenuOption { FIGHT, BAG, TEAM, RUN }
 
+    // --- THE FIX: We now attach a hidden "Actor ID" to every message
+    // (0 = None, 1 = Player, 2 = Enemy) so the game knows exactly who is animating!
+    private static class BattleMessage {
+        String line1, line2;
+        int activeActor;
+        BattleMessage(String l1, String l2, int activeActor) {
+            this.line1 = l1; this.line2 = l2; this.activeActor = activeActor;
+        }
+    }
+
     private final GamePanel gp;
     private final KeyboardHandler kh;
     private BattleManager battle;
@@ -51,9 +61,10 @@ public class BattleUI {
 
     private String dialogueLine1 = "";
     private String dialogueLine2 = "";
+    private int currentMessageActor = 0; // Tracks who is currently doing the action
     private int dialogueTicks = 0;
 
-    private final Queue<String[]> messageQueue = new LinkedList<>();
+    private final Queue<BattleMessage> messageQueue = new LinkedList<>();
     private BufferedImage hpFrame_player, hpFrame_enemy, dialogueBoxFrame, playerBackSprite;
 
     // --- ANIMATION VARIABLES ---
@@ -110,15 +121,23 @@ public class BattleUI {
         }
     }
 
+    // Default queue (No specific actor animating)
     private void queueMessage(String line1, String line2) {
-        messageQueue.add(new String[]{line1, line2});
+        messageQueue.add(new BattleMessage(line1, line2, 0));
+    }
+
+    // Overloaded queue (Specific actor animating!)
+    private void queueMessage(String line1, String line2, int activeActor) {
+        messageQueue.add(new BattleMessage(line1, line2, activeActor));
     }
 
     private void playNextMessage(BattleState nextState) {
         if (!messageQueue.isEmpty()) {
-            String[] msg = messageQueue.poll();
-            dialogueLine1 = msg[0];
-            dialogueLine2 = msg[1];
+            BattleMessage msg = messageQueue.poll();
+            dialogueLine1 = msg.line1;
+            dialogueLine2 = msg.line2;
+            currentMessageActor = msg.activeActor; // Tell the game who is acting!
+
             dialogueTicks = 90;
             stateAfterMessage = nextState;
             currentState = BattleState.MESSAGE;
@@ -238,9 +257,10 @@ public class BattleUI {
             item.use(battle.getPlayerRot());
             int healed = battle.getPlayerRot().getCurrentHp() - oldHp;
 
-            queueMessage("Used " + item.getName() + "!", "");
+            // Flag this as an action performed by the Player (1)
+            queueMessage("Used " + item.getName() + "!", "", 1);
             if (healed > 0) {
-                queueMessage(battle.getPlayerRot().getName(), "recovered " + healed + " HP!");
+                queueMessage(battle.getPlayerRot().getName(), "recovered " + healed + " HP!", 1);
             }
 
             gp.player.getInventory().removeItem(item);
@@ -373,6 +393,10 @@ public class BattleUI {
         BrainRot defender = playerMovesFirst ? battle.getEnemyRot() : battle.getPlayerRot();
         int skillIdx = playerMovesFirst ? playerChosenIndex : enemyChosenIndex;
 
+        // Define exact actors (1 = Player, 2 = Enemy)
+        int attackerActor = playerMovesFirst ? 1 : 2;
+        int defenderActor = playerMovesFirst ? 2 : 1;
+
         if (playerMovesFirst && (playerChosenIndex == -1 || playerChosenIndex == -2)) {
             playNextMessage(BattleState.ANIMATION);
             return;
@@ -380,7 +404,9 @@ public class BattleUI {
 
         if (!attacker.isFainted()) {
             Skill skill = attacker.getMoves().get(skillIdx);
-            queueMessage(attacker.getName() + " used", skill.getName() + "!");
+
+            // Queue message with Attacker ID
+            queueMessage(attacker.getName() + " used", skill.getName() + "!", attackerActor);
 
             int oldHp = defender.getCurrentHp();
             if (playerMovesFirst) battle.executePlayerTurn(skillIdx);
@@ -388,7 +414,8 @@ public class BattleUI {
             int damage = oldHp - defender.getCurrentHp();
 
             if (damage > 0) {
-                queueMessage(defender.getName(), "took " + damage + " damage!");
+                // Queue message with Defender ID
+                queueMessage(defender.getName(), "took " + damage + " damage!", defenderActor);
             } else if (damage < 0) {
                 queueMessage(defender.getName(), "recovered " + (-damage) + " HP!");
             }
@@ -403,12 +430,17 @@ public class BattleUI {
         BrainRot defender = playerMovesFirst ? battle.getPlayerRot() : battle.getEnemyRot();
         int skillIdx = playerMovesFirst ? enemyChosenIndex : playerChosenIndex;
 
+        int attackerActor = playerMovesFirst ? 2 : 1;
+        int defenderActor = playerMovesFirst ? 1 : 2;
+
         if (!battle.getEnemyRot().isFainted() && !battle.getPlayerRot().isFainted() && !attacker.isFainted()) {
             if (!playerMovesFirst && (playerChosenIndex == -1 || playerChosenIndex == -2)) {
                 // Nothing
             } else {
                 Skill skill = attacker.getMoves().get(skillIdx);
-                queueMessage(attacker.getName() + " used", skill.getName() + "!");
+
+                // Queue message with Attacker ID
+                queueMessage(attacker.getName() + " used", skill.getName() + "!", attackerActor);
 
                 int oldHp = defender.getCurrentHp();
                 if (playerMovesFirst) battle.executeEnemyTurn(skillIdx);
@@ -416,7 +448,8 @@ public class BattleUI {
                 int damage = oldHp - defender.getCurrentHp();
 
                 if (damage > 0) {
-                    queueMessage(defender.getName(), "took " + damage + " damage!");
+                    // Queue message with Defender ID
+                    queueMessage(defender.getName(), "took " + damage + " damage!", defenderActor);
                 } else if (damage < 0) {
                     queueMessage(defender.getName(), "recovered " + (-damage) + " HP!");
                 }
@@ -438,7 +471,7 @@ public class BattleUI {
                 BattleReward.Result reward = battle.getReward();
 
                 queueMessage(battle.getEnemyRot().getName() + " fainted!", "");
-                queueMessage(battle.getPlayerRot().getName() + " gained", reward.xp + " XP!");
+                queueMessage(battle.getPlayerRot().getName() + " gained", reward.xp + " XP!", 1);
                 queueMessage("Coins earned:", "+" + reward.coins + " RotCoins!");
 
                 if (reward.hasScroll()) {
@@ -447,10 +480,10 @@ public class BattleUI {
 
                 for (LevelUpResult lu : reward.levelUps) {
                     queueMessage(battle.getPlayerRot().getName() + " grew to",
-                            "level " + lu.newLevel + "!");
+                            "level " + lu.newLevel + "!", 1);
                     if (lu.skillUnlocked != null) {
                         queueMessage(battle.getPlayerRot().getName() + " learned",
-                                lu.skillUnlocked.getName() + "!");
+                                lu.skillUnlocked.getName() + "!", 1);
                     }
                 }
             } else {
@@ -557,19 +590,19 @@ public class BattleUI {
             String l1 = (dialogueLine1 != null) ? dialogueLine1.toLowerCase() : "";
             String l2 = (dialogueLine2 != null) ? dialogueLine2.toLowerCase() : "";
 
-            String pName = (battle.getPlayerRot() != null) ? battle.getPlayerRot().getName().toLowerCase() : "";
-            String eName = (battle.getEnemyRot() != null) ? battle.getEnemyRot().getName().toLowerCase() : "";
+            // THE FIX: Using the hidden Actor ID to know exactly who is acting!
+            // No more broken "String matching" logic for mirror matches.
 
             // Attacking logic (Wind-up -> Attack)
             if (l1.contains("used") && !l1.startsWith("used ")) {
-                if (!pName.isEmpty() && l1.startsWith(pName)) pFrame = (dialogueTicks > 45) ? 4 : 5;
-                if (!eName.isEmpty() && l1.startsWith(eName)) eFrame = (dialogueTicks > 45) ? 4 : 5;
+                if (currentMessageActor == 1) pFrame = (dialogueTicks > 45) ? 4 : 5;
+                else if (currentMessageActor == 2) eFrame = (dialogueTicks > 45) ? 4 : 5;
             }
 
             // Hurt logic (Loops rapidly between 2 and 3)
             if (l2.contains("took") || l2.contains("damage")) {
-                if (!pName.isEmpty() && l1.startsWith(pName)) pFrame = currentHurtFrame;
-                if (!eName.isEmpty() && l1.startsWith(eName)) eFrame = currentHurtFrame;
+                if (currentMessageActor == 1) pFrame = currentHurtFrame;
+                else if (currentMessageActor == 2) eFrame = currentHurtFrame;
             }
 
             // Item used logic
