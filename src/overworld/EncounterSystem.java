@@ -50,13 +50,23 @@ public class EncounterSystem {
 
                         // 1. Get Map Settings via Enum
                         Directories currentMap = Directories.getByPath(gp.CURRENT_PATH);
+                        int mapMin = currentMap.getMinLevel();
+                        int mapMax = currentMap.getMaxLevel();
+                        int pLvl = leader.getLevel();
 
-                        // 2. Use the new Min and Max Range!
-                        int minLvl = currentMap.getMinLevel();
-                        int maxLvl = currentMap.getMaxLevel();
+                        // 2. THE PERFECT RPG SCALING MATH
+                        // The highest level enemy you will face is your level, BUT it cannot exceed the map's max limit.
+                        int finalMax = Math.min(pLvl, mapMax);
 
-                        // 3. Roll random level between min and max
-                        int wildLevel = utils.RandomUtil.range(minLvl, maxLvl);
+                        // Safety: If you walked into a hard map early, force the map's minimum level on you.
+                        finalMax = Math.max(finalMax, mapMin);
+
+                        // Keep the minimum level close to you so it stays challenging (max 2 levels weaker than finalMax)
+                        // This naturally creates the 1 (min:1), 1-2 (min:1), 1-3 (min:1), 2-4 (min:2) progression!
+                        int finalMin = Math.max(mapMin, finalMax - 2);
+
+                        // 3. Roll the wild level!
+                        int wildLevel = utils.RandomUtil.range(finalMin, finalMax);
 
                         startWildBattle(player, spawnRandomWildBrainRot(wildLevel), gp);
                     }
