@@ -122,5 +122,7 @@ public class NPC {
     }
 
     // Abstract-like method for children to override
-    public void interact(GamePanel gp) {}
+    public void interact(GamePanel gp) {
+        gp.DIALOGUEBOX.startDialogue(name, dialogues);
+    }
 }
