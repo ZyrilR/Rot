@@ -1,0 +1,10 @@
+[PLAYER]
+;1296;1344;0;down;/res/Worlds/Routes/Route131/
+[INVENTORY]
+
+[PCSYSTEM]
+==PARTY==
+1
+LIRILI LARILA;5;0;SAND;null;NORMAL;71;71;23;27;6;1.0;1.0;1.0;NONE;0;0:Prickly Trunk|Sand Surge:20|15
+==STORED==
+0

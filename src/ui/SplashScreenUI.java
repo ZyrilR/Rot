@@ -90,7 +90,6 @@ public class SplashScreenUI {
         switch (cursor) {
             case 0 -> {   // PLAY
                 gp.WORLDSELECTUI.open();
-                gp.GAMESTATE = "world_select";
             }
             case 1 -> {   // CREDITS
                 state = State.CREDITS;

@@ -69,6 +69,7 @@ public class GamePanel extends JPanel {
         this.addKeyListener(KEYBOARDHANDLER);
 
         // Load the default map so the world is ready when needed
+        System.out.println("[GamePanel] Loading Default Map");
         world.loadMap(ROUTE131.getPath(), true);
         CURRENT_PATH = ROUTE131.getPath();
 

@@ -1,10 +1,10 @@
 [PLAYER]
-;528;3360;0;left;/res/Worlds/Routes/Route131/
+;1680;2784;0;down;/res/Worlds/Routes/Route131/
 [INVENTORY]
 
 [PCSYSTEM]
 ==PARTY==
 1
-LIRILI LARILA;5;0;SAND;null;NORMAL;57;57;18;26;8;1.0;1.0;1.0;NONE;0;0:Prickly Trunk|Sand Surge:20|15
+CAPUCCINO ASSASSINO;5;0;DARK;POISON;NORMAL;34;34;31;8;20;1.0;1.0;1.0;NONE;0;0:Shadow Jab|Night Slash:15|20
 ==STORED==
 0

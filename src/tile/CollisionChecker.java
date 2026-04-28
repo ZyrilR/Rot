@@ -8,7 +8,6 @@ import java.util.ArrayList;
 
 import static utils.Constants.*;
 import java.awt.Rectangle;
-import entity.Building;
 
 public class CollisionChecker {
     GamePanel gp;

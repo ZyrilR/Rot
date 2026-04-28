@@ -172,7 +172,7 @@ public class TileManager {
                 String line;
                 String[] items;
                 while((line = br.readLine()) != null) {
-                    System.out.println(line);
+//                    System.out.println(line);
 
                     String[] parts = line.split("\\|");
 
@@ -192,7 +192,8 @@ public class TileManager {
                             items = parts[6].split(";");
                             Inventory inventory = new Inventory(items.length);
                             for (String item : items)
-                                inventory.addItem(ItemRegistry.getItem(item));
+                                if (!item.isEmpty())
+                                    inventory.addItem(ItemRegistry.getItem(item));
 
                             npc1 = switch(parts[1].toUpperCase()) {
                                 case "TRAINERNPC" -> new TrainerNPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[7]));
@@ -215,7 +216,8 @@ public class TileManager {
                             items = parts[5].split(";");
                             Inventory inv = new Inventory(items.length);
                             for (String item: items)
-                                inv.addItem(ItemRegistry.getItem(item));
+                                if (!item.isEmpty())
+                                    inv.addItem(ItemRegistry.getItem(item));
                             loots.add(new TileLoot(null, Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inv, parts[parts.length - 1].split(";")));
                             break;
                         default:
@@ -235,17 +237,23 @@ public class TileManager {
             // This will tell you exactly what went wrong (e.g., File Not Found or NullPointer)
             e.printStackTrace();
         }
+        System.out.println("[TileManager] Loaded Layer " + layerName);
     }
 
     public static void loadTiles() {
+        System.out.println("[TileManager] Loading Tiles...");
         //Tiles
-        for (int i = 1; i <= 1676; i++) {
+        int size = 2080;
+        for (int i = 1; i <= size; i++) {
             BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/" + i + ".png")));
 //            System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
         }
+        System.out.println("[TileManager] Loaded " + size + " Tiles");
 
+        size = 424;
+        System.out.println("[TileManager] Loading Decorations...");
         //Decorations
-        for (int i = 1; i <= 424; i++) {
+        for (int i = 1; i <= size; i++) {
             Tile tile = null;
             //if first img = transparent : background : false
             if (i == 1 || i == 3 || (i >= 33 && i <= 38))
@@ -267,30 +275,39 @@ public class TileManager {
             DECORATION_TILES.add(tile);
 //            System.out.println("ADDED: Decorations " + i + DECORATION_TILES.size());
         }
+        System.out.println("[TileManager] Loaded " + size + " Decoration Tiles");
 
+        size = 127;
         int[] NON_COLLIDABLE = new int[]{92, 94, 2, 107, 64, 45};
+        System.out.println("[TileManager] Loading Decorations...");
 
-        for (int i = 1; i <= 127; i++) {
+        for (int i = 1; i <= size; i++) {
             if (contains(NON_COLLIDABLE, i))
                 BUILDING_TILES.add(new Tile(loadImage("/res/Buildings/" + i + ".png"), false));
             else
                 BUILDING_TILES.add(new Tile(loadImage("/res/Buildings/" + i + ".png"), true));
 //            System.out.println("ADDED: Building 1 " + i + BACKGROUND_TILES.size());
         }
+        System.out.println("[TileManager] Loaded " + size + " Building Tiles");
 
+        System.out.println("[TileManager] Loading Sprites...");
         for (int i = 1; i <= 5; i++) {
             for (int j = 1; j <= 5; j++) {
                 INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/" + i + "/" + j + ".png"), true));
 //                System.out.println("ADDED: Sprite " + i + " " + j + INTERACTIVE_TILES.size());
             }
         }
+        System.out.println("[TileManager] Loaded " + 5 + " Sprites");
 
-        for (int i = 26; i <= 34; i++) {
+        size = 34;
+        System.out.println("[TileManager] Loading Interactive Tiles...");
+        for (int i = 26; i <= size; i++) {
             if (i >= 31 && i <= 34)
                 INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/Interactives/" + i + ".png"), true));
             else
                 INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/Interactives/" + i + ".png"), false));
         }
+        System.out.println("[TileManager] Loaded " + size + " Interactive Tiles");
     }
 
     public ArrayList<TileTeleporter> getTeleporters() {

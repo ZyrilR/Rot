@@ -1,0 +1,7 @@
+6,10,15,1,8
+Background:BACKGROUND
+Background_2:BACKGROUND
+Decoration:DECORATION
+Building:BUILDING
+Building_2:BUILDING
+Interactive:INTERACTIVE

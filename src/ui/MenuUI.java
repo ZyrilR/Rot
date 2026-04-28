@@ -26,9 +26,7 @@ public class MenuUI {
         BRAINROTS ("BRAINROTS"),
         QUESTS    ("QUESTS"),
         SAVE      ("SAVE"),
-        SAVENEWSLOT      ("SAVENEW"),
-        LOAD      ("LOAD"),
-        EXIT      ("EXIT");
+        RETURN      ("RETURN");
 
         final String label;
         MenuItem(String label) { this.label = label; }
@@ -113,19 +111,9 @@ public class MenuUI {
                 gp.GAMESTATE = "play";
                 System.out.println("[MenuUI] Saving Current Slot.");
             }
-            case SAVENEWSLOT -> {
-                DataManager.saveNewData(gp);
-                gp.GAMESTATE = "play";
-                System.out.println("[MenuUI] Saving New Slot.");
-            }
-            case LOAD -> {
-                DataManager.loadData(gp, 2);
-                gp.GAMESTATE = "play";
-                System.out.println("[MenuUI] Loading Slot 2.");
-            }
-            case EXIT -> {
-                System.out.println("[MenuUI] Exiting.");
-                System.exit(0);
+            case RETURN -> {
+                System.out.println("[MenuUI] Returning to Splash Screen.");
+                gp.GAMESTATE = "splash";
             }
 
         }

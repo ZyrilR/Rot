@@ -275,7 +275,6 @@ public class Player {
     public void teleport(int[] coordinates) {
         worldX = coordinates[0] * TILE_SIZE;
         worldY = coordinates[1] * TILE_SIZE;
-        System.out.println("TELEPORTED TO: " + coordinates[0] + "," + coordinates[1]);
     }
     public void reset() {
         name = "";

@@ -82,7 +82,7 @@ public class BattleUI {
     public BattleUI(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
         this.kh = kh;
-        loadAssets();
+//        loadAssets();
     }
 
     private void loadAssets() {

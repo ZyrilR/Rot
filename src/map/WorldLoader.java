@@ -61,6 +61,7 @@ public class WorldLoader {
     }
 
     public void loadMap(String folderPath, boolean initWorldSettings) {
+        System.out.println("[WorldLoader] Loading World Folder: '" + folderPath + "'...");
 
         // Get Layers (Naming Convention: background_#)
         try {
@@ -120,7 +121,7 @@ public class WorldLoader {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        System.out.println("[WorldLoader] Loaded World Folder: '" + folderPath + "'");
         gp.player.teleport(SPAWN_POINT);
     }
 

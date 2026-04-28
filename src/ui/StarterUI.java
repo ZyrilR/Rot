@@ -60,7 +60,7 @@ public class StarterUI {
 
     private void loadAssets() {
         capsuleImg = AssetManager.loadImage("/res/Templates/Items/9.png");
-        dialogueBoxFrame = AssetManager.loadImage("/res/UI/Battle/dialogue_box.png");
+//        dialogueBoxFrame = AssetManager.loadImage("/res/UI/Battle/dialogue_box.png");
     }
 
     private void rollRandomStarters() {

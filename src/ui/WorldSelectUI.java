@@ -89,6 +89,7 @@ public class WorldSelectUI {
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
     public void open() {
+        gp.GAMESTATE = "world_select";
         subState      = SubState.BROWSING;
         statusMessage = "";
         actionCursor  = 0;
@@ -340,6 +341,7 @@ public class WorldSelectUI {
         utils.Constants.CURRENT_LOAD = sel.slotId;
         gp.player.reset();
         DataManager.loadData(gp, sel.slotId);
+        CURRENT_LOAD = sel.slotId;
         gp.GAMESTATE = "play";
         System.out.println("[WorldSelectUI] Loaded slot " + sel.slotId);
     }

@@ -186,7 +186,8 @@ public class DataManager {
                 String[] itemTokens = line.split(":");
                 for (String token : itemTokens) {
                     String[] kv = token.split(";");
-                    if (kv.length < 2) continue;
+                    if (kv.length < 2)
+                        continue;
                     int qty = safeParseInt(kv[0]);
                     Item item = ItemRegistry.getItem(kv[1].trim());
                     if (item != null) {
