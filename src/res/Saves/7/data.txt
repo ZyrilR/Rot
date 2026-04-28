@@ -1,0 +1,9 @@
+[PLAYER]
+;624;3264;0;Down;/res/Worlds/Routes/Route131/
+[INVENTORY]
+
+[PCSYSTEM]
+==PARTY==
+0
+==STORED==
+0

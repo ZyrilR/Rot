@@ -5,16 +5,12 @@ import engine.GamePanel;
 import items.Item;
 import items.ItemRegistry;
 import overworld.Player;
-import progression.Quest;
 import progression.QuestSystem;
-import ui.QuestToast;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Files;
 import java.util.ArrayList;
 
 import static storage.PCSystem.*;
@@ -23,76 +19,94 @@ import static utils.Directories.*;
 
 public class DataManager {
 
+    // ── Save helpers ──────────────────────────────────────────────────────────
+
     public static void saveCurrentLoad(GamePanel gp) {
         saveData(gp, CURRENT_LOAD, false);
     }
+
     public static void saveNewData(GamePanel gp) {
-        File currentFolder = new File(SAVES.getPath());
-
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(currentFolder, "saves_config.txt")))) {
-            int folders = Integer.parseInt(br.readLine());
-            saveData(gp, folders + 1, true);
-            FileWriter fw = new FileWriter(new File(currentFolder, "saves_config.txt"));
-            fw.write("" + (folders + 1));
-            fw.close();
+        File savesRoot = new File(SAVES.getPath());
+        int nextSlot;
+        try {
+            File cfg = new File(savesRoot, "saves_config.txt");
+            if (!cfg.exists()) {
+                nextSlot = 1;
+            } else {
+                try (BufferedReader br = new BufferedReader(new FileReader(cfg))) {
+                    String line = br.readLine();
+                    nextSlot = (line != null) ? Integer.parseInt(line.trim()) + 1 : 1;
+                }
+            }
+            // Write updated config
+            try (FileWriter fw = new FileWriter(cfg)) {
+                fw.write(String.valueOf(nextSlot));
+            }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.err.println("[DataManager] saveNewData config error: " + e.getMessage());
+            nextSlot = 1;
         }
-
+        saveData(gp, nextSlot, true);
     }
+
     private static void saveData(GamePanel gp, int folderID, boolean newFolder) {
-        File currentFolder = new File(SAVES.getPath(), "/" + folderID);
+        File folder = new File(SAVES.getPath(), String.valueOf(folderID));
         gp.GAMESTATE = "play";
 
         try {
-            if (newFolder) {
-                currentFolder.mkdir();
+            if (newFolder) folder.mkdirs();
+
+            // Screenshot
+            try {
+                BufferedImage img = screenshotGamePanel(gp);
+                ImageIO.write(img, "png", new File(folder, "screenshot.png"));
+            } catch (Exception e) {
+                System.err.println("[DataManager] Screenshot failed: " + e.getMessage());
             }
-            File data = new File(currentFolder, "data.txt");
-            File quests = new File(currentFolder, "quests.txt");
-            File img = new File(currentFolder, "screenshot.png");
 
-            ImageIO.write(screenshotGamePanel(gp), "png", img);
+            // data.txt
+            try (FileWriter fw = new FileWriter(new File(folder, "data.txt"))) {
+                fw.write(getData(gp));
+            }
 
-            FileWriter fileWriter = new FileWriter(data);
-            fileWriter.write(getData(gp));
-            fileWriter.close();
-            fileWriter = new FileWriter(quests);
-            fileWriter.write(QuestSystem.getInstance().toFileFormat());
+            // quests.txt
+            try (FileWriter fw = new FileWriter(new File(folder, "quests.txt"))) {
+                fw.write(QuestSystem.getInstance().toFileFormat());
+            }
 
-            fileWriter.close();
+            System.out.println("[DataManager] Saved slot " + folderID);
+
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.err.println("[DataManager] Save failed: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
+    // ── Data serialization ────────────────────────────────────────────────────
+
     private static String getData(GamePanel gp) {
         Player plr = gp.player;
-        //====WRITE CONTENT====
+
         String format =
                 "[PLAYER]\n" +
                         plr.name + ";" +
                         plr.worldX + ";" + plr.worldY + ";" +
                         plr.getRotCoins() + ";" + plr.getDirection() + ";" + gp.CURRENT_PATH + "\n";
 
-        ArrayList<String> names = new ArrayList<>();
-
+        // Inventory
+        ArrayList<String> seen = new ArrayList<>();
         format += "[INVENTORY]\n";
         int i = 0;
         for (Item item : plr.getInventory().getRawItems()) {
-            if (names.contains(item.getName().toLowerCase())) {
-                i++;
-                continue;
-            }
-            names.add(item.getName().toLowerCase());
+            if (seen.contains(item.getName().toLowerCase())) { i++; continue; }
+            seen.add(item.getName().toLowerCase());
             format += countOf(item.getName(), plr.getInventory()) + ";" + item.getName();
-            if (i < plr.getInventory().getRawItems().size() - 1)
-                format += ":";
+            if (i < plr.getInventory().getRawItems().size() - 1) format += ":";
             i++;
         }
 
+        // PC System
         format += "\n[PCSYSTEM]\n==PARTY==\n" + plr.getPCSYSTEM().getPartySize() + "\n";
-
         for (BrainRot rot : plr.getPCSYSTEM().getParty())
             format += rot.toFileFormat() + "\n";
 
@@ -100,13 +114,14 @@ public class DataManager {
         for (i = 0; i < BOX_COUNT; i++) {
             for (int j = 0; j < BOX_CAPACITY; j++) {
                 BrainRot rot = plr.getPCSYSTEM().getBoxMember(i, j);
-                if (rot != null) {
-                    format += i + ";" + j + "-" + rot.toFileFormat() + "\n";
-                }
+                if (rot != null) format += i + ";" + j + "-" + rot.toFileFormat() + "\n";
             }
         }
+
         return format;
     }
+
+    // ── Load ─────────────────────────────────────────────────────────────────
 
     public static void loadLatestData(GamePanel gp) {
         loadData(gp, CURRENT_LOAD);
@@ -114,177 +129,183 @@ public class DataManager {
 
     public static void loadData(GamePanel gp, int slotNo) {
         gp.player.reset();
-        String line;
-        String[] parts;
-        System.out.println("CURRENT LOAD: " + CURRENT_LOAD);
+        CURRENT_LOAD = slotNo;
 
-        ArrayList<String> lines = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader((new FileReader(new File(SAVES.getPath() + "/" + slotNo, "quests.txt"))))) {
-
-            while ((line = br.readLine()) != null) {
-                System.out.println("LOADING LINE: " + line);
-                lines.add(line);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        // ── Load quests (graceful if missing) ─────────────────────────────────
         QuestSystem.reset();
-        QuestSystem.getInstance().loadFromLines(lines);
+        File questFile = new File(SAVES.getPath() + "/" + slotNo, "quests.txt");
+        if (questFile.exists()) {
+            ArrayList<String> lines = new ArrayList<>();
+            try (BufferedReader br = new BufferedReader(new FileReader(questFile))) {
+                String line;
+                while ((line = br.readLine()) != null) lines.add(line);
+            } catch (Exception e) {
+                System.err.println("[DataManager] quests.txt read error: " + e.getMessage());
+            }
+            if (!lines.isEmpty()) QuestSystem.getInstance().loadFromLines(lines);
+        } else {
+            System.out.println("[DataManager] No quests.txt for slot " + slotNo + " — starting fresh.");
+        }
 
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(SAVES.getPath() + "/" + slotNo, "data.txt")))) {
+        // ── Load player data ──────────────────────────────────────────────────
+        File dataFile = new File(SAVES.getPath() + "/" + slotNo, "data.txt");
+        if (!dataFile.exists()) {
+            System.err.println("[DataManager] data.txt missing for slot " + slotNo);
+            return;
+        }
 
-            //READ FIRST PART
+        try (BufferedReader br = new BufferedReader(new FileReader(dataFile))) {
+            String line;
+
+            // [PLAYER] header
+            br.readLine();
+
+            // Player line: name;worldX;worldY;coins;direction;path
             line = br.readLine();
-//            System.out.println("LOADING " + line);
-
-            //LOAD PLAYER ATTRIBUTES
-            line = br.readLine();
-            parts = line.split(";");
+            if (line == null) return;
+            String[] parts = line.split(";");
 
             gp.player.name = parts[0];
-            gp.player.setRotCoins(Integer.parseInt(parts[3]));
+            gp.player.setRotCoins(safeParseInt(parts[3]));
             gp.player.setDirection(parts[4]);
-            gp.world.loadMap(parts[5], true);
-            gp.player.teleport(new int[]{Integer.parseInt(parts[1])/TILE_SIZE, Integer.parseInt(parts[2])/TILE_SIZE});
-            System.out.println("LOADED WORLD 4: " + parts[5]);
 
-            //READ SECOND PART
-            line = br.readLine();
-//            System.out.println("LOADING " + line);
+            String mapPath = (parts.length >= 6) ? parts[5] : utils.Directories.ROUTE131.getPath();
+            gp.world.loadMap(mapPath, true);
+            gp.CURRENT_PATH = mapPath;
+            gp.player.teleport(new int[]{
+                    safeParseInt(parts[1]) / TILE_SIZE,
+                    safeParseInt(parts[2]) / TILE_SIZE
+            });
 
+            // [INVENTORY] header
+            br.readLine();
+
+            // Inventory line
             line = br.readLine();
-            parts = line.split(":");
-            for (String part : parts) {
-                String[] item = part.split(";");
-                for (int i = 0; i < Integer.parseInt(item[0]); i++) {
-                    gp.player.getInventory().addItem(ItemRegistry.getItem(item[1]));
+            if (line != null && !line.isBlank() && !line.startsWith("[")) {
+                String[] itemTokens = line.split(":");
+                for (String token : itemTokens) {
+                    String[] kv = token.split(";");
+                    if (kv.length < 2) continue;
+                    int qty = safeParseInt(kv[0]);
+                    Item item = ItemRegistry.getItem(kv[1].trim());
+                    if (item != null) {
+                        for (int q = 0; q < qty; q++) gp.player.getInventory().addItem(item);
+                    }
                 }
             }
 
-            //READ THIRD PART
-            line = br.readLine();
-//            System.out.println("LOADING " + line);
-
-            //READ THIRD PART FIRST SECTION
-            line = br.readLine();
-//            System.out.println("LOADING " + line);
-
-            //GET THIRD PART FIRST SECTION's SIZE
-            line = br.readLine();
-//            System.out.println("PARTY SIZE: " + line);
-
-            //LOOP THROUGH THIRD PART FIRST SECTION
-            for (int i = 0; i < Integer.parseInt(line); i++) {
-                parts = br.readLine().split(":");
-                BrainRot rot = getRot(parts);
-                gp.player.getPCSYSTEM().addBrainRotToParty(rot);
-//                System.out.println("ADDED TO PARTY: " + rot.getName());
+            // [PCSYSTEM] header
+            br.readLine(); // [PCSYSTEM]
+            br.readLine(); // ==PARTY==
+            int partySize = safeParseInt(br.readLine());
+            for (int p = 0; p < partySize; p++) {
+                line = br.readLine();
+                if (line == null) break;
+                BrainRot rot = parseRot(line.split(":"));
+                if (rot != null) gp.player.getPCSYSTEM().addBrainRotToParty(rot);
             }
 
-            //READ THIRD PART SECOND SECTION
-            line = br.readLine();
-//            System.out.println("LOADING " + line);
-
-            //GET THIRD PART FIRST SECTION's SIZE
-            line = br.readLine();
-//            System.out.println("PARTY SIZE: " + line);
-
-            //LOOP THROUGH THIRD PART FIRST SECTION
-            for (int i = 0; i < Integer.parseInt(line); i++) {
-                parts = br.readLine().split("-");
-                BrainRot rot = getRot(parts[1].split(":"));
-                parts = parts[0].split(";");
-                gp.player.getPCSYSTEM().addBrainRot(rot, Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
-//                System.out.println("ADDED TO BOX [" + Integer.parseInt(parts[0]) + "," + Integer.parseInt(parts[1]) + "]: " + rot.getName());
+            br.readLine(); // ==STORED==
+            int storedSize = safeParseInt(br.readLine());
+            for (int s = 0; s < storedSize; s++) {
+                line = br.readLine();
+                if (line == null) break;
+                // Format: boxIdx;slotIdx-<rotData>
+                int dashIdx = line.indexOf('-');
+                if (dashIdx < 0) continue;
+                String location = line.substring(0, dashIdx);
+                String rotData  = line.substring(dashIdx + 1);
+                String[] locParts = location.split(";");
+                if (locParts.length < 2) continue;
+                int box  = safeParseInt(locParts[0]);
+                int slot = safeParseInt(locParts[1]);
+                BrainRot rot = parseRot(rotData.split(":"));
+                if (rot != null) gp.player.getPCSYSTEM().addBrainRot(rot, box, slot);
             }
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.err.println("[DataManager] loadData error: " + e.getMessage());
+            e.printStackTrace();
         }
+
+        System.out.println("[DataManager] Loaded slot " + slotNo);
     }
 
-    private static BrainRot getRot(String[] parts) {
+    // ── BrainRot parsing ──────────────────────────────────────────────────────
 
-        System.out.println(parts[0]);
+    /**
+     * Parses a BrainRot from the split colon-sections of toFileFormat().
+     * parts[0] = semicolon-delimited attributes
+     * parts[1] = pipe-delimited move names
+     * parts[2] = pipe-delimited move UP values
+     */
+    private static BrainRot parseRot(String[] parts) {
+        if (parts == null || parts.length < 1) return null;
 
-        String[] attributes = parts[0].split(";");
+        String[] attrs = parts[0].split(";");
+        if (attrs.length < 17) {
+            System.err.println("[DataManager] Malformed rot data (only " + attrs.length + " attrs): " + parts[0]);
+            return null;
+        }
 
-                /*
-                0 = Name
-                0.5 = Level
-                0.75 = XP
-                1 = TYPE1
-                2 = TYPE2 (nullable)
-                3 = Tier
-                4 = MaxHP
-                5 = CurrentHP
-                6 = Attack
-                7 = Defense
-                8 = Speed
-                9 = AttackMod
-                10 = DefenseMod
-                11 = SpeedMod
-                12 = Status
-                13 = StatusTurns
-                14 = TurnCount
-                parts[1] = moves (pipe-separated)
-                parts[2] = per-move UP values (pipe-separated)
-                 */
-
-        String[] skills = parts[1].split("\\|");
-
-        // Parse per-move UP values
-        int[] moveUPs = new int[skills.length];
-        if (parts.length > 2 && !parts[2].isEmpty()) {
+        String[] moves  = (parts.length > 1 && !parts[1].isBlank()) ? parts[1].split("\\|") : new String[0];
+        int[]    moveUPs = new int[moves.length];
+        if (parts.length > 2 && !parts[2].isBlank()) {
             String[] upParts = parts[2].split("\\|");
-            for (int i = 0; i < upParts.length && i < moveUPs.length; i++) {
-                moveUPs[i] = Integer.parseInt(upParts[i]);
-            }
+            for (int i = 0; i < upParts.length && i < moveUPs.length; i++)
+                moveUPs[i] = safeParseInt(upParts[i]);
         }
 
-        BrainRot rot = new BrainRot(
-                attributes[0],                               // Name
-                safeParseInt(attributes[1]),                 // Level
-                safeParseInt(attributes[2]),                 // currentXP
-                attributes[3],                               // primaryType
-                attributes[4],                               // secondaryType
-                attributes[5],                               // tier
-
-                safeParseInt(attributes[6]),                 // MAX_HP
-                safeParseInt(attributes[7]),                 // currentHP
-                safeParseInt(attributes[8]),                 // BASE_ATK
-                safeParseInt(attributes[9]),                 // BASE_DEF
-                safeParseInt(attributes[10]),                 // BASE_SPEED
-                Double.parseDouble(attributes[11]),           // attackMod
-                Double.parseDouble(attributes[12]),          // defenseMod
-                Double.parseDouble(attributes[13]),          // speedMod
-                attributes[14],                              // status
-                safeParseInt(attributes[15]),                // statusTurns
-                safeParseInt(attributes[16]),                // turnCount
-                skills,
-                moveUPs
-        );
-        return rot;
+        try {
+            return new BrainRot(
+                    attrs[0],                           // name
+                    safeParseInt(attrs[1]),             // level
+                    safeParseInt(attrs[2]),             // currentXP
+                    attrs[3],                           // primaryType
+                    attrs[4],                           // secondaryType
+                    attrs[5],                           // tier
+                    safeParseInt(attrs[6]),             // MAX_HP
+                    safeParseInt(attrs[7]),             // currentHP
+                    safeParseInt(attrs[8]),             // BASE_ATK
+                    safeParseInt(attrs[9]),             // BASE_DEF
+                    safeParseInt(attrs[10]),            // BASE_SPEED
+                    safeParseDouble(attrs[11]),         // attackMod
+                    safeParseDouble(attrs[12]),         // defenseMod
+                    safeParseDouble(attrs[13]),         // speedMod
+                    attrs[14],                          // status
+                    safeParseInt(attrs[15]),            // statusTurns
+                    safeParseInt(attrs[16]),            // turnCount
+                    moves,
+                    moveUPs
+            );
+        } catch (Exception e) {
+            System.err.println("[DataManager] parseRot failed: " + e.getMessage());
+            return null;
+        }
     }
+
+    // ── Utilities ─────────────────────────────────────────────────────────────
 
     private static int safeParseInt(String value) {
-        if (value == null || value.trim().isEmpty() ||
-                value.equalsIgnoreCase("NONE") || value.equalsIgnoreCase("null")) {
-            return 0;
-        }
-        try {
-            return Integer.parseInt(value.trim());
-        } catch (NumberFormatException e) {
-            return 0;
-        }
+        if (value == null) return 0;
+        String v = value.trim();
+        if (v.isEmpty() || v.equalsIgnoreCase("NONE") || v.equalsIgnoreCase("null")) return 0;
+        try { return Integer.parseInt(v); }
+        catch (NumberFormatException e) { return 0; }
+    }
+
+    private static double safeParseDouble(String value) {
+        if (value == null) return 1.0;
+        try { return Double.parseDouble(value.trim()); }
+        catch (NumberFormatException e) { return 1.0; }
     }
 
     public static BufferedImage screenshotGamePanel(GamePanel gamePanel) {
         BufferedImage image = new BufferedImage(
                 gamePanel.getWidth(),
                 gamePanel.getHeight(),
-                BufferedImage.TYPE_INT_ARGB
-        );
+                BufferedImage.TYPE_INT_ARGB);
         gamePanel.update();
         Graphics2D g2 = image.createGraphics();
         gamePanel.printAll(g2);
