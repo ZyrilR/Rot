@@ -28,27 +28,31 @@ import static utils.Constants.*;
 import static utils.Directories.*;
 
 public class GamePanel extends JPanel {
+
     // ── Core handlers ─────────────────────────────────────────────────────────
-    public KeyboardHandler KEYBOARDHANDLER      = new KeyboardHandler();
-    public EncounterSystem encounterSystem      = new EncounterSystem();
-    public CollisionChecker COLLISIONCHECKER    = new CollisionChecker(this);
-    public Player player                        = new Player(this, KEYBOARDHANDLER);
+    public KeyboardHandler  KEYBOARDHANDLER  = new KeyboardHandler();
+    public EncounterSystem  encounterSystem  = new EncounterSystem();
+    public CollisionChecker COLLISIONCHECKER = new CollisionChecker(this);
+    public Player           player           = new Player(this, KEYBOARDHANDLER);
 
-    public String GAMESTATE               = "play";
-    public DialogueBox DIALOGUEBOX        = new DialogueBox(this);
+    public String     GAMESTATE   = "splash";   // start on splash screen
+    public DialogueBox DIALOGUEBOX = new DialogueBox(this);
 
-    // --- INTEGRATED OUR CUSTOM UI ---
+    // ── UI systems ────────────────────────────────────────────────────────────
+    public final SplashScreenUI   SPLASHSCREEN   = new SplashScreenUI(this);
+    public final WorldSelectUI  WORLDSELECTUI  = new WorldSelectUI(this);
+
     public BlackFadeEffect BLACKFADEEFFECT = new BlackFadeEffect();
-    public BattleUI BATTLEUI               = new BattleUI(this, KEYBOARDHANDLER);
-    public StarterUI STARTERUI             = new StarterUI(this, KEYBOARDHANDLER);
+    public BattleUI        BATTLEUI        = new BattleUI(this, KEYBOARDHANDLER);
+    public StarterUI       STARTERUI       = new StarterUI(this, KEYBOARDHANDLER);
 
-    public final ShopUI SHOPUI            = new ShopUI(this);
-    public final PCUI     PCUI            = new PCUI(this, player.getPCSYSTEM());
-    public final QuestUI QUESTUI          = new QuestUI(this);
-    public final QuestToast QUESTTOAST    = new QuestToast();
-    public final MenuUI MENUUI            = new MenuUI(this);
-    public final InventoryUI INVENTORYUI  = new InventoryUI(this);
-    public final MapUI MAPUI              = new MapUI(this);
+    public final ShopUI      SHOPUI      = new ShopUI(this);
+    public final PCUI        PCUI        = new PCUI(this, player.getPCSYSTEM());
+    public final QuestUI     QUESTUI     = new QuestUI(this);
+    public final QuestToast  QUESTTOAST  = new QuestToast();
+    public final MenuUI      MENUUI      = new MenuUI(this);
+    public final InventoryUI INVENTORYUI = new InventoryUI(this);
+    public final MapUI       MAPUI       = new MapUI(this);
 
     public final DarknessOverlay DARKNESSOVERLAY = new DarknessOverlay();
 
@@ -64,32 +68,20 @@ public class GamePanel extends JPanel {
         this.setFocusTraversalKeysEnabled(false);
         this.addKeyListener(KEYBOARDHANDLER);
 
+        // Load the default map so the world is ready when needed
         world.loadMap(ROUTE131.getPath(), true);
         CURRENT_PATH = ROUTE131.getPath();
 
-        // ── Seed the PC party with the player's starting team ────────────────
-//        testQuests();
-        seedTestParty();
-
-        // --- NEW: Force the player to the Starter Lab if they have no BrainRots! ---
-        if (player.getPCSYSTEM().getPartySize() == 0) {
-            GAMESTATE = "starter";
-        } else {
-            GAMESTATE = "play";
-        }
+        // Open splash on startup
+        SPLASHSCREEN.open();
     }
 
-
-    // ── Test seed ─────────────────────────────────────────────────────────────
+    // ── Dev helpers (commented out for production) ────────────────────────────
 
     private void seedTestParty() {
-        // [YOUR ORIGINAL SEED LOGIC REMAINS UNCHANGED HERE]
         PCSystem PCSYSTEM = player.getPCSYSTEM();
         PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", 15));
         PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    25));
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", 30));
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", 30));
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", 30));
         PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", 30));
 
         player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
@@ -98,57 +90,56 @@ public class GamePanel extends JPanel {
         player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
         player.getInventory().addItem(ItemRegistry.getItem("Focus Stance Scroll"));
 
-        for (brainrots.BrainRot rot : PCSYSTEM.getParty()) {
-            rot.gainXp(RandomUtil.range(100,10000));
+        for (BrainRot rot : PCSYSTEM.getParty()) {
+            rot.gainXp(RandomUtil.range(100, 10000));
         }
         System.out.println("[DEV] XP awarded.");
     }
 
     private void testQuests() {
-        // [YOUR ORIGINAL QUEST TEST LOGIC REMAINS UNCHANGED HERE]
         progression.QuestSystem qs = progression.QuestSystem.getInstance();
         qs.complete("SPEED_DEMON");
         System.out.println("[DEV] Quests force-completed for testing.");
     }
 
     // ── Layer accessors ───────────────────────────────────────────────────────
-    public ArrayList<TileManager> getWorldBackgroundLayer() {
-        return world.getBackgroundLayer();
-    }
-    public ArrayList<TileManager> getWorldBuildingLayer() {
-        return world.getBuildingLayer();
-    }
-    public TileManager getWorldInteractiveLayer() {
-        return world.getInteractiveLayer();
-    }
+
+    public ArrayList<TileManager> getWorldBackgroundLayer() { return world.getBackgroundLayer(); }
+    public ArrayList<TileManager> getWorldBuildingLayer()   { return world.getBuildingLayer(); }
+    public TileManager            getWorldInteractiveLayer() { return world.getInteractiveLayer(); }
 
     // ── Game loop ─────────────────────────────────────────────────────────────
+
     public void update() {
         BLACKFADEEFFECT.update();
 
-        switch (GAMESTATE.toUpperCase()) {
-            case "STARTER" -> STARTERUI.update();
-            case "PLAY"    -> updatePlayState();
-            case "BATTLE_FADE" -> {
+        switch (GAMESTATE.toLowerCase()) {
+            case "splash"       -> SPLASHSCREEN.update();
+            case "world_select" -> WORLDSELECTUI.update();
+            case "starter"      -> STARTERUI.update();
+            case "play"         -> updatePlayState();
+            case "battle_fade"  -> {
                 if (BLACKFADEEFFECT.isFullyBlack()) {
                     BATTLEUI.setBattle(encounterSystem.getActiveBattle());
                     GAMESTATE = "battle";
                     BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_OUT_TO_PLAY, 10);
                 }
             }
-            case "BATTLE" -> {
+            case "battle" -> {
                 BATTLEUI.update();
                 if (encounterSystem.getActiveBattle() == null) GAMESTATE = "play";
             }
-            case "DIALOGUE"  -> DIALOGUEBOX.update();
-            case "SHOP"      -> SHOPUI.update();
-            case "PC"        -> PCUI.update();
-            case "MENU"      -> MENUUI.update();
-            case "QUESTS"    -> QUESTUI.update();
-            case "MAP"       -> MAPUI.update();
-            case "INVENTORY" -> {
+            case "dialogue"  -> DIALOGUEBOX.update();
+            case "shop"      -> SHOPUI.update();
+            case "pc"        -> PCUI.update();
+            case "menu"      -> MENUUI.update();
+            case "quests"    -> QUESTUI.update();
+            case "map"       -> MAPUI.update();
+            case "inventory" -> {
                 INVENTORYUI.update();
-                if (encounterSystem.getActiveBattle() != null && (INVENTORYUI.getSelectedItemForBattle() != null || KEYBOARDHANDLER.escPressed)) {
+                if (encounterSystem.getActiveBattle() != null
+                        && (INVENTORYUI.getSelectedItemForBattle() != null
+                        || KEYBOARDHANDLER.escPressed)) {
                     GAMESTATE = "battle";
                 }
             }
@@ -159,19 +150,14 @@ public class GamePanel extends JPanel {
         player.update();
         encounterSystem.checkTrainerLook(player, world.getInteractiveLayer().getNPCs(), this);
 
-        // BUG FIX: Removed checkWildEncounter from here!
-        // It belongs in your Player.java class when the player moves to a new tile.
-
         if (encounterSystem.getActiveBattle() != null) {
             GAMESTATE = "battle_fade";
             BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_IN_TO_BLACK, 10);
             return;
         }
 
-        TileTeleporter tr = CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
-        if (tr != null) {
-            handleTeleport(tr);
-        }
+        TileTeleporter tr = tile.CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
+        if (tr != null) handleTeleport(tr);
 
         if (KEYBOARDHANDLER.ePressed) {
             KEYBOARDHANDLER.ePressed = false;
@@ -192,28 +178,27 @@ public class GamePanel extends JPanel {
     }
 
     private void handleTeleport(TileTeleporter tr) {
-        // 1. Identification
         Directories currentMapData = Directories.getByPath(CURRENT_PATH);
         String targetPath = Directories.getPath(tr.getLinkTo());
 
-        // 2. Progression Check (Strictly enforcing your requirements)
         if (!targetPath.equalsIgnoreCase(CURRENT_PATH)) {
             int totalRots = player.getPCSYSTEM().getPartySize() + player.getPCSYSTEM().getPCCount();
             BrainRot lead = player.getPCSYSTEM().getPartyMember(0);
 
-            if (totalRots < currentMapData.getReqRots() || (lead != null && lead.getLevel() < currentMapData.getReqLevel())) {
+            if (totalRots < currentMapData.getReqRots()
+                    || (lead != null && lead.getLevel() < currentMapData.getReqLevel())) {
                 ArrayList<String> warning = new ArrayList<>();
                 warning.add("The path ahead is blocked!");
                 warning.add("Mastery of " + currentMapData.name() + " required:");
                 warning.add("- Own " + currentMapData.getReqRots() + " BrainRots (You: " + totalRots + ")");
-                warning.add("- Partner Lv. " + currentMapData.getReqLevel() + " (You: " + (lead != null ? lead.getLevel() : 0) + ")");
+                warning.add("- Partner Lv. " + currentMapData.getReqLevel()
+                        + " (You: " + (lead != null ? lead.getLevel() : 0) + ")");
                 DIALOGUEBOX.startDialogue("System", warning);
 
-                // Push back
                 player.worldX -= (player.getDirection().equals("right") ? TILE_SIZE : 0);
-                player.worldX += (player.getDirection().equals("left") ? TILE_SIZE : 0);
-                player.worldY -= (player.getDirection().equals("down") ? TILE_SIZE : 0);
-                player.worldY += (player.getDirection().equals("up") ? TILE_SIZE : 0);
+                player.worldX += (player.getDirection().equals("left")  ? TILE_SIZE : 0);
+                player.worldY -= (player.getDirection().equals("down")  ? TILE_SIZE : 0);
+                player.worldY += (player.getDirection().equals("up")    ? TILE_SIZE : 0);
                 return;
             }
         }
@@ -229,7 +214,7 @@ public class GamePanel extends JPanel {
             for (TileTeleporter tile : getWorldInteractiveLayer().getTeleporters()) {
                 if (tile != null && tile.getName().equalsIgnoreCase(tr.getLinkToTeleporterName())) {
                     coords = tile.getCoordinates().clone();
-                    switch(tile.getDirection().toUpperCase()) {
+                    switch (tile.getDirection().toUpperCase()) {
                         case "LEFT"  -> coords[0] -= 1;
                         case "RIGHT" -> coords[0] += 1;
                         case "DOWN"  -> coords[1] += 1;
@@ -243,6 +228,7 @@ public class GamePanel extends JPanel {
     }
 
     // ── Rendering ─────────────────────────────────────────────────────────────
+
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -251,42 +237,47 @@ public class GamePanel extends JPanel {
         g2.setColor(Color.BLACK);
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        if (GAMESTATE.equalsIgnoreCase("STARTER")) {
-            STARTERUI.draw(g2);
-        }
-        // FIX: Removed "BATTLE_FADE" from here!
-        // We only draw the BattleUI when we are actually IN the battle state.
-        else if (GAMESTATE.equalsIgnoreCase("BATTLE") ||
-                (GAMESTATE.equalsIgnoreCase("INVENTORY") && encounterSystem.getActiveBattle() != null)) {
-
-            // Only draw if the battle manager is actually created
-            if (encounterSystem.getActiveBattle() != null) {
-                BATTLEUI.draw(g2);
-                if (GAMESTATE.equalsIgnoreCase("INVENTORY")) INVENTORYUI.draw(g2);
-            }
-        } else {
-            // FIX: During "BATTLE_FADE", it now falls into this block.
-            // This keeps the Overworld visible WHILE the screen smoothly fades to black!
-            world.draw(g2);
-            player.draw(g2);
-            DARKNESSOVERLAY.draw(g2, player.screenX + TILE_SIZE / 2, player.screenY + TILE_SIZE / 2);
-        }
-
-        // Draw UI overlays depending on the state
         switch (GAMESTATE.toLowerCase()) {
-            case "dialogue"  -> DIALOGUEBOX.draw(g2);
-            case "shop"      -> SHOPUI.draw(g2);
-            case "menu"      -> MENUUI.draw(g2);
-            case "pc"        -> PCUI.draw(g2);
-            case "inventory" -> { if (encounterSystem.getActiveBattle() == null) INVENTORYUI.draw(g2); }
-            case "quests"    -> QUESTUI.draw(g2);
-            case "map"       -> MAPUI.draw(g2);
+
+            case "splash" -> SPLASHSCREEN.draw(g2);
+
+            case "world_select" -> WORLDSELECTUI.draw(g2);
+
+            case "starter" -> STARTERUI.draw(g2);
+
+            case "battle", "inventory" -> {
+                if (encounterSystem.getActiveBattle() != null) {
+                    BATTLEUI.draw(g2);
+                    if (GAMESTATE.equalsIgnoreCase("inventory")) INVENTORYUI.draw(g2);
+                }
+            }
+
+            default -> {
+                // Overworld + fade (covers play, battle_fade, dialogue, shop, etc.)
+                world.draw(g2);
+                player.draw(g2);
+                DARKNESSOVERLAY.draw(g2,
+                        player.screenX + TILE_SIZE / 2,
+                        player.screenY + TILE_SIZE / 2);
+
+                // UI overlays on top of the world
+                switch (GAMESTATE.toLowerCase()) {
+                    case "dialogue"  -> DIALOGUEBOX.draw(g2);
+                    case "shop"      -> SHOPUI.draw(g2);
+                    case "menu"      -> MENUUI.draw(g2);
+                    case "pc"        -> PCUI.draw(g2);
+                    case "inventory" -> INVENTORYUI.draw(g2);
+                    case "quests"    -> QUESTUI.draw(g2);
+                    case "map"       -> MAPUI.draw(g2);
+                }
+            }
         }
 
+        // Quest toast renders over everything except the fade
         QUESTTOAST.update();
         QUESTTOAST.draw(g2);
 
-        // Top-most layer: The Fade Effect smoothly draws over EVERYTHING
+        // Fade is the absolute top layer
         if (!BLACKFADEEFFECT.isFadeOutComplete()) {
             BLACKFADEEFFECT.draw(g2);
         }
