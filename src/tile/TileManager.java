@@ -243,11 +243,10 @@ public class TileManager {
     public static void loadTiles() {
         System.out.println("[TileManager] Loading Tiles...");
         //Tiles
-        int size = 2080;
-        for (int i = 1; i <= size; i++) {
+        int size = 2128;
+        for (int i = 1; i <= size; i++)
             BACKGROUND_TILES.add(new Tile(loadImage("/res/Tiles/" + i + ".png")));
-//            System.out.println("ADDED: Tile " + BACKGROUND_TILES.size());
-        }
+
         System.out.println("[TileManager] Loaded " + size + " Tiles");
 
         size = 424;
@@ -273,7 +272,6 @@ public class TileManager {
                 tile = new Tile(loadImage("/res/Decorations/" + i + ".png"), false, "Background");
 
             DECORATION_TILES.add(tile);
-//            System.out.println("ADDED: Decorations " + i + DECORATION_TILES.size());
         }
         System.out.println("[TileManager] Loaded " + size + " Decoration Tiles");
 
@@ -286,7 +284,6 @@ public class TileManager {
                 BUILDING_TILES.add(new Tile(loadImage("/res/Buildings/" + i + ".png"), false));
             else
                 BUILDING_TILES.add(new Tile(loadImage("/res/Buildings/" + i + ".png"), true));
-//            System.out.println("ADDED: Building 1 " + i + BACKGROUND_TILES.size());
         }
         System.out.println("[TileManager] Loaded " + size + " Building Tiles");
 
@@ -294,7 +291,6 @@ public class TileManager {
         for (int i = 1; i <= 5; i++) {
             for (int j = 1; j <= 5; j++) {
                 INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/" + i + "/" + j + ".png"), true));
-//                System.out.println("ADDED: Sprite " + i + " " + j + INTERACTIVE_TILES.size());
             }
         }
         System.out.println("[TileManager] Loaded " + 5 + " Sprites");
@@ -307,7 +303,6 @@ public class TileManager {
             else
                 INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/Interactives/" + i + ".png"), false));
         }
-        System.out.println("[TileManager] Loaded " + size + " Interactive Tiles");
     }
 
     public ArrayList<TileTeleporter> getTeleporters() {
