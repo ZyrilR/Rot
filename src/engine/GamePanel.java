@@ -246,11 +246,24 @@ public class GamePanel extends JPanel {
 
             case "starter" -> STARTERUI.draw(g2);
 
-            case "battle", "inventory" -> {
+            case "battle" -> {
                 if (encounterSystem.getActiveBattle() != null) {
                     BATTLEUI.draw(g2);
-                    if (GAMESTATE.equalsIgnoreCase("inventory")) INVENTORYUI.draw(g2);
                 }
+            }
+            case "inventory" -> {
+                if (encounterSystem.getActiveBattle() != null) {
+                    // Battle inventory: draw battle UI behind it
+                    BATTLEUI.draw(g2);
+                } else {
+                    // Overworld inventory: draw world behind it
+                    world.draw(g2);
+                    player.draw(g2);
+                    DARKNESSOVERLAY.draw(g2,
+                            player.screenX + TILE_SIZE / 2,
+                            player.screenY + TILE_SIZE / 2);
+                }
+                INVENTORYUI.draw(g2);
             }
 
             default -> {
