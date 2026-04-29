@@ -70,7 +70,7 @@ public class DevConsole {
     private static final int CURSOR_BLINK  = 30;
 
     // Must match Player.java initial speed value
-    private static final int BASE_SPEED = 32;
+    private static final int BASE_SPEED = 4;
 
     // ── State ─────────────────────────────────────────────────────────────────
     private final GamePanel gp;

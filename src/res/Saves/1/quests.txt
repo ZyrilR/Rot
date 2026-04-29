@@ -11,7 +11,7 @@ CLEAN_CATCH;false;0;false
 GROWING_COLLECTION;false;0;false
 DIAMOND_MIND;false;0;false
 FULL_ROSTER;false;0;false
-ORGANIZED;false;1;false
+ORGANIZED;false;5;false
 LEVEL_GRINDER;true;1;false
 SKILL_COLLECTOR;false;0;false
 FULLY_COOKED;false;0;false
