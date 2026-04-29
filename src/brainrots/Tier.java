@@ -14,6 +14,15 @@ public enum Tier {
         };
     }
 
+    public static final Tier getTier(int level) {
+        if(level < GOLD_LEVEL)
+            return NORMAL;
+        else if(level < DIAMOND_LEVEL)
+            return GOLD;
+        else
+            return DIAMOND;
+    }
+
     // Evolution thresholds — tier reflects the BrainRot's evolution stage at a given level.
     public static final int GOLD_LEVEL    = 25;
     public static final int DIAMOND_LEVEL = 50;

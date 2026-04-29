@@ -12,7 +12,7 @@ GROWING_COLLECTION;false;0;false
 DIAMOND_MIND;false;0;false
 FULL_ROSTER;false;0;false
 ORGANIZED;false;1;false
-LEVEL_GRINDER;false;0;false
+LEVEL_GRINDER;true;1;false
 SKILL_COLLECTOR;false;0;false
 FULLY_COOKED;false;0;false
 FIRST_STEPS;false;0;false
