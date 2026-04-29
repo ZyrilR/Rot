@@ -186,7 +186,7 @@ public class SplashScreenUI {
             int lx = btnX + (btnW - fm.stringWidth(label)) / 2;
             int ly = btnY + (btnH - fm.getHeight()) / 2 + fm.getAscent();
             g2.setColor(sel ? new Color(44, 44, 42) : new Color(200, 196, 185));
-            g2.drawString(label, lx, ly);
+            g2.drawString(label, lx, ly + 4);
 
             // Cursor triangle (left of selected button)
             if (sel) {

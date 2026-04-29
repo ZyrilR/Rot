@@ -124,6 +124,7 @@ public class BrainRot {
             currentXp -= xpToNextLevel(level);
             results.add(levelUp());
         }
+        this.tier = Tier.getTier(level);
         return results;
     }
 

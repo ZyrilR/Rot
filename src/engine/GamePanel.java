@@ -53,6 +53,8 @@ public class GamePanel extends JPanel {
     public final MenuUI      MENUUI      = new MenuUI(this);
     public final InventoryUI INVENTORYUI = new InventoryUI(this);
     public final MapUI       MAPUI       = new MapUI(this);
+    public final DevConsole DEVCONSOLE    = new DevConsole(this);
+
 
     public final DarknessOverlay DARKNESSOVERLAY = new DarknessOverlay();
 
@@ -148,6 +150,35 @@ public class GamePanel extends JPanel {
     }
 
     private void updatePlayState() {
+        if (KEYBOARDHANDLER.consolePressed) {
+            KEYBOARDHANDLER.consolePressed = false;
+            DEVCONSOLE.toggle();
+            KEYBOARDHANDLER.consoleTypingMode = DEVCONSOLE.isOpen();
+        }
+
+        // Route typed characters to the console while it is open
+        if (DEVCONSOLE.isOpen()) {
+            if (KEYBOARDHANDLER.lastTypedChar != 0) {
+                DEVCONSOLE.typeChar(KEYBOARDHANDLER.lastTypedChar);
+                KEYBOARDHANDLER.lastTypedChar = 0;
+            }
+            if (KEYBOARDHANDLER.backspaceHit) {
+                DEVCONSOLE.backspace();
+                KEYBOARDHANDLER.backspaceHit = false;
+            }
+            if (KEYBOARDHANDLER.enterHit) {
+                DEVCONSOLE.submit();
+                KEYBOARDHANDLER.enterHit = false;
+            }
+            if (KEYBOARDHANDLER.escPressed) {
+                KEYBOARDHANDLER.escPressed = false;
+                DEVCONSOLE.close();
+                KEYBOARDHANDLER.consoleTypingMode = false;
+            }
+            DEVCONSOLE.update();
+            return; // Swallow all other input while console is open
+        }
+
         player.update();
         encounterSystem.checkTrainerLook(player, world.getInteractiveLayer().getNPCs(), this);
 
@@ -296,6 +327,7 @@ public class GamePanel extends JPanel {
             BLACKFADEEFFECT.draw(g2);
         }
 
+        DEVCONSOLE.draw(g2);
         g2.dispose();
     }
 }
