@@ -175,8 +175,25 @@ public class GamePanel extends JPanel {
                 DEVCONSOLE.close();
                 KEYBOARDHANDLER.consoleTypingMode = false;
             }
+            // UP/DOWN → scroll history; LEFT/RIGHT → move text cursor
+            if (KEYBOARDHANDLER.upPressed) {
+                KEYBOARDHANDLER.upPressed = false;
+                DEVCONSOLE.scrollUp();
+            }
+            if (KEYBOARDHANDLER.downPressed) {
+                KEYBOARDHANDLER.downPressed = false;
+                DEVCONSOLE.scrollDown();
+            }
+            if (KEYBOARDHANDLER.leftPressed) {
+                KEYBOARDHANDLER.leftPressed = false;
+                DEVCONSOLE.moveCursorLeft();
+            }
+            if (KEYBOARDHANDLER.rightPressed) {
+                KEYBOARDHANDLER.rightPressed = false;
+                DEVCONSOLE.moveCursorRight();
+            }
             DEVCONSOLE.update();
-            return; // Swallow all other input while console is open
+            return;
         }
 
         player.update();

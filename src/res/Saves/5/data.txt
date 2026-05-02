@@ -1,5 +1,5 @@
 [PLAYER]
-;960;3504;0;down;/res/Worlds/Routes/Route131/
+;624;3264;0;Down;/res/Worlds/Routes/Route131/
 [INVENTORY]
 
 [PCSYSTEM]
