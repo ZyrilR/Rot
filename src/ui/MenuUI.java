@@ -24,6 +24,7 @@ public class MenuUI {
     private enum MenuItem {
         BACKPACK  ("BACKPACK"),
         BRAINROTS ("BRAINROTS"),
+        BADGES    ("BADGES"),
         QUESTS    ("QUESTS"),
         SAVE      ("SAVE"),
         RETURN      ("RETURN");
@@ -100,6 +101,11 @@ public class MenuUI {
                 gp.GAMESTATE = "pc";
                 gp.PCUI.open();
                 System.out.println("[MenuUI] Opening BrainRots (PC).");
+            }
+            case BADGES -> {
+                gp.BADGEUI.open();
+                gp.GAMESTATE = "badges";
+                System.out.println("[MenuUI] Opening Badges.");
             }
             case QUESTS -> {
                 gp.QUESTUI.open();

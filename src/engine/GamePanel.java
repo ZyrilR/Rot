@@ -54,7 +54,8 @@ public class GamePanel extends JPanel {
     public final InventoryUI INVENTORYUI = new InventoryUI(this);
     public final MapUI       MAPUI       = new MapUI(this);
     public final DevConsole DEVCONSOLE    = new DevConsole(this);
-
+    public final BadgeUI    BADGEUI    = new BadgeUI(this);
+    public final BadgeToast BADGETOAST = new BadgeToast();
 
     public final DarknessOverlay DARKNESSOVERLAY = new DarknessOverlay();
 
@@ -136,6 +137,7 @@ public class GamePanel extends JPanel {
             case "shop"      -> SHOPUI.update();
             case "pc"        -> PCUI.update();
             case "menu"      -> MENUUI.update();
+            case "badges" -> BADGEUI.update();
             case "quests"    -> QUESTUI.update();
             case "map"       -> MAPUI.update();
             case "inventory" -> {
@@ -329,6 +331,7 @@ public class GamePanel extends JPanel {
                     case "menu"      -> MENUUI.draw(g2);
                     case "pc"        -> PCUI.draw(g2);
                     case "inventory" -> INVENTORYUI.draw(g2);
+                    case "badges"    -> BADGEUI.draw(g2);
                     case "quests"    -> QUESTUI.draw(g2);
                     case "map"       -> MAPUI.draw(g2);
                 }
@@ -338,6 +341,9 @@ public class GamePanel extends JPanel {
         // Quest toast renders over everything except the fade
         QUESTTOAST.update();
         QUESTTOAST.draw(g2);
+
+        BADGETOAST.update();
+        BADGETOAST.draw(g2);
 
         // Fade is the absolute top layer
         if (!BLACKFADEEFFECT.isFadeOutComplete()) {
