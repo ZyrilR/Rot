@@ -558,6 +558,8 @@ public class BattleUI {
 
     public void draw(Graphics2D g2) {
         if (this.battle == null) return;
+        if (this.battle.getEnemyRot()  == null) return;
+        if (this.battle.getPlayerRot() == null) return;
 
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setColor(new Color(100, 180, 100));
