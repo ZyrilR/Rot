@@ -3,58 +3,51 @@ package ui;
 import engine.GamePanel;
 import utils.AssetManager;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 import static utils.Constants.*;
 
-/**
- * Splash / title screen shown at game startup.
- *
- * States:
- *   MAIN   — title + three buttons (PLAY, CREDITS, QUIT)
- *   CREDITS — simple overlay; ESC or BACK closes it
- *
- * Controls (MAIN):
- *   W / S / UP / DOWN — move cursor
- *   ENTER             — confirm
- *
- * Controls (CREDITS):
- *   ESC / ENTER       — back
- */
 public class SplashScreenUI {
-
-    // ── State ─────────────────────────────────────────────────────────────────
 
     private enum State { MAIN, CREDITS }
     private State state = State.MAIN;
 
     private final GamePanel gp;
+    private BufferedImage splashBg;
 
-    // ── Button layout ─────────────────────────────────────────────────────────
+    private final Color COLOR_MAROON = new Color(85, 14, 14); // #550E0E
+    private final Color COLOR_TEXT_UNSELECTED = new Color(240, 240, 240);
 
     private static final String[] BUTTON_LABELS = { "PLAY", "CREDITS", "QUIT" };
-    private int cursor        = 0;
+    private int cursor = 0;
     private int inputCooldown = 0;
-
-    // ── Animation ─────────────────────────────────────────────────────────────
-
-    private int tick = 0; // used for subtle pulse on cursor
+    private int tick = 0;
 
     public SplashScreenUI(GamePanel gp) {
         this.gp = gp;
+        loadBackground();
     }
 
-    // ── Lifecycle ─────────────────────────────────────────────────────────────
+    private void loadBackground() {
+        try {
+            // Using the path you specified
+            File file = new File("src/res/SplashScreen/ROT.png");
+            splashBg = ImageIO.read(file);
+        } catch (IOException e) {
+            System.out.println("Error: Could not load splash image at path provided.");
+            e.printStackTrace();
+        }
+    }
 
     public void open() {
-        state         = State.MAIN;
-        cursor        = 0;
+        state = State.MAIN;
+        cursor = 0;
         inputCooldown = INPUT_DELAY * 2;
-        tick          = 0;
     }
-
-    // ── Update ────────────────────────────────────────────────────────────────
 
     public void update() {
         tick++;
@@ -62,15 +55,14 @@ public class SplashScreenUI {
 
         if (state == State.CREDITS) {
             if (gp.KEYBOARDHANDLER.escPressed || gp.KEYBOARDHANDLER.enterPressed) {
-                gp.KEYBOARDHANDLER.escPressed   = false;
+                gp.KEYBOARDHANDLER.escPressed = false;
                 gp.KEYBOARDHANDLER.enterPressed = false;
-                state         = State.MAIN;
+                state = State.MAIN;
                 inputCooldown = INPUT_DELAY;
             }
             return;
         }
 
-        // ── MAIN state ────────────────────────────────────────────────────────
         if (gp.KEYBOARDHANDLER.upPressed && cursor > 0) {
             cursor--;
             inputCooldown = INPUT_DELAY;
@@ -88,129 +80,75 @@ public class SplashScreenUI {
 
     private void handleSelection() {
         switch (cursor) {
-            case 0 -> {   // PLAY
-                gp.WORLDSELECTUI.open();
-            }
-            case 1 -> {   // CREDITS
-                state = State.CREDITS;
-            }
-            case 2 -> {   // QUIT
-                System.exit(0);
-            }
+            case 0 -> gp.WORLDSELECTUI.open();
+            case 1 -> state = State.CREDITS;
+            case 2 -> System.exit(0);
         }
     }
 
-    // ── Draw ──────────────────────────────────────────────────────────────────
-
     public void draw(Graphics2D g2) {
-        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
 
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        // 1. Draw Background Image
+        if (splashBg != null) {
+            g2.drawImage(splashBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+        } else {
+            g2.setColor(Color.BLACK);
+            g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        }
+
+        // Define the base font for the UI
         Font base = (AssetManager.pokemonGb != null)
                 ? AssetManager.pokemonGb : new Font("Monospaced", Font.PLAIN, 10);
 
-        // ── Background ───────────────────────────────────────────────────────
-        g2.setColor(new Color(20, 18, 14));
-        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
         if (state == State.CREDITS) {
+            // Pass the font into the new credits method
             drawCredits(g2, base);
-            return;
+        } else {
+            drawMenu(g2);
         }
-
-        drawMain(g2, base);
     }
 
-    // ── Main screen ───────────────────────────────────────────────────────────
+    private void drawMenu(Graphics2D g2) {
+        int btnW = 220;
+        int btnH = 44;
 
-    private void drawMain(Graphics2D g2, Font base) {
-
-        // ── Title ─────────────────────────────────────────────────────────────
-        int titleY = SCREEN_HEIGHT / 3;
-
-        g2.setFont(base.deriveFont(Font.BOLD, 64f));
-        FontMetrics titleFm = g2.getFontMetrics();
-        String title = "ROT";
-        int titleX = (SCREEN_WIDTH - titleFm.stringWidth(title)) / 2;
-
-        // Shadow
-        g2.setColor(new Color(0, 0, 0, 120));
-        g2.drawString(title, titleX + 4, titleY + 4);
-
-        // Gold fill
-        g2.setColor(new Color(216, 184, 88));
-        g2.drawString(title, titleX, titleY);
-
-        // Subtitle
-        g2.setFont(base.deriveFont(12f));
-        FontMetrics subFm = g2.getFontMetrics();
-        String sub = "A BrainRot Adventure";
-        g2.setColor(new Color(160, 155, 140));
-        g2.drawString(sub, (SCREEN_WIDTH - subFm.stringWidth(sub)) / 2, titleY + 28);
-
-        // Thin gold separator
-        int sepY = titleY + 50;
-        g2.setColor(new Color(216, 184, 88, 120));
-        g2.setStroke(new BasicStroke(1));
-        g2.drawLine(SCREEN_WIDTH / 2 - 80, sepY, SCREEN_WIDTH / 2 + 80, sepY);
-
-        // ── Buttons ───────────────────────────────────────────────────────────
-        int btnW   = 200;
-        int btnH   = 36;
-        int btnGap = 14;
-        int totalH = BUTTON_LABELS.length * btnH + (BUTTON_LABELS.length - 1) * btnGap;
-        int startY = SCREEN_HEIGHT / 2 + 20;
-        int btnX   = (SCREEN_WIDTH - btnW) / 2;
+        int startY = (int)(SCREEN_HEIGHT * 0.54);
+        int btnX = (SCREEN_WIDTH - btnW) / 2;
 
         for (int i = 0; i < BUTTON_LABELS.length; i++) {
-            int btnY   = startY + i * (btnH + btnGap);
             boolean sel = (i == cursor);
+            int btnY = startY + i * (btnH + 12);
 
-            // Button background
-            Color bgColor = sel ? new Color(216, 184, 88) : new Color(44, 42, 38);
-            g2.setColor(bgColor);
-            g2.fillRoundRect(btnX, btnY, btnW, btnH, 10, 10);
+            if (sel) {
+                g2.setColor(COLOR_MAROON);
+                int pulse = (int)(Math.sin(tick * 0.1) * 3);
+                g2.fillRoundRect(btnX - pulse, btnY, btnW + (pulse * 2), btnH, 5, 5);
 
-            // Border
-            g2.setStroke(new BasicStroke(sel ? 2 : 1));
-            g2.setColor(sel ? new Color(255, 230, 120) : new Color(80, 76, 68));
-            g2.drawRoundRect(btnX, btnY, btnW, btnH, 10, 10);
-            g2.setStroke(new BasicStroke(1));
+                g2.setColor(Color.WHITE);
+                g2.setStroke(new BasicStroke(2));
+                g2.drawRoundRect(btnX - pulse, btnY, btnW + (pulse * 2), btnH, 5, 5);
+            } else {
+                g2.setColor(new Color(0, 0, 0, 150));
+                g2.fillRoundRect(btnX, btnY, btnW, btnH, 5, 5);
+            }
 
-            // Label
-            g2.setFont(base.deriveFont(Font.BOLD, 14f));
+            Font menuFont = (AssetManager.pokemonGb != null) ? AssetManager.pokemonGb.deriveFont(Font.BOLD, 18)
+                    : new Font("SansSerif", Font.BOLD, 18);
+
+            g2.setFont(menuFont);
             FontMetrics fm = g2.getFontMetrics();
             String label = BUTTON_LABELS[i];
-            int lx = btnX + (btnW - fm.stringWidth(label)) / 2;
-            int ly = btnY + (btnH - fm.getHeight()) / 2 + fm.getAscent();
-            g2.setColor(sel ? new Color(44, 44, 42) : new Color(200, 196, 185));
-            g2.drawString(label, lx, ly + 4);
+            int tx = btnX + (btnW - fm.stringWidth(label)) / 2;
+            int ty = btnY + (btnH + fm.getAscent() - 2) / 2;
 
-            // Cursor triangle (left of selected button)
-            if (sel) {
-                int pulse   = (int)(Math.sin(tick * 0.12) * 2);
-                int ts      = 7;
-                int cx      = btnX - 16 + pulse;
-                int cy      = btnY + btnH / 2;
-                g2.setColor(new Color(216, 184, 88));
-                g2.fillPolygon(
-                        new int[]{ cx, cx, cx + ts },
-                        new int[]{ cy - ts, cy + ts, cy }, 3);
-            }
+            g2.setColor(sel ? Color.WHITE : COLOR_TEXT_UNSELECTED);
+            g2.drawString(label, tx, ty);
         }
-
-        // ── Footer hint ───────────────────────────────────────────────────────
-        g2.setFont(base.deriveFont(8f));
-        g2.setColor(new Color(80, 76, 68));
-        String hint = "W/S Move   ENTER Confirm";
-        FontMetrics hfm = g2.getFontMetrics();
-        g2.drawString(hint, (SCREEN_WIDTH - hfm.stringWidth(hint)) / 2,
-                SCREEN_HEIGHT - 20);
     }
 
-    // ── Credits screen ────────────────────────────────────────────────────────
+    // ── Restored Detailed Credits screen ──────────────────────────────────────
 
     private void drawCredits(Graphics2D g2, Font base) {
 
@@ -219,7 +157,7 @@ public class SplashScreenUI {
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         int panelW = 460, panelH = 340;
-        int panelX = (SCREEN_WIDTH  - panelW) / 2;
+        int panelX = (SCREEN_WIDTH - panelW) / 2;
         int panelY = (SCREEN_HEIGHT - panelH) / 2;
 
         drawWindow(g2, panelX, panelY, panelW, panelH);
@@ -278,7 +216,7 @@ public class SplashScreenUI {
                 panelY + panelH - 16);
     }
 
-    // ── Helper ────────────────────────────────────────────────────────────────
+    // ── Restored Window Helper ────────────────────────────────────────────────
 
     private void drawWindow(Graphics2D g2, int x, int y, int w, int h) {
         int arc = 16;
