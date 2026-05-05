@@ -3,6 +3,8 @@ package ui;
 import engine.GamePanel;
 import save.DataManager;
 import utils.AssetManager;
+import utils.AudioManager;
+import utils.Constants;
 
 import java.awt.*;
 
@@ -120,6 +122,7 @@ public class MenuUI {
             case RETURN -> {
                 System.out.println("[MenuUI] Returning to Splash Screen.");
                 gp.GAMESTATE = "splash";
+                AudioManager.playMusic(Constants.SND_SPLASH, true);
             }
 
         }
