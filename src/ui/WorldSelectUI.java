@@ -15,18 +15,6 @@ import static utils.Constants.*;
 
 /**
  * Minecraft-style world / save-slot selection screen.
- *
- * Controls:
- *   UP / DOWN    — scroll slot list
- *   LEFT / RIGHT — cycle action button (Play | New | Rename | Delete)
- *   ENTER        — confirm action
- *   ESC          — back / cancel
- *
- * Sub-states:
- *   BROWSING        — normal navigation
- *   NAMING_NEW      — typing a name for the NEW world (before it is created)
- *   RENAMING        — typing a new name for an EXISTING world
- *   CONFIRM_DELETE  — yes / no prompt, LEFT / RIGHT toggles
  */
 public class WorldSelectUI {
 
@@ -62,6 +50,9 @@ public class WorldSelectUI {
     private final GamePanel      gp;
     private final List<SaveSlot> slots = new ArrayList<>();
 
+    // NEW: Background image field
+    private BufferedImage        splashBg;
+
     private int      slotCursor    = 0;
     private int      actionCursor  = 0;   // 0=Play 1=New 2=Rename 3=Delete
     private int      scrollOffset  = 0;
@@ -84,7 +75,11 @@ public class WorldSelectUI {
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
-    public WorldSelectUI(GamePanel gp) { this.gp = gp; }
+    public WorldSelectUI(GamePanel gp) {
+        this.gp = gp;
+        // NEW: Load the background image
+        this.splashBg = AssetManager.loadImage("/res/SplashScreen/ROT.png");
+    }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -346,36 +341,25 @@ public class WorldSelectUI {
         System.out.println("[WorldSelectUI] Loaded slot " + sel.slotId);
     }
 
-    /** Step 1: ask the player to type a world name. */
     private void startNamingNew() {
         textBuffer    = new StringBuilder("New World");
         subState      = SubState.NAMING_NEW;
         inputCooldown = INPUT_DELAY;
     }
 
-    /**
-     * Step 2: called when ENTER is pressed in NAMING_NEW.
-     * Creates the world, writes the name, then transitions to the starter screen.
-     * Spawn fix: teleport to (13, 68) AFTER DataManager.saveNewData() so the
-     * screenshot inside saveNewData does not reset the coordinates afterward.
-     */
     private void confirmNewWorld() {
         String name = textBuffer.toString().trim();
         if (name.isEmpty()) name = "New World";
 
-        // Reset state for a fresh save
         gp.player.reset();
         QuestSystem.reset();
 
-        // Set the correct spawn before saving so the screenshot captures Route 131
         gp.world.loadMap(utils.Directories.ROUTE131.getPath(), true);
         gp.CURRENT_PATH = utils.Directories.ROUTE131.getPath();
         gp.player.teleport(new int[]{ 13, 68 });
 
-        // Now save — the screenshot will capture the player at (13, 68)
         DataManager.saveNewData(gp);
 
-        // Refresh list and point cursor at the newest slot
         refreshSlots();
         if (!slots.isEmpty()) {
             slotCursor = slots.size() - 1;
@@ -388,7 +372,6 @@ public class WorldSelectUI {
         subState      = SubState.BROWSING;
         statusMessage = "[ \"" + name + "\" created ]";
 
-        // Go to the starter screen
         gp.GAMESTATE = "starter";
         System.out.println("[WorldSelectUI] New world \"" + name + "\" — spawned at (13, 68).");
     }
@@ -439,7 +422,16 @@ public class WorldSelectUI {
         Font base = (AssetManager.pokemonGb != null)
                 ? AssetManager.pokemonGb : new Font("Monospaced", Font.PLAIN, 10);
 
-        g2.setColor(new Color(20, 18, 14));
+        // ── NEW: Background Image Overlay ──
+        if (splashBg != null) {
+            g2.drawImage(splashBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+        } else {
+            g2.setColor(new Color(20, 18, 14));
+            g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        }
+
+        // Dim background to make the UI pop
+        g2.setColor(new Color(0, 0, 0, 160));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
         int winX = TILE_SIZE,     winY = TILE_SIZE / 2;
@@ -589,7 +581,7 @@ public class WorldSelectUI {
             // Single gray palette for all buttons
             Color bg = dim ? new Color(55, 53, 50)
                     : sel  ? ACTION_SEL
-                      :        ACTION_BASE;
+                    :        ACTION_BASE;
             g2.setColor(bg);
             g2.fillRoundRect(bx, by, btnW, btnH, 8, 8);
 
