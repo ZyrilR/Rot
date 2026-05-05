@@ -19,9 +19,14 @@ public class CaptureManager {
             return capture(target, target.getCurrentHp() == target.getMaxHp());
         }
 
-        // Base capture rate scales with missing HP (0–60%)
+        // THE FIX: Base capture rate now has a 30% floor, plus up to 50% based on missing HP!
         double hpRatio  = (double) target.getCurrentHp() / target.getMaxHp();
-        double baseRate = (1.0 - hpRatio) * 60.0;
+        double baseRate = 30.0 + ((1.0 - hpRatio) * 50.0);
+
+        // Status Effect Bonus (+15% if they are asleep, paralyzed, burned, etc.)
+        if (!target.getStatus().equalsIgnoreCase("NONE")) {
+            baseRate += 15.0;
+        }
 
         // Clean Catch check — full HP before any damage modifier
         boolean atFullHp = (target.getCurrentHp() == target.getMaxHp());
@@ -32,7 +37,18 @@ public class CaptureManager {
         if (capsuleName.equals("HEAVY CAPSULE") && playerRot.getDefense() > target.getDefense()) bonus = 20;
         if (hasTypeBonus(capsuleName, target)) bonus = 20;
 
-        double totalRate = Math.min(95, baseRate + bonus);
+        // Tier resistance (Makes Diamond/Gold harder to catch without being impossible)
+        double tierMult = switch (target.getTier()) {
+            case GOLD    -> 0.8;  // 20% harder to catch
+            case DIAMOND -> 0.5;  // 50% harder to catch
+            default      -> 1.0;  // Normal
+        };
+
+        double totalRate = (baseRate + bonus) * tierMult;
+
+        // Cap the max chance at 95% so there is always a tiny risk of breaking out, unless using Master
+        totalRate = Math.min(95.0, totalRate);
+
         System.out.printf("Capture rate: %.1f%%%n", totalRate);
 
         if (RandomUtil.chance(totalRate)) {

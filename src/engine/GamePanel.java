@@ -221,6 +221,8 @@ public class GamePanel extends JPanel {
             GAMESTATE = "MENU";
         }
 
+
+
         if (KEYBOARDHANDLER.mPressed && !CURRENT_PATH.toLowerCase().contains("cave")) {
             KEYBOARDHANDLER.mPressed = false;
             MAPUI.open();
@@ -297,7 +299,8 @@ public class GamePanel extends JPanel {
             case "starter" -> STARTERUI.draw(g2);
 
             case "battle" -> {
-                if (encounterSystem.getActiveBattle() != null) {
+                if (encounterSystem.getActiveBattle() != null
+                        && encounterSystem.getActiveBattle().getEnemyRot() != null) {
                     BATTLEUI.draw(g2);
                 }
             }

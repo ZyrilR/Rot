@@ -182,14 +182,24 @@ public class TileManager {
                         case "TRAINERNPC", "GYMLEADER", "GYMMASTER":
 
                             ArrayList<BrainRot> party = new ArrayList<>();
-                            String[] brainrots = parts[5].split(";");
+                            String rots = parts[5];
+                            String itemString = parts[6];
+                            if (!parts[1].equalsIgnoreCase("TRAINERNPC")) {
+                                rots = parts[6];
+                                itemString = parts[7];
+                            }
+
+                            System.out.println(rots);
+
+                            String[] brainrots = rots.split(";");
+                            System.out.println(line);
 
                             for (String brainrot : brainrots) {
                                 String[] rot = brainrot.split(":");
                                 party.add(BrainRotFactory.create(rot[0], Integer.parseInt(rot[1])));
                             }
 
-                            items = parts[6].split(";");
+                            items = itemString.split(";");
                             Inventory inventory = new Inventory(items.length);
                             for (String item : items)
                                 if (!item.isEmpty())
@@ -197,8 +207,8 @@ public class TileManager {
 
                             npc1 = switch(parts[1].toUpperCase()) {
                                 case "TRAINERNPC" -> new TrainerNPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[7]));
-                                case "GYMLEADER" -> new GymLeader(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[7]));
-                                case "MARKETNPC" -> new GymMaster(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[7]));
+                                case "GYMLEADER" -> new GymLeader(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[8]), parts[5]);
+                                case "GYMMASTER" -> new GymMaster(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[8]));
                                 default -> null;
                             };
 
