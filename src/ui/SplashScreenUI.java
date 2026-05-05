@@ -2,6 +2,8 @@ package ui;
 
 import engine.GamePanel;
 import utils.AssetManager;
+import utils.AudioManager;
+import utils.Constants;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -47,6 +49,8 @@ public class SplashScreenUI {
         state = State.MAIN;
         cursor = 0;
         inputCooldown = INPUT_DELAY * 2;
+
+        AudioManager.playMusic(Constants.SND_SPLASH, true);
     }
 
     public void update() {
@@ -80,7 +84,9 @@ public class SplashScreenUI {
 
     private void handleSelection() {
         switch (cursor) {
-            case 0 -> gp.WORLDSELECTUI.open();
+            case 0 -> {
+                gp.WORLDSELECTUI.open();
+            }
             case 1 -> state = State.CREDITS;
             case 2 -> System.exit(0);
         }
@@ -356,4 +362,6 @@ public class SplashScreenUI {
         g2.drawRoundRect(x + 4, y + 4, w - 8, h - 8, arc - 4, arc - 4);
         g2.setStroke(new BasicStroke(1));
     }
+
+
 }

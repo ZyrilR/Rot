@@ -127,6 +127,8 @@ public class StarterUI {
                 if (gp.BLACKFADEEFFECT.isFullyBlack()) {
                     gp.GAMESTATE = "play";
                     gp.BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_OUT_TO_PLAY, 8);
+
+                    utils.AudioManager.playMusic(utils.Constants.BGM_OVERWORLD, true);
                 }
             }
         }
