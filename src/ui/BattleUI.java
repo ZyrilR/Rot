@@ -78,13 +78,15 @@ public class BattleUI {
     public BattleUI(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
         this.kh = kh;
+
+        loadAssets();
     }
 
     private void loadAssets() {
         hpFrame_player   = AssetManager.loadImage("/res/UI/Battle/hp_frame_player.png");
         hpFrame_enemy    = AssetManager.loadImage("/res/UI/Battle/hp_frame_enemy.png");
         dialogueBoxFrame = AssetManager.loadImage("/res/UI/Battle/dialogue_box.png");
-        playerBackSprite = AssetManager.loadImage("/res/InteractiveTiles/player/4.png");
+        playerBackSprite = AssetManager.loadImage("/res/InteractiveTiles/Player/4.png");
     }
 
     public void setBattle(BattleManager battle) {
@@ -479,6 +481,9 @@ public class BattleUI {
 
         if (battle.isOver()) {
             if (battle.getResult() == BattleManager.BattleResult.PLAYER_WIN) {
+
+                utils.AudioManager.playMusic(utils.Constants.BGM_VICTORY, false);
+
                 BattleReward.Result reward = battle.getReward();
                 queueMessage(battle.getEnemyRot().getName() + " fainted!", "");
                 queueMessage(battle.getPlayerRot().getName() + " gained", reward.xp + " XP!", 1);
@@ -517,6 +522,8 @@ public class BattleUI {
             gp.BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_OUT_TO_PLAY, 8);
             gp.encounterSystem.clearBattle();
             inputCooldown = INPUT_DELAY;
+
+            utils.AudioManager.resumeOverworldMusic();
         }
     }
 

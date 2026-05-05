@@ -102,6 +102,8 @@ public class EncounterSystem {
         }
         activeBattle = new BattleManager(playerRot, wildRot, gp.player.getPCSYSTEM().getParty(), player, true);
         System.out.println("[EncounterSystem] Wild battle: " + wildRot.getName() + " Lv." + wildRot.getLevel());
+
+        utils.AudioManager.playMusic(utils.Constants.BGM_WILD_BATTLE, true);
     }
 
     public void startTrainerBattle(Player player, TrainerNPC trainer, GamePanel gp) {
