@@ -35,12 +35,12 @@ public class BattleManager {
         this.wildBattle = wildBattle;
         this.caveBonus  = player.gp.CURRENT_PATH.toLowerCase().contains("cave");
 
-        // ── GUARD: if enemy is null or has no moves, end the battle immediately ──
+        // ── GUARD: if enemy is null or has no moves, end immediately ──────────
         if (enemyRot == null) {
-            System.err.println("[BattleManager] ERROR: enemyRot is null! Ending battle immediately.");
+            System.err.println("[BattleManager] enemyRot is null! Ending battle.");
             result = BattleResult.ENEMY_WIN;
         } else if (enemyRot.getMoves() == null || enemyRot.getMoves().isEmpty()) {
-            System.err.println("[BattleManager] ERROR: enemyRot has no moves! Ending battle.");
+            System.err.println("[BattleManager] enemyRot has no moves! Ending battle.");
             result = BattleResult.ENEMY_WIN;
         }
     }
@@ -55,8 +55,12 @@ public class BattleManager {
         if (enemyRot == null) { result = BattleResult.ENEMY_WIN; return; }
         if (!StatusEffectManager.canAct(playerRot)) { endTurnCleanup(); return; }
 
-        Skill skill = playerRot.getMoves().get(skillIndex);
-        if (!playerRot.useSkill(skillIndex)) return;
+        // Clamp skill index to player's actual move count
+        int safeIndex = Math.min(skillIndex, playerRot.getMoves().size() - 1);
+        if (safeIndex < 0) { endTurnCleanup(); return; }
+
+        Skill skill = playerRot.getMoves().get(safeIndex);
+        if (!playerRot.useSkill(safeIndex)) return;
 
         System.out.println(playerRot.getName() + " used " + skill.getName() + "!");
 
@@ -77,14 +81,16 @@ public class BattleManager {
         if (!StatusEffectManager.canAct(enemyRot)) { endTurnCleanup(); return; }
 
         List<Skill> moves = enemyRot.getMoves();
-        if (moves == null || moves.isEmpty() || skillIndex >= moves.size()) {
-            System.err.println("[BattleManager] Enemy has no valid skill at index " + skillIndex);
-            endTurnCleanup();
-            return;
-        }
+        if (moves == null || moves.isEmpty()) { endTurnCleanup(); return; }
 
-        Skill skill = moves.get(skillIndex);
-        if (!enemyRot.useSkill(skillIndex)) return;
+        // ── FIX: clamp index to enemy's ACTUAL move count ─────────────────────
+        // This was the IndexOutOfBoundsException — enemyChosenIndex could be
+        // calculated as (moveCount - 1) of a DIFFERENT rot than the one fighting.
+        int safeIndex = Math.min(skillIndex, moves.size() - 1);
+        if (safeIndex < 0) { endTurnCleanup(); return; }
+
+        Skill skill = moves.get(safeIndex);
+        if (!enemyRot.useSkill(safeIndex)) return;
 
         System.out.println(enemyRot.getName() + " used " + skill.getName() + "!");
 
@@ -100,8 +106,7 @@ public class BattleManager {
     }
 
     public boolean executeCapture(Item capsule) {
-        if (!wildBattle) return false;
-        if (enemyRot == null) return false;
+        if (!wildBattle || enemyRot == null) return false;
         boolean success = CaptureManager.attempt((Capsule) capsule, enemyRot, playerRot, playerTeam);
         if (success) result = BattleResult.CAPTURED;
         return success;
@@ -142,24 +147,19 @@ public class BattleManager {
         reward.levelUps = playerRot.gainXp(reward.xp);
         player.earnRotCoins(reward.coins);
 
-        if (reward.hasScroll() && reward.scroll != null) {
+        if (reward.hasScroll() && reward.scroll != null)
             reward.scrollAdded = player.getInventory().addItem(reward.scroll);
-        }
 
-        System.out.println("[BattleManager] Rewards resolved — "
-                + reward.xp + " XP, "
-                + reward.coins + " coins"
-                + (reward.hasScroll()
-                ? ", " + reward.scrollSkillName + " scroll"
-                + (reward.scrollAdded ? " added" : " (bag full)")
-                : ""));
+        System.out.println("[BattleManager] Rewards: " + reward.xp + " XP, " + reward.coins + " coins"
+                + (reward.hasScroll() ? ", " + reward.scrollSkillName + " scroll"
+                + (reward.scrollAdded ? " added" : " (bag full)") : ""));
     }
 
     // ── Getters ───────────────────────────────────────────────────────────────
 
-    public BattleResult         getResult()    { return result; }
-    public boolean              isOver()       { return result != BattleResult.ONGOING; }
-    public BrainRot             getPlayerRot() { return playerRot; }
-    public BrainRot             getEnemyRot()  { return enemyRot; }
-    public BattleReward.Result  getReward()    { return reward; }
+    public BattleResult        getResult()    { return result; }
+    public boolean             isOver()       { return result != BattleResult.ONGOING; }
+    public BrainRot            getPlayerRot() { return playerRot; }
+    public BrainRot            getEnemyRot()  { return enemyRot; }
+    public BattleReward.Result getReward()    { return reward; }
 }
