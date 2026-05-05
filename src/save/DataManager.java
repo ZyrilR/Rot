@@ -5,6 +5,7 @@ import engine.GamePanel;
 import items.Item;
 import items.ItemRegistry;
 import overworld.Player;
+import progression.BadgeSystem;
 import progression.QuestSystem;
 
 import javax.imageio.ImageIO;
@@ -72,6 +73,10 @@ public class DataManager {
             // quests.txt
             try (FileWriter fw = new FileWriter(new File(folder, "quests.txt"))) {
                 fw.write(QuestSystem.getInstance().toFileFormat());
+            }
+
+            try (FileWriter fw = new FileWriter(new File(folder, "badges.txt"))) {
+                fw.write(progression.BadgeSystem.getInstance().toFileFormat());
             }
 
             System.out.println("[DataManager] Saved slot " + folderID);
@@ -145,6 +150,19 @@ public class DataManager {
             if (!lines.isEmpty()) QuestSystem.getInstance().loadFromLines(lines);
         } else {
             System.out.println("[DataManager] No quests.txt for slot " + slotNo + " — starting fresh.");
+        }
+
+        BadgeSystem.reset();
+        File badgeFile = new File(SAVES.getPath() + "/" + slotNo, "badges.txt");
+        if (badgeFile.exists()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(badgeFile))) {
+                String line = br.readLine();
+                if (line != null) BadgeSystem.getInstance().loadFromLine(line);
+            } catch (Exception e) {
+                System.err.println("[DataManager] badges.txt read error: " + e.getMessage());
+            }
+        } else {
+            System.out.println("[DataManager] No badges.txt for slot " + slotNo + " — starting fresh.");
         }
 
         // ── Load player data ──────────────────────────────────────────────────

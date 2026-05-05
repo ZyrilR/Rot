@@ -152,68 +152,191 @@ public class SplashScreenUI {
 
     private void drawCredits(Graphics2D g2, Font base) {
 
-        // Dim overlay
         g2.setColor(new Color(0, 0, 0, 200));
         g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        int panelW = 460, panelH = 340;
-        int panelX = (SCREEN_WIDTH - panelW) / 2;
+        int panelW = 500, panelH = 480;
+        int panelX = (SCREEN_WIDTH  - panelW) / 2;
         int panelY = (SCREEN_HEIGHT - panelH) / 2;
 
         drawWindow(g2, panelX, panelY, panelW, panelH);
 
-        // Title bar
+        // ── Title bar ──────────────────────────────────────────────────────
         g2.setColor(new Color(44, 44, 42));
         g2.fillRoundRect(panelX + 8, panelY + 8, panelW - 16, 36, 8, 8);
         g2.setFont(base.deriveFont(Font.BOLD, 14f));
         g2.setColor(new Color(241, 239, 232));
         g2.drawString("CREDITS", panelX + 28, panelY + 32);
-
         g2.setColor(new Color(216, 184, 88));
         g2.drawLine(panelX + 8, panelY + 46, panelX + panelW - 8, panelY + 46);
 
-        // Credit lines
-        String[][] credits = {
-                { "Game Design & Programming", "" },
-                { "Zyril", "" },
-                { "", "" },
-                { "Engine", "Java Swing / Java 2D" },
-                { "Font", "PokemonGB (RAeo)" },
-                { "", "" },
-                { "Inspired by", "Pokemon (Game Freak)" },
-                { "& Italian Brainrot memes", "" },
+        int innerX  = panelX + 24;
+        int innerW  = panelW - 48;
+        int ty      = panelY + 66;
+        int lineH   = 20;
+        int sectionGap = 10;
+
+        // ── Helper: section header ─────────────────────────────────────────
+        // drawn inline below
+
+        // ── TEAM ──────────────────────────────────────────────────────────
+        // Section label
+        g2.setFont(base.deriveFont(Font.BOLD, 9f));
+        g2.setColor(new Color(216, 184, 88));
+        String teamLabel = "TEAM BRAINROT TRAINERS";
+        FontMetrics fm = g2.getFontMetrics();
+        int labelW = fm.stringWidth(teamLabel);
+        int lineY  = ty + fm.getAscent() / 2;
+        int gap    = 8;
+        g2.drawLine(innerX, lineY, innerX + (innerW - labelW) / 2 - gap, lineY);
+        g2.drawString(teamLabel, innerX + (innerW - labelW) / 2, ty + fm.getAscent());
+        g2.drawLine(innerX + (innerW + labelW) / 2 + gap, lineY, innerX + innerW, lineY);
+        ty += fm.getHeight() + 8;
+
+        // Members — two columns
+        String[][] members = {
+                { "Caipang, Chrisnel Graine",  "Programmer" },
+                { "Restauro, Zyril Ryle",      "Programmer" },
+                { "Din, Jon Vincent",          "Programmer" },
+                { "Dira, Luther Derrick",      "Programmer" },
+                { "Castro, Kyle Angelo",       "Programmer" },
         };
-
-        int ty = panelY + 70;
-        for (String[] row : credits) {
-            if (row[0].isEmpty() && row[1].isEmpty()) { ty += 10; continue; }
-
-            boolean isHeader = row[1].isEmpty();
-
-            if (isHeader) {
-                g2.setFont(base.deriveFont(Font.BOLD, 11f));
-                g2.setColor(new Color(216, 184, 88));
-                FontMetrics fm = g2.getFontMetrics();
-                g2.drawString(row[0], panelX + (panelW - fm.stringWidth(row[0])) / 2, ty);
-            } else {
-                g2.setFont(base.deriveFont(9f));
-                g2.setColor(new Color(120, 116, 108));
-                g2.drawString(row[0], panelX + 28, ty);
-                FontMetrics fm = g2.getFontMetrics();
-                g2.setColor(new Color(200, 196, 185));
-                g2.drawString(row[1], panelX + panelW - fm.stringWidth(row[1]) - 28, ty);
-            }
-            ty += 22;
+        for (String[] m : members) {
+            // Name
+            g2.setFont(base.deriveFont(Font.BOLD, 10f));
+            g2.setColor(new Color(44, 44, 42));
+            g2.drawString(m[0], innerX + 14, ty + lineH - 4);
+            // Role badge
+            g2.setFont(base.deriveFont(8f));
+            FontMetrics bfm = g2.getFontMetrics();
+            int badgeW = bfm.stringWidth(m[1]) + 12;
+            int badgeH = 14;
+            int badgeX = innerX + innerW - badgeW;
+            int badgeY = ty + (lineH - badgeH) / 2;
+            g2.setColor(new Color(216, 184, 88, 60));
+            g2.fillRoundRect(badgeX, badgeY, badgeW, badgeH, 4, 4);
+            g2.setColor(new Color(150, 120, 40));
+            g2.setStroke(new java.awt.BasicStroke(1));
+            g2.drawRoundRect(badgeX, badgeY, badgeW, badgeH, 4, 4);
+            g2.setColor(new Color(120, 96, 30));
+            g2.drawString(m[1], badgeX + 6, badgeY + 11);
+            ty += lineH + 2;
         }
+        ty += sectionGap;
 
-        // Back hint
-        g2.setFont(base.deriveFont(8f));
+        // ── ASSETS ────────────────────────────────────────────────────────
+        g2.setFont(base.deriveFont(Font.BOLD, 9f));
+        g2.setColor(new Color(216, 184, 88));
+        String assetsLabel = "ASSETS";
+        fm = g2.getFontMetrics();
+        labelW = fm.stringWidth(assetsLabel);
+        lineY  = ty + fm.getAscent() / 2;
+        g2.drawLine(innerX, lineY, innerX + (innerW - labelW) / 2 - gap, lineY);
+        g2.drawString(assetsLabel, innerX + (innerW - labelW) / 2, ty + fm.getAscent());
+        g2.drawLine(innerX + (innerW + labelW) / 2 + gap, lineY, innerX + innerW, lineY);
+        ty += fm.getHeight() + 8;
+
+        String[][] assets = {
+                { "Font",  "PokemonGB (RAeo)" },
+                { "Tiles", "Placeholder assets" },
+        };
+        for (String[] a : assets) {
+            g2.setFont(base.deriveFont(9f));
+            g2.setColor(new Color(120, 116, 108));
+            g2.drawString(a[0], innerX + 14, ty + lineH - 4);
+            g2.setFont(base.deriveFont(9f));
+            FontMetrics rfm = g2.getFontMetrics();
+            g2.setColor(new Color(200, 196, 185));
+            g2.drawString(a[1], innerX + innerW - rfm.stringWidth(a[1]), ty + lineH - 4);
+            ty += lineH + 2;
+        }
+        ty += sectionGap;
+
+        // ── TECHNOLOGIES ──────────────────────────────────────────────────
+        g2.setFont(base.deriveFont(Font.BOLD, 9f));
+        g2.setColor(new Color(216, 184, 88));
+        String techLabel = "TECHNOLOGIES";
+        fm = g2.getFontMetrics();
+        labelW = fm.stringWidth(techLabel);
+        lineY  = ty + fm.getAscent() / 2;
+        g2.drawLine(innerX, lineY, innerX + (innerW - labelW) / 2 - gap, lineY);
+        g2.drawString(techLabel, innerX + (innerW - labelW) / 2, ty + fm.getAscent());
+        g2.drawLine(innerX + (innerW + labelW) / 2 + gap, lineY, innerX + innerW, lineY);
+        ty += fm.getHeight() + 8;
+
+        g2.setFont(base.deriveFont(9f));
         g2.setColor(new Color(120, 116, 108));
-        String hint = "ESC / ENTER to go back";
-        FontMetrics hfm = g2.getFontMetrics();
-        g2.drawString(hint,
-                panelX + (panelW - hfm.stringWidth(hint)) / 2,
-                panelY + panelH - 16);
+        g2.drawString("Engine", innerX + 14, ty + lineH - 4);
+        fm = g2.getFontMetrics();
+        g2.setColor(new Color(200, 196, 185));
+        g2.drawString("Java / Java Swing / Java 2D", innerX + innerW - fm.stringWidth("Java / Java Swing / Java 2D"), ty + lineH - 4);
+        ty += lineH + 2 + sectionGap;
+
+        // ── SPECIAL THANKS ────────────────────────────────────────────────
+        g2.setFont(base.deriveFont(Font.BOLD, 9f));
+        g2.setColor(new Color(216, 184, 88));
+        String thanksLabel = "SPECIAL THANKS TO";
+        fm = g2.getFontMetrics();
+        labelW = fm.stringWidth(thanksLabel);
+        lineY  = ty + fm.getAscent() / 2;
+        g2.drawLine(innerX, lineY, innerX + (innerW - labelW) / 2 - gap, lineY);
+        g2.drawString(thanksLabel, innerX + (innerW - labelW) / 2, ty + fm.getAscent());
+        g2.drawLine(innerX + (innerW + labelW) / 2 + gap, lineY, innerX + innerW, lineY);
+        ty += fm.getHeight() + 8;
+
+        String[] thanks = { "Sir Khai", "Claude", "ChatGPT", "Gemini" };
+        // Render as centered pills in one row
+        g2.setFont(base.deriveFont(9f));
+        fm = g2.getFontMetrics();
+        int pillH = 16, pillPadX = 10, pillGap = 6;
+        int totalPillW = 0;
+        for (String t : thanks) totalPillW += fm.stringWidth(t) + pillPadX * 2 + pillGap;
+        totalPillW -= pillGap;
+        int pillStartX = innerX + (innerW - totalPillW) / 2;
+        int pillY = ty;
+        for (String t : thanks) {
+            int pw = fm.stringWidth(t) + pillPadX * 2;
+            g2.setColor(new Color(230, 226, 218));
+            g2.fillRoundRect(pillStartX, pillY, pw, pillH, 8, 8);
+            g2.setColor(new Color(190, 185, 172));
+            g2.drawRoundRect(pillStartX, pillY, pw, pillH, 8, 8);
+            g2.setColor(new Color(80, 76, 70));
+            g2.drawString(t, pillStartX + pillPadX, pillY + 12);
+            pillStartX += pw + pillGap;
+        }
+        ty += pillH + 2 + sectionGap;
+
+        // ── INSPIRED BY ───────────────────────────────────────────────────
+        g2.setFont(base.deriveFont(Font.BOLD, 9f));
+        g2.setColor(new Color(216, 184, 88));
+        String inspLabel = "INSPIRED BY";
+        fm = g2.getFontMetrics();
+        labelW = fm.stringWidth(inspLabel);
+        lineY  = ty + fm.getAscent() / 2;
+        g2.drawLine(innerX, lineY, innerX + (innerW - labelW) / 2 - gap, lineY);
+        g2.drawString(inspLabel, innerX + (innerW - labelW) / 2, ty + fm.getAscent());
+        g2.drawLine(innerX + (innerW + labelW) / 2 + gap, lineY, innerX + innerW, lineY);
+        ty += fm.getHeight() + 8;
+
+        String[] inspired = { "Pokemon", "Italian Brainrot Memes" };
+        g2.setFont(base.deriveFont(9f));
+        fm = g2.getFontMetrics();
+        int inspTotalW = 0;
+        for (String s : inspired) inspTotalW += fm.stringWidth(s) + pillPadX * 2 + pillGap;
+        inspTotalW -= pillGap;
+        pillStartX = innerX + (innerW - inspTotalW) / 2;
+        for (String s : inspired) {
+            int pw = fm.stringWidth(s) + pillPadX * 2;
+            g2.setColor(new Color(230, 226, 218));
+            g2.fillRoundRect(pillStartX, ty, pw, pillH, 8, 8);
+            g2.setColor(new Color(190, 185, 172));
+            g2.drawRoundRect(pillStartX, ty, pw, pillH, 8, 8);
+            g2.setColor(new Color(80, 76, 70));
+            g2.drawString(s, pillStartX + pillPadX, ty + 12);
+            pillStartX += pw + pillGap;
+        }
+        ty += pillH + sectionGap;
+
     }
 
     // ── Restored Window Helper ────────────────────────────────────────────────
