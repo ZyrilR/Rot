@@ -4,7 +4,7 @@ import engine.GamePanel;
 import input.KeyboardHandler;
 import items.Inventory;
 import storage.PCSystem;
-import tile.CollisionChecker;
+import tile.TileChecker;
 import tile.TileLoot;
 import tile.TileManager;
 import tile.TileTeleporter;
@@ -193,10 +193,10 @@ public class Player {
             collisionOn = false;
 
             // 1. CHECK WALLS/BUILDINGS
-            gp.COLLISIONCHECKER.checkTile(this);
+            gp.TILECHECKER.checkTile(this);
 
             // 2. CHECK NPCS (This is what stops you from ghosting!)
-            gp.COLLISIONCHECKER.checkNPC(this, gp.getWorldInteractiveLayer().getNPCs());
+            gp.TILECHECKER.checkNPC(this, gp.getWorldInteractiveLayer().getNPCs());
 
             if (!collisionOn) {
                 isWalking = true;
@@ -238,7 +238,7 @@ public class Player {
             }
         }
 
-        TileLoot tl = CollisionChecker.getTileLootInFront(gp);
+        TileLoot tl = TileChecker.getTileLootInFront(gp);
         if (tl != null) {
             tl.interact(gp);
             gp.player.getInventory().appendInventory(tl.getInventory());

@@ -80,6 +80,12 @@ public class Constants {
     public static final String SFX_ENTER       = "/res/Sounds/EnterSoundEffect.mp3";
 
 
+    // Battle Rewards Economy
+    public static final int    XP_PER_LEVEL        = 20;
+    public static final int    COIN_BASE           = 50;
+    public static final int    COIN_PER_LEVEL      = 10;
+    public static final double SCROLL_DROP_PERCENT = 20.0;
+
     public static final void InitializeBrainrotDescriptions() {
         BRAINROT_DESCRIPTIONS.put("TUNG TUNG TUNG SAHUR", "A cursed wooden log that wakes up at 3AM and just starts going. Nobody asked it to. Nobody can stop it. It has been drumming since before you were born and will still be drumming long after.");
         BRAINROT_DESCRIPTIONS.put("TRALALERO TRALALA", "A shark wearing Nike shoes who absolutely does not care about your opinion. It walks on the ocean floor, it vibes, it confuses marine biologists, and it has never once explained itself. The shoes are real. They are fresh.");
