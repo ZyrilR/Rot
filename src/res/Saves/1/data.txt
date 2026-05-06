@@ -1,5 +1,5 @@
 [PLAYER]
-;960;2352;500;down;/res/Worlds/Routes/Route131/
+;864;2352;500;left;/res/Worlds/Routes/Route131/
 [INVENTORY]
 1;MILD STEW:1;NORMAL CAPSULE
 [PCSYSTEM]

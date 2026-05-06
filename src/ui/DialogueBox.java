@@ -105,16 +105,8 @@ public class DialogueBox {
     private void finishDialogue() {
         dialogueIndex = 0;
         resetTypewriter();
-
-        if (pendingShopOpen) {
-            pendingShopOpen = false;
-            gp.SHOPUI.open();
-            gp.GAMESTATE = "shop";
-            System.out.println("[DialogueBox] Dialogue finished — opening shop.");
-        } else {
-            gp.GAMESTATE = "play";
-            isPlaying = false;
-        }
+        gp.GAMESTATE = "play";
+        isPlaying = false;
     }
 
     public void draw(Graphics2D g2) {
