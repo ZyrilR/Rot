@@ -7,13 +7,11 @@ import input.KeyboardHandler;
 import map.WorldLoader;
 import overworld.EncounterSystem;
 import overworld.Player;
+import progression.QuestSystem;
 import storage.PCSystem;
 import npc.NPC;
 import npc.TrainerNPC;
-import tile.CollisionChecker;
-import tile.TileLoot;
-import tile.TileManager;
-import tile.TileTeleporter;
+import tile.*;
 import ui.*;
 
 import javax.swing.JPanel;
@@ -36,11 +34,10 @@ import static utils.Constants.*;
 import static utils.Directories.*;
 
 public class GamePanel extends JPanel {
-
     // ── Core handlers ─────────────────────────────────────────────────────────
     public KeyboardHandler  KEYBOARDHANDLER  = new KeyboardHandler();
     public EncounterSystem  encounterSystem  = new EncounterSystem();
-    public CollisionChecker COLLISIONCHECKER = new CollisionChecker(this);
+    public TileChecker      TILECHECKER      = new TileChecker(this);
     public Player           player           = new Player(this, KEYBOARDHANDLER);
 
     public String     GAMESTATE   = "splash";   // start on splash screen
@@ -119,7 +116,7 @@ public class GamePanel extends JPanel {
     }
 
     private void testQuests() {
-        progression.QuestSystem qs = progression.QuestSystem.getInstance();
+        QuestSystem qs = QuestSystem.getInstance();
         qs.complete("SPEED_DEMON");
         System.out.println("[DEV] Quests force-completed for testing.");
     }
@@ -267,7 +264,7 @@ public class GamePanel extends JPanel {
             return;
         }
 
-        TileTeleporter tr = tile.CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
+        TileTeleporter tr = TileChecker.getTeleporterTileInCurrentPosition(this, player);
         if (tr != null) handleTeleport(tr);
 
         if (KEYBOARDHANDLER.ePressed) {
@@ -291,8 +288,8 @@ public class GamePanel extends JPanel {
     }
 
     private void handleTeleport(TileTeleporter tr) {
-        Directories currentMapData = Directories.getByPath(CURRENT_PATH);
-        String targetPath = Directories.getPath(tr.getLinkTo());
+        Directories currentMapData = getByPath(CURRENT_PATH);
+        String targetPath = getPath(tr.getLinkTo());
 
         if (!targetPath.equalsIgnoreCase(CURRENT_PATH)) {
             int totalRots = player.getPCSYSTEM().getPartySize() + player.getPCSYSTEM().getPCCount();
