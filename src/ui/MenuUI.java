@@ -3,8 +3,6 @@ package ui;
 import engine.GamePanel;
 import save.DataManager;
 import utils.AssetManager;
-import utils.AudioManager;
-import utils.Constants;
 
 import java.awt.*;
 
@@ -16,6 +14,7 @@ import static utils.Constants.*;
  *
  * Controls:
  *   W / S   — move cursor
+ *   A / D   — lower / raise volume
  *   ENTER   — confirm
  *   ESC     — close
  */
@@ -26,10 +25,10 @@ public class MenuUI {
     private enum MenuItem {
         BACKPACK  ("BACKPACK"),
         BRAINROTS ("BRAINROTS"),
-        BADGES    ("BADGES"),
         QUESTS    ("QUESTS"),
         SAVE      ("SAVE"),
-        RETURN      ("RETURN");
+        VOLUME    ("VOLUME"), // <-- NEW VOLUME OPTION
+        RETURN    ("RETURN");
 
         final String label;
         MenuItem(String label) { this.label = label; }
@@ -47,7 +46,7 @@ public class MenuUI {
 
     // ── Layout ────────────────────────────────────────────────────────────────
 
-    private static final int PANEL_W = 135;
+    private static final int PANEL_W = 165; // WIDENED slightly to fit the slider
     private static final int ROW_H   = 30;
     private static final int PAD_V   = 12;
 
@@ -68,6 +67,7 @@ public class MenuUI {
     public void update() {
         if (inputCooldown > 0) { inputCooldown--; return; }
 
+        // --- UP / DOWN NAVIGATION ---
         if (gp.KEYBOARDHANDLER.upPressed) {
             cursorIndex = (cursorIndex - 1 + ITEMS.length) % ITEMS.length;
             utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
@@ -78,6 +78,31 @@ public class MenuUI {
             inputCooldown = INPUT_DELAY;
         }
 
+        // --- LEFT / RIGHT VOLUME CONTROL ---
+        if (gp.KEYBOARDHANDLER.leftPressed) {
+            gp.KEYBOARDHANDLER.leftPressed = false;
+            if (ITEMS[cursorIndex] == MenuItem.VOLUME) {
+                if (utils.AudioManager.volume > 0) {
+                    utils.AudioManager.volume--;
+                    utils.AudioManager.applyVolume();
+                    utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
+                    inputCooldown = INPUT_DELAY;
+                }
+            }
+        }
+        if (gp.KEYBOARDHANDLER.rightPressed) {
+            gp.KEYBOARDHANDLER.rightPressed = false;
+            if (ITEMS[cursorIndex] == MenuItem.VOLUME) {
+                if (utils.AudioManager.volume < 10) {
+                    utils.AudioManager.volume++;
+                    utils.AudioManager.applyVolume();
+                    utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
+                    inputCooldown = INPUT_DELAY;
+                }
+            }
+        }
+
+        // --- CANCEL ---
         if (gp.KEYBOARDHANDLER.escPressed) {
             gp.KEYBOARDHANDLER.escPressed = false;
             gp.GAMESTATE = "play";
@@ -85,8 +110,15 @@ public class MenuUI {
             return;
         }
 
+        // --- CONFIRM ---
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
+
+            // Prevent pressing enter on the volume slider from doing anything
+            if (ITEMS[cursorIndex] == MenuItem.VOLUME) {
+                return;
+            }
+
             utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             handleSelection();
         }
@@ -97,7 +129,6 @@ public class MenuUI {
     private void handleSelection() {
         switch (ITEMS[cursorIndex]) {
             case BACKPACK -> {
-                // Open the inventory UI and switch game state
                 gp.INVENTORYUI.open();
                 gp.GAMESTATE = "inventory";
                 System.out.println("[MenuUI] Opening Backpack.");
@@ -106,11 +137,6 @@ public class MenuUI {
                 gp.GAMESTATE = "pc";
                 gp.PCUI.open();
                 System.out.println("[MenuUI] Opening BrainRots (PC).");
-            }
-            case BADGES -> {
-                gp.BADGEUI.open();
-                gp.GAMESTATE = "badges";
-                System.out.println("[MenuUI] Opening Badges.");
             }
             case QUESTS -> {
                 gp.QUESTUI.open();
@@ -126,9 +152,7 @@ public class MenuUI {
                 System.out.println("[MenuUI] Returning to Splash Screen.");
                 utils.AudioManager.playMusic(utils.Constants.SND_SPLASH, true);
                 gp.GAMESTATE = "splash";
-                AudioManager.playMusic(Constants.SND_SPLASH, true);
             }
-
         }
     }
 
@@ -167,7 +191,7 @@ public class MenuUI {
             int      textY   = cy + fm.getAscent() / 2;
             boolean  hovered = (i == cursorIndex);
 
-            // Cursor triangle — same style as InventoryUI
+            // Cursor triangle
             if (hovered) {
                 int ts = 9;
                 int tx = itemX + 1;
@@ -183,7 +207,31 @@ public class MenuUI {
 
             g2.setFont(labelFont);
             g2.setColor(new Color(80, 76, 70));
-            g2.drawString(item.label, labelX, textY);
+
+            // --- CRAZY SHII: DRAW THE VOLUME SLIDER ---
+            if (item == MenuItem.VOLUME) {
+                g2.drawString("VOL", labelX, textY);
+
+                int barX = labelX + fm.stringWidth("VOL") + 10;
+                int barY = cy - 4;
+
+                g2.drawString("<", barX, textY);
+
+                // Draw 10 little volume notches
+                for (int v = 0; v < 10; v++) {
+                    int rectX = barX + 12 + (v * 7);
+                    if (v < utils.AudioManager.volume) {
+                        g2.fillRect(rectX, barY, 5, 8); // Solid box
+                    } else {
+                        g2.drawRect(rectX, barY, 4, 7); // Empty box
+                    }
+                }
+
+                g2.drawString(">", barX + 86, textY);
+
+            } else {
+                g2.drawString(item.label, labelX, textY);
+            }
         }
     }
 
