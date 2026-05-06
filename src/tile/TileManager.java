@@ -285,9 +285,9 @@ public class TileManager {
         }
         System.out.println("[TileManager] Loaded " + size + " Decoration Tiles");
 
-        size = 127;
+        size = 275;
         int[] NON_COLLIDABLE = new int[]{92, 94, 2, 107, 64, 45};
-        System.out.println("[TileManager] Loading Decorations...");
+        System.out.println("[TileManager] Loading Buildings...");
 
         for (int i = 1; i <= size; i++) {
             if (contains(NON_COLLIDABLE, i))

@@ -1,0 +1,8 @@
+7,58,40,0,0
+Background:BACKGROUND
+Background_Collision:BACKGROUND
+Decoration:DECORATION
+Decoration_Collision:DECORATION
+Building:BUILDING
+Building_Collision:BUILDING
+Interactive:INTERACTIVE
