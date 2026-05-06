@@ -183,20 +183,26 @@ public class BattleUI {
     private void updateMenu() {
         if (kh.upPressed && (menuCursor == MenuOption.TEAM || menuCursor == MenuOption.RUN)) {
             menuCursor = (menuCursor == MenuOption.TEAM) ? MenuOption.FIGHT : MenuOption.BAG;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             inputCooldown = INPUT_DELAY;
         } else if (kh.downPressed && (menuCursor == MenuOption.FIGHT || menuCursor == MenuOption.BAG)) {
             menuCursor = (menuCursor == MenuOption.FIGHT) ? MenuOption.TEAM : MenuOption.RUN;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             inputCooldown = INPUT_DELAY;
         } else if (kh.leftPressed && (menuCursor == MenuOption.BAG || menuCursor == MenuOption.RUN)) {
             menuCursor = (menuCursor == MenuOption.BAG) ? MenuOption.FIGHT : MenuOption.TEAM;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             inputCooldown = INPUT_DELAY;
         } else if (kh.rightPressed && (menuCursor == MenuOption.FIGHT || menuCursor == MenuOption.TEAM)) {
             menuCursor = (menuCursor == MenuOption.FIGHT) ? MenuOption.BAG : MenuOption.RUN;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             inputCooldown = INPUT_DELAY;
         }
 
         if (kh.enterPressed) {
             kh.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
+
             switch (menuCursor) {
                 case FIGHT -> { setPrompt(); currentState = BattleState.SKILL_SELECT; }
                 case BAG   -> {
@@ -240,6 +246,9 @@ public class BattleUI {
             gp.player.getInventory().removeItem(item);
             boolean success = battle.executeCapture(item);
             if (success) {
+
+                utils.AudioManager.playMusic(utils.Constants.BGM_CAUGHT_ROT, false);
+
                 queueMessage("Gotcha!", battle.getEnemyRot().getName() + " was caught!");
                 gp.player.getPCSYSTEM().addBrainRot(battle.getEnemyRot());
                 playNextMessage(BattleState.FINISH);
@@ -263,13 +272,22 @@ public class BattleUI {
 
     private void updateSkillSelect() {
         int moveCount = battle.getPlayerRot().getMoves().size();
-        if (kh.upPressed && skillCursor >= 2) skillCursor -= 2;
-        else if (kh.downPressed && skillCursor < moveCount - 2) skillCursor += 2;
-        else if (kh.leftPressed && skillCursor % 2 != 0) skillCursor--;
-        else if (kh.rightPressed && skillCursor % 2 == 0 && skillCursor + 1 < moveCount) skillCursor++;
+        if (kh.upPressed && skillCursor >= 2) {
+            skillCursor -= 2; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY;
+        }
+        else if (kh.downPressed && skillCursor < moveCount - 2) {
+            skillCursor += 2; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY;
+        }
+        else if (kh.leftPressed && skillCursor % 2 != 0) {
+            skillCursor--; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY;
+        }
+        else if (kh.rightPressed && skillCursor % 2 == 0 && skillCursor + 1 < moveCount) {
+            skillCursor++; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY;
+        }
 
         if (kh.enterPressed) {
             kh.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             Skill chosenSkill = battle.getPlayerRot().getMoves().get(skillCursor);
             if (chosenSkill.getCurrentUP() < 1) {
                 queueMessage(battle.getPlayerRot().getName(), "doesn't have enough UP for " + chosenSkill.getName() + "!");
@@ -290,8 +308,12 @@ public class BattleUI {
 
     private void updateTeamSelect() {
         int size = gp.player.getPCSYSTEM().getPartySize();
-        if (kh.upPressed && partyCursor > 0) { partyCursor--; inputCooldown = INPUT_DELAY; }
-        else if (kh.downPressed && partyCursor < size - 1) { partyCursor++; inputCooldown = INPUT_DELAY; }
+        if (kh.upPressed && partyCursor > 0) {
+            partyCursor--; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY;
+        }
+        else if (kh.downPressed && partyCursor < size - 1) {
+            partyCursor++; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY;
+        }
 
         if (kh.escPressed && battle.getPlayerRot() != null && !battle.getPlayerRot().getName().isEmpty() && !isInitialSendOut) {
             kh.escPressed = false;
@@ -302,6 +324,7 @@ public class BattleUI {
 
         if (kh.enterPressed) {
             kh.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             BrainRot selected = gp.player.getPCSYSTEM().getPartyMember(partyCursor);
             if (!isInitialSendOut && selected == battle.getPlayerRot()) {
                 queueMessage(selected.getName(), "is already in battle!");
@@ -323,6 +346,7 @@ public class BattleUI {
     private void updateTeamConfirm() {
         if (kh.upPressed || kh.downPressed) {
             confirmCursor = (confirmCursor == 0) ? 1 : 0;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             inputCooldown = INPUT_DELAY;
         }
         if (kh.escPressed) {
@@ -334,6 +358,7 @@ public class BattleUI {
         }
         if (kh.enterPressed) {
             kh.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             if (confirmCursor == 0) {
                 BrainRot selected = gp.player.getPCSYSTEM().getPartyMember(partyCursor);
                 battle.setPlayerRot(selected);
@@ -372,9 +397,14 @@ public class BattleUI {
     }
 
     private void updateLevelupReplaceConfirm() {
-        if (kh.upPressed || kh.downPressed) { confirmCursor = (confirmCursor == 0) ? 1 : 0; inputCooldown = INPUT_DELAY; }
+        if (kh.upPressed || kh.downPressed) {
+            confirmCursor = (confirmCursor == 0) ? 1 : 0;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
+            inputCooldown = INPUT_DELAY;
+        }
         if (kh.enterPressed) {
             kh.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             if (confirmCursor == 0) {
                 dialogueLine1 = "Choose a move to forget";
                 dialogueLine2 = "for " + replaceCandidateSkill.getName() + ".";
@@ -389,10 +419,18 @@ public class BattleUI {
 
     private void updateLevelupReplaceSelect() {
         int moveCount = replaceTargetRot.getMoves().size();
-        if (kh.upPressed && replaceSlotCursor >= 2)                              { replaceSlotCursor -= 2; inputCooldown = INPUT_DELAY; }
-        else if (kh.downPressed && replaceSlotCursor < moveCount - 2)           { replaceSlotCursor += 2; inputCooldown = INPUT_DELAY; }
-        else if (kh.leftPressed && replaceSlotCursor % 2 != 0)                  { replaceSlotCursor--;    inputCooldown = INPUT_DELAY; }
-        else if (kh.rightPressed && replaceSlotCursor % 2 == 0 && replaceSlotCursor + 1 < moveCount) { replaceSlotCursor++; inputCooldown = INPUT_DELAY; }
+        if (kh.upPressed && replaceSlotCursor >= 2) {
+            replaceSlotCursor -= 2; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY;
+        }
+        else if (kh.downPressed && replaceSlotCursor < moveCount - 2) {
+            replaceSlotCursor += 2; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY;
+        }
+        else if (kh.leftPressed && replaceSlotCursor % 2 != 0) {
+            replaceSlotCursor--; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY;
+        }
+        else if (kh.rightPressed && replaceSlotCursor % 2 == 0 && replaceSlotCursor + 1 < moveCount) {
+            replaceSlotCursor++; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY;
+        }
 
         if (kh.escPressed) {
             kh.escPressed = false;
@@ -404,6 +442,7 @@ public class BattleUI {
         }
         if (kh.enterPressed) {
             kh.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             Skill forgotten = replaceTargetRot.getMoves().get(replaceSlotCursor);
             replaceTargetRot.replaceMove(replaceSlotCursor, replaceCandidateSkill);
             queueMessage(replaceTargetRot.getName() + " forgot",   forgotten.getName() + "!");

@@ -53,6 +53,30 @@ public class AudioManager {
         }
     }
 
+    // Add this new method inside utils.AudioManager.java
+
+    /**
+     * Plays a short sound effect once OVER the background music.
+     * Uses a fire-and-forget temporary thread.
+     */
+    public static void playSFX(String path) {
+        new Thread(() -> {
+            try {
+                InputStream is = AudioManager.class.getResourceAsStream(path);
+                if (is == null) {
+                    System.err.println("[AudioManager] SFX file not found: " + path);
+                    return;
+                }
+                // Create a temporary player just for this sound
+                Player sfxPlayer = new Player(is);
+                sfxPlayer.play(); // Plays the sound once
+                sfxPlayer.close(); // Cleans up memory instantly when done
+            } catch (Exception e) {
+                System.err.println("[AudioManager] SFX Error: " + e.getMessage());
+            }
+        }).start();
+    }
+
     public static void stopMusic() {
         if (currentTrack != null) currentTrack.stopTrack();
         if (savedOverworldTrack != null) savedOverworldTrack.stopTrack();

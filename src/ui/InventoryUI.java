@@ -101,6 +101,7 @@ public class InventoryUI {
             itemCursor   = 0;
             scrollOffset = 0;
             clearStatus();
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             inputCooldown = INPUT_DELAY;
             return;
         }
@@ -117,18 +118,21 @@ public class InventoryUI {
         if (gp.KEYBOARDHANDLER.upPressed && itemCursor > 0) {
             itemCursor--;
             clampScroll(computeVisibleCount());
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             inputCooldown = INPUT_DELAY;
             return;
         }
         if (gp.KEYBOARDHANDLER.downPressed && itemCursor < size - 1) {
             itemCursor++;
             clampScroll(computeVisibleCount());
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             inputCooldown = INPUT_DELAY;
             return;
         }
 
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             if (size == 0) { setStatus("Your bag is empty!"); inputCooldown = INPUT_DELAY; return; }
             handleItemUse(list.get(itemCursor));
             inputCooldown = INPUT_DELAY;
@@ -177,13 +181,18 @@ public class InventoryUI {
             return;
         }
         if (gp.KEYBOARDHANDLER.upPressed && partyCursor > 0) {
-            partyCursor--; inputCooldown = INPUT_DELAY; return;
+            partyCursor--;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
+            inputCooldown = INPUT_DELAY; return;
         }
         if (gp.KEYBOARDHANDLER.downPressed && partyCursor < partySize - 1) {
-            partyCursor++; inputCooldown = INPUT_DELAY; return;
+            partyCursor++;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
+            inputCooldown = INPUT_DELAY; return;
         }
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             BrainRot target = gp.player.getPCSYSTEM().getPartyMember(partyCursor);
 
             if (openedInBattle) {
@@ -300,11 +309,20 @@ public class InventoryUI {
             cancelToItemList("Scroll cancelled.");
             return;
         }
-        if (gp.KEYBOARDHANDLER.upPressed   && moveCursor > 0)            { moveCursor--; inputCooldown = INPUT_DELAY; return; }
-        if (gp.KEYBOARDHANDLER.downPressed  && moveCursor < moveCount - 1){ moveCursor++; inputCooldown = INPUT_DELAY; return; }
+        if (gp.KEYBOARDHANDLER.upPressed   && moveCursor > 0) {
+            moveCursor--;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
+            inputCooldown = INPUT_DELAY;
+            return; }
+        if (gp.KEYBOARDHANDLER.downPressed  && moveCursor < moveCount - 1){
+            moveCursor++;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
+            inputCooldown = INPUT_DELAY;
+            return; }
 
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             if (pendingItem instanceof Scroll scroll) {
                 Scroll.ScrollResult result = scroll.apply(pendingScrollTarget, moveCursor);
                 if (result == Scroll.ScrollResult.SWAPPED) {
