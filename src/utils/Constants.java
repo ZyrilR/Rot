@@ -75,6 +75,11 @@ public class Constants {
     public static final String BGM_WILD_BATTLE = "/res/Sounds/Wild_Battle.mp3";
     public static final String BGM_OVERWORLD   = "/res/Sounds/Overworld.mp3";
     public static final String BGM_VICTORY     = "/res/Sounds/Victory_Music.mp3";
+    public static final String BGM_CAUGHT_ROT  = "/res/Sounds/CaughtRot.mp3";
+    public static final String SFX_SELECT      = "/res/Sounds/SelectSoundEffect.mp3";
+    public static final String SFX_ENTER       = "/res/Sounds/EnterSoundEffect.mp3";
+
+
     public static final void InitializeBrainrotDescriptions() {
         BRAINROT_DESCRIPTIONS.put("TUNG TUNG TUNG SAHUR", "A cursed wooden log that wakes up at 3AM and just starts going. Nobody asked it to. Nobody can stop it. It has been drumming since before you were born and will still be drumming long after.");
         BRAINROT_DESCRIPTIONS.put("TRALALERO TRALALA", "A shark wearing Nike shoes who absolutely does not care about your opinion. It walks on the ocean floor, it vibes, it confuses marine biologists, and it has never once explained itself. The shoes are real. They are fresh.");

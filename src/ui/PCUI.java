@@ -109,19 +109,25 @@ public class PCUI {
     private void updateBoxLayout() {
         if (gp.KEYBOARDHANDLER.tabPressed) {
             gp.KEYBOARDHANDLER.tabPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             layout = Layout.PARTY; previousLayout = Layout.PARTY;
             partyCursorRow = 0; inputCooldown = INPUT_DELAY;
             return;
         }
 
         if (gp.KEYBOARDHANDLER.upPressed && boxCursorRow > 0) {
-            boxCursorRow--; inputCooldown = INPUT_DELAY;
+            boxCursorRow--;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
+            inputCooldown = INPUT_DELAY;
         } else if (gp.KEYBOARDHANDLER.downPressed && boxCursorRow < GRID_ROWS - 1) {
-            boxCursorRow++; inputCooldown = INPUT_DELAY;
+            boxCursorRow++;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
+            inputCooldown = INPUT_DELAY;
         } else if (gp.KEYBOARDHANDLER.leftPressed) {
             if (gp.KEYBOARDHANDLER.shiftPressed) {
                 // SHIFT+LEFT → cycle to previous box, keep cursor col
                 currentBox = (currentBox - 1 + PCSystem.BOX_COUNT) % PCSystem.BOX_COUNT;
+                utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
                 inputCooldown = INPUT_DELAY;
             } else {
                 // LEFT → move cursor col, wrap box silently at edge
@@ -131,12 +137,14 @@ public class PCUI {
                     currentBox = (currentBox - 1 + PCSystem.BOX_COUNT) % PCSystem.BOX_COUNT;
                     boxCursorCol = GRID_COLS - 1;
                 }
+                utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
                 inputCooldown = INPUT_DELAY;
             }
         } else if (gp.KEYBOARDHANDLER.rightPressed) {
             if (gp.KEYBOARDHANDLER.shiftPressed) {
                 // SHIFT+RIGHT → cycle to next box, keep cursor col
                 currentBox = (currentBox + 1) % PCSystem.BOX_COUNT;
+                utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
                 inputCooldown = INPUT_DELAY;
             } else {
                 // RIGHT → move cursor col, wrap box silently at edge
@@ -146,12 +154,14 @@ public class PCUI {
                     currentBox = (currentBox + 1) % PCSystem.BOX_COUNT;
                     boxCursorCol = 0;
                 }
+                utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
                 inputCooldown = INPUT_DELAY;
             }
         }
 
         if (gp.KEYBOARDHANDLER.ePressed) {
             gp.KEYBOARDHANDLER.ePressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             int idx = boxCursorRow * GRID_COLS + boxCursorCol;
             BrainRot hov = pc.getBoxMember(currentBox, idx);
             if (hov != null) openDetail(hov, Layout.BOX);
@@ -161,6 +171,7 @@ public class PCUI {
 
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             handleBoxSelect(); inputCooldown = INPUT_DELAY;
         }
 
@@ -176,16 +187,18 @@ public class PCUI {
     private void updatePartyLayout() {
         if (gp.KEYBOARDHANDLER.tabPressed) {
             gp.KEYBOARDHANDLER.tabPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             layout = Layout.BOX; previousLayout = Layout.BOX;
             inputCooldown = INPUT_DELAY;
             return;
         }
 
-        if      (gp.KEYBOARDHANDLER.upPressed   && partyCursorRow > 0)                           { partyCursorRow--; inputCooldown = INPUT_DELAY; }
-        else if (gp.KEYBOARDHANDLER.downPressed  && partyCursorRow < PCSystem.PARTY_CAPACITY - 1) { partyCursorRow++; inputCooldown = INPUT_DELAY; }
+        if      (gp.KEYBOARDHANDLER.upPressed   && partyCursorRow > 0)                           { partyCursorRow--; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY; }
+        else if (gp.KEYBOARDHANDLER.downPressed  && partyCursorRow < PCSystem.PARTY_CAPACITY - 1) { partyCursorRow++; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY; }
 
         if (gp.KEYBOARDHANDLER.ePressed) {
             gp.KEYBOARDHANDLER.ePressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             BrainRot hov = (partyCursorRow < pc.getPartySize()) ? pc.getPartyMember(partyCursorRow) : null;
             if (hov != null) openDetail(hov, Layout.PARTY);
             else setStatus("No BrainRot here", false);
@@ -194,6 +207,7 @@ public class PCUI {
 
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             handlePartySelect(); inputCooldown = INPUT_DELAY;
         }
 
@@ -209,6 +223,7 @@ public class PCUI {
     private void updateDetailLayout() {
         if (gp.KEYBOARDHANDLER.tabPressed) {
             gp.KEYBOARDHANDLER.tabPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             detailTab   = (detailTab == DetailTab.INFO) ? DetailTab.MOVES : DetailTab.INFO;
             movesCursor = 0; inputCooldown = INPUT_DELAY;
             return;
@@ -216,8 +231,8 @@ public class PCUI {
 
         if (detailTab == DetailTab.MOVES && detailRot != null) {
             int count = detailRot.getMoves().size();
-            if      (gp.KEYBOARDHANDLER.upPressed   && movesCursor > 0)         { movesCursor--; inputCooldown = INPUT_DELAY; }
-            else if (gp.KEYBOARDHANDLER.downPressed  && movesCursor < count - 1) { movesCursor++; inputCooldown = INPUT_DELAY; }
+            if      (gp.KEYBOARDHANDLER.upPressed   && movesCursor > 0)         { movesCursor--; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY; }
+            else if (gp.KEYBOARDHANDLER.downPressed  && movesCursor < count - 1) { movesCursor++; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY; }
         }
 
         if (gp.KEYBOARDHANDLER.escPressed) {

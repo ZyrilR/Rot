@@ -67,9 +67,11 @@ public class MenuUI {
 
         if (gp.KEYBOARDHANDLER.upPressed) {
             cursorIndex = (cursorIndex - 1 + ITEMS.length) % ITEMS.length;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             inputCooldown = INPUT_DELAY;
         } else if (gp.KEYBOARDHANDLER.downPressed) {
             cursorIndex = (cursorIndex + 1) % ITEMS.length;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
             inputCooldown = INPUT_DELAY;
         }
 
@@ -82,6 +84,7 @@ public class MenuUI {
 
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             handleSelection();
         }
     }
@@ -113,6 +116,7 @@ public class MenuUI {
             }
             case RETURN -> {
                 System.out.println("[MenuUI] Returning to Splash Screen.");
+                utils.AudioManager.playMusic(utils.Constants.SND_SPLASH, true);
                 gp.GAMESTATE = "splash";
             }
 
