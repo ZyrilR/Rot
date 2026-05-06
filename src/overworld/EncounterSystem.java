@@ -132,6 +132,7 @@ public class EncounterSystem {
         }
 
         activeBattle = new BattleManager(playerRot, trainerLead, gp.player.getPCSYSTEM().getParty(), player, false);
+        activeBattle.setTrainer(trainer);
         System.out.println("[EncounterSystem] Trainer battle: " + trainer.name);
     }
 
@@ -162,12 +163,23 @@ public class EncounterSystem {
 
     public void checkTrainerLook(Player player, List<NPC> npcs, GamePanel gp) {
         if (activeBattle != null) return; // already in battle — don't retrigger
+        long now = gp.getGameTime();
         for (NPC npc : npcs) {
             if (npc == null) continue;
-            if (!(npc instanceof TrainerNPC trainer) || trainer.hasBeenDefeated()) continue;
-            if (isInLineOfSight(npc.direction,
+            if (!(npc instanceof TrainerNPC trainer)) continue;
+            if (trainer.hasBeenDefeated()) {
+                if (trainer.isCooldownExpired(now)) {
+                    trainer.setDefeated(false);
+                    String key = gp.CURRENT_PATH + "@" + (trainer.worldX / TILE_SIZE) + "," + (trainer.worldY / TILE_SIZE);
+                    gp.defeatedTrainers.remove(key);
+                } else {
+                    continue;
+                }
+            }
+            String dir = trainer.getFacingDirection();
+            if (isInLineOfSight(dir,
                     player.worldX / TILE_SIZE, player.worldY / TILE_SIZE,
-                    npc.worldX   / TILE_SIZE, npc.worldY   / TILE_SIZE)) {
+                    trainer.worldX   / TILE_SIZE, trainer.worldY   / TILE_SIZE)) {
                 if (getLeadBrainRot(gp) != null) startTrainerBattle(player, trainer, gp);
                 return;
             }

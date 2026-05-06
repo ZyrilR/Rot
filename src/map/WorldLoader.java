@@ -123,6 +123,8 @@ public class WorldLoader {
         }
         System.out.println("[WorldLoader] Loaded World Folder: '" + folderPath + "'");
         gp.player.teleport(SPAWN_POINT);
+        gp.CURRENT_PATH = folderPath;
+        gp.applyPersistentMapState();
     }
 
     public TileManager getInteractiveLayer() {

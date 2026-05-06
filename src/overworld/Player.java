@@ -242,6 +242,16 @@ public class Player {
         if (tl != null) {
             tl.interact(gp);
             gp.player.getInventory().appendInventory(tl.getInventory());
+
+            // Persist the pickup: mark the tile as gone in the matrix + remove from loots ArrayList.
+            String key = gp.CURRENT_PATH + "@" + tl.getX() + "," + tl.getY();
+            gp.pickedLoots.add(key);
+            int[][] m = gp.getWorldInteractiveLayer().getMap();
+            if (tl.getY() >= 0 && tl.getY() < m.length
+                    && tl.getX() >= 0 && tl.getX() < m[0].length) {
+                m[tl.getY()][tl.getX()] = 0;
+            }
+            gp.getWorldInteractiveLayer().getLoots().remove(tl);
         }
     }
 

@@ -8,7 +8,10 @@ import map.WorldLoader;
 import overworld.EncounterSystem;
 import overworld.Player;
 import storage.PCSystem;
+import npc.NPC;
+import npc.TrainerNPC;
 import tile.CollisionChecker;
+import tile.TileLoot;
 import tile.TileManager;
 import tile.TileTeleporter;
 import ui.*;
@@ -19,6 +22,11 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import items.ItemRegistry;
 import utils.RandomUtil;
@@ -61,6 +69,16 @@ public class GamePanel extends JPanel {
 
     public final WorldLoader world = new WorldLoader(this);
     public String CURRENT_PATH;
+
+    // ── Persistent runtime state (saved/loaded across slots) ──────────────────
+    /** Game time in ticks (frames). Advances only while updatePlayState is running. */
+    public long gameTime = 0;
+    /** Keys ("mapPath@col,row") for loots already picked up. */
+    public final Set<String> pickedLoots = new HashSet<>();
+    /** Keys ("mapPath@col,row") for trainers defeated, mapped to gameTime when defeated. */
+    public final Map<String, Long> defeatedTrainers = new HashMap<>();
+
+    public long getGameTime() { return gameTime; }
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -111,6 +129,47 @@ public class GamePanel extends JPanel {
     public ArrayList<TileManager> getWorldBackgroundLayer() { return world.getBackgroundLayer(); }
     public ArrayList<TileManager> getWorldBuildingLayer()   { return world.getBuildingLayer(); }
     public TileManager            getWorldInteractiveLayer() { return world.getInteractiveLayer(); }
+
+    /**
+     * Re-applies persistent state to the freshly-loaded interactive layer:
+     *  - removes already-picked loots from the map matrix and the loot ArrayList
+     *  - restores defeated/cooldown state on trainer NPCs
+     * Safe to call after every world.loadMap().
+     */
+    public void applyPersistentMapState() {
+        TileManager interactive = world.getInteractiveLayer();
+        if (interactive == null || CURRENT_PATH == null) return;
+
+        // Prune picked-up loots
+        Iterator<TileLoot> it = interactive.getLoots().iterator();
+        while (it.hasNext()) {
+            TileLoot tl = it.next();
+            String key = CURRENT_PATH + "@" + tl.getX() + "," + tl.getY();
+            if (pickedLoots.contains(key)) {
+                int[][] map = interactive.getMap();
+                if (tl.getY() >= 0 && tl.getY() < map.length
+                        && tl.getX() >= 0 && tl.getX() < map[0].length) {
+                    map[tl.getY()][tl.getX()] = 0;
+                }
+                it.remove();
+            }
+        }
+
+        // Restore defeated/cooldown state for trainers on this map
+        for (NPC npc : interactive.getNPCs()) {
+            if (npc instanceof TrainerNPC trainer) {
+                String key = CURRENT_PATH + "@" + (trainer.worldX / TILE_SIZE) + "," + (trainer.worldY / TILE_SIZE);
+                Long defAt = defeatedTrainers.get(key);
+                if (defAt != null) {
+                    if (gameTime - defAt >= TrainerNPC.COOLDOWN_TICKS) {
+                        defeatedTrainers.remove(key);
+                    } else {
+                        trainer.restoreDefeatedState(defAt);
+                    }
+                }
+            }
+        }
+    }
 
     // ── Game loop ─────────────────────────────────────────────────────────────
 
@@ -198,6 +257,7 @@ public class GamePanel extends JPanel {
             return;
         }
 
+        gameTime++;
         player.update();
         encounterSystem.checkTrainerLook(player, world.getInteractiveLayer().getNPCs(), this);
 

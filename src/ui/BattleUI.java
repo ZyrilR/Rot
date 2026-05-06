@@ -383,7 +383,18 @@ public class BattleUI {
     // ── Level-up move replacement flow ────────────────────────────────────────
 
     private void updateLevelupCheck() {
-        if (pendingReplacements.isEmpty()) { playNextMessage(BattleState.FINISH); return; }
+        if (pendingReplacements.isEmpty()) {
+            // If a trainer battle is still ONGOING (next BrainRot was sent out),
+            // hand control back to the player instead of finishing.
+            if (!battle.isOver()) {
+                setPrompt();
+                currentState = BattleState.MENU;
+                inputCooldown = INPUT_DELAY;
+                return;
+            }
+            playNextMessage(BattleState.FINISH);
+            return;
+        }
         Object[] next = pendingReplacements.poll();
         replaceTargetRot      = (BrainRot) next[0];
         replaceCandidateSkill = (Skill)    next[1];
@@ -543,10 +554,35 @@ public class BattleUI {
                         }
                     }
                 }
+
+                // ── Trainer battles: keep fighting if they have more BrainRots ──
+                boolean trainerHasMore = battle.trainerHasNextEnemy();
+                if (trainerHasMore) {
+                    BrainRot next = battle.advanceToNextTrainerEnemy();
+                    if (next != null) {
+                        // Resume battle; play victory music for fainted message, then back to overworld feel
+                        utils.AudioManager.playMusic(utils.Constants.BGM_WILD_BATTLE, true);
+                        queueMessage(battle.getTrainer().name + " sent out", next.getName() + "!", 2);
+                        playerMovesFirst = battle.getPlayerRot().getSpeed() >= next.getSpeed();
+                    }
+                } else if (battle.getTrainer() != null) {
+                    // Trainer is fully defeated: persist defeat + start cooldown
+                    battle.getTrainer().markDefeated(gp.getGameTime());
+                    String key = gp.CURRENT_PATH + "@"
+                            + (battle.getTrainer().worldX / TILE_SIZE) + ","
+                            + (battle.getTrainer().worldY / TILE_SIZE);
+                    gp.defeatedTrainers.put(key, gp.getGameTime());
+                }
+
+                BattleState afterMessages;
+                if (!pendingReplacements.isEmpty()) afterMessages = BattleState.LEVELUP_CHECK;
+                else if (trainerHasMore)            afterMessages = BattleState.MENU;
+                else                                afterMessages = BattleState.FINISH;
+                playNextMessage(afterMessages);
             } else {
                 queueMessage("Battle Finished!", "Result: " + battle.getResult().name());
+                playNextMessage(pendingReplacements.isEmpty() ? BattleState.FINISH : BattleState.LEVELUP_CHECK);
             }
-            playNextMessage(pendingReplacements.isEmpty() ? BattleState.FINISH : BattleState.LEVELUP_CHECK);
         } else {
             if (playerMovesFirst) setPrompt();
             currentState = playerMovesFirst ? BattleState.MENU : BattleState.ENEMY_AI;
@@ -961,6 +997,17 @@ public class BattleUI {
 
         // Position BELOW the bar
         g2.drawString(hpNum, x + w - fm2.stringWidth(hpNum) - 20, barY + 30);
+
+        // Type badges (primary + optional secondary) below the HP bar
+        Font badgeFont = getCustomFont(Font.PLAIN, 10);
+        int badgeY = barY + 16;
+        int bx = x + 20;
+        if (rot.getPrimaryType() != null) {
+            int bw1 = drawTypeBadgeBattle(g2, badgeFont, rot.getPrimaryType().name(), bx, badgeY, 14);
+            if (rot.getSecondaryType() != null) {
+                drawTypeBadgeBattle(g2, badgeFont, rot.getSecondaryType().name(), bx + bw1 + 4, badgeY, 14);
+            }
+        }
     }
 
     // ── Menu overlays ─────────────────────────────────────────────────────────
@@ -986,12 +1033,19 @@ public class BattleUI {
         int menuW = 480, menuX = SCREEN_WIDTH - menuW - 10;
         drawBattleBox(g2, menuX, boxY, menuW, 126);
 
+        Font badgeFont = getCustomFont(Font.PLAIN, 10);
         List<Skill> moves = battle.getPlayerRot().getMoves();
         for (int i = 0; i < moves.size(); i++) {
             int dx = menuX + 40 + (i % 2 == 1 ? 230 : 0);
             int dy = boxY  + 50 + (i >= 2 ? 40 : 0);
-            g2.setColor(moves.get(i).getCurrentUP() < 1 ? new Color(180, 180, 180) : new Color(44, 44, 42));
-            drawFittingString(g2, moves.get(i).getName(), dx, dy, 200, 16f, Font.BOLD);
+            Skill sk = moves.get(i);
+            g2.setColor(sk.getCurrentUP() < 1 ? new Color(180, 180, 180) : new Color(44, 44, 42));
+            drawFittingString(g2, sk.getName(), dx, dy, 200, 16f, Font.BOLD);
+
+            // Skill type badge under the move name
+            if (sk.getType() != null)
+                drawTypeBadgeBattle(g2, badgeFont, sk.getType().name(), dx, dy + 4, 14);
+
             if (i == skillCursor) drawCursor(g2, dx - 25, dy - 14);
         }
     }
