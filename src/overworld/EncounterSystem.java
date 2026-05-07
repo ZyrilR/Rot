@@ -180,7 +180,10 @@ public class EncounterSystem {
             if (isInLineOfSight(dir,
                     player.worldX / TILE_SIZE, player.worldY / TILE_SIZE,
                     trainer.worldX   / TILE_SIZE, trainer.worldY   / TILE_SIZE)) {
-                if (getLeadBrainRot(gp) != null) startTrainerBattle(player, trainer, gp);
+                if (getLeadBrainRot(gp) != null && !gp.DIALOGUEBOX.isPlaying) {
+                    trainer.facePlayer(player);
+                    trainer.startEncounter(gp);
+                }
                 return;
             }
         }

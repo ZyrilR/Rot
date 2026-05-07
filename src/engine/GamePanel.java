@@ -55,6 +55,8 @@ public class GamePanel extends JPanel {
     public final PCUI        PCUI        = new PCUI(this, player.getPCSYSTEM());
     public final QuestUI     QUESTUI     = new QuestUI(this);
     public final QuestToast  QUESTTOAST  = new QuestToast();
+    public final NotificationToast NOTIFICATION = new NotificationToast();
+    public final TeleportEffect TELEPORTEFFECT = new TeleportEffect();
     public final MenuUI      MENUUI      = new MenuUI(this);
     public final InventoryUI INVENTORYUI = new InventoryUI(this);
     public final MapUI       MAPUI       = new MapUI(this);
@@ -209,6 +211,7 @@ public class GamePanel extends JPanel {
                 BATTLEUI.update();
                 if (encounterSystem.getActiveBattle() == null) GAMESTATE = "play";
             }
+            case "teleport"  -> updateTeleportState();
             case "dialogue"  -> DIALOGUEBOX.update();
             case "shop"      -> SHOPUI.update();
             case "pc"        -> PCUI.update();
@@ -307,6 +310,50 @@ public class GamePanel extends JPanel {
         }
     }
 
+    // Pending teleport target captured before the spin animation runs
+    private String  pendingTeleportPath;
+    private String  pendingTeleportName;
+    private TileTeleporter pendingTeleportTile;
+
+    private void updateTeleportState() {
+        boolean phaseDone = TELEPORTEFFECT.update();
+        if (!phaseDone) return;
+
+        switch (TELEPORTEFFECT.getPhase()) {
+            case SPIN_IN -> {
+                // Swap maps, reposition player, then spin out
+                TELEPORTEFFECT.markReadyToSwap();
+                CURRENT_PATH = pendingTeleportPath;
+                world.loadMap(CURRENT_PATH, true);
+                DARKNESSOVERLAY.setActive(CURRENT_PATH.toLowerCase().contains("cave"));
+
+                int[] coords = new int[2];
+                for (TileTeleporter tile : getWorldInteractiveLayer().getTeleporters()) {
+                    if (tile != null && tile.getName().equalsIgnoreCase(pendingTeleportName)) {
+                        coords = tile.getCoordinates().clone();
+                        switch (tile.getDirection().toUpperCase()) {
+                            case "LEFT"  -> coords[0] -= 1;
+                            case "RIGHT" -> coords[0] += 1;
+                            case "DOWN"  -> coords[1] += 1;
+                            case "UP"    -> coords[1] -= 1;
+                        }
+                    }
+                }
+                player.teleport(coords);
+                if (pendingTeleportTile != null) pendingTeleportTile.isInteracted = false;
+                TELEPORTEFFECT.startSpinOut();
+            }
+            case SPIN_OUT -> {
+                TELEPORTEFFECT.stop();
+                pendingTeleportPath = null;
+                pendingTeleportName = null;
+                pendingTeleportTile = null;
+                GAMESTATE = "play";
+            }
+            default -> {}
+        }
+    }
+
     private void handleTeleport(TileTeleporter tr) {
         Directories currentMapData = getByPath(CURRENT_PATH);
         String targetPath = getPath(tr.getLinkTo());
@@ -335,25 +382,13 @@ public class GamePanel extends JPanel {
 
         if (!tr.isInteracted) tr.interact(this);
 
-        if (!DIALOGUEBOX.isPlaying) {
-            CURRENT_PATH = targetPath;
-            world.loadMap(CURRENT_PATH, true);
-            DARKNESSOVERLAY.setActive(CURRENT_PATH.toLowerCase().contains("cave"));
-
-            int[] coords = new int[2];
-            for (TileTeleporter tile : getWorldInteractiveLayer().getTeleporters()) {
-                if (tile != null && tile.getName().equalsIgnoreCase(tr.getLinkToTeleporterName())) {
-                    coords = tile.getCoordinates().clone();
-                    switch (tile.getDirection().toUpperCase()) {
-                        case "LEFT"  -> coords[0] -= 1;
-                        case "RIGHT" -> coords[0] += 1;
-                        case "DOWN"  -> coords[1] += 1;
-                        case "UP"    -> coords[1] -= 1;
-                    }
-                }
-            }
-            player.teleport(coords);
-            tr.isInteracted = false;
+        if (!DIALOGUEBOX.isPlaying && !TELEPORTEFFECT.isActive()) {
+            pendingTeleportPath = targetPath;
+            pendingTeleportName = tr.getLinkToTeleporterName();
+            pendingTeleportTile = tr;
+            utils.AudioManager.playSFX(utils.Constants.SFX_TELEPORT);
+            TELEPORTEFFECT.startSpinIn();
+            GAMESTATE = "teleport";
         }
     }
 
@@ -424,6 +459,9 @@ public class GamePanel extends JPanel {
 
         BADGETOAST.update();
         BADGETOAST.draw(g2);
+
+        NOTIFICATION.update();
+        NOTIFICATION.draw(g2);
 
         // Fade is the absolute top layer
         if (!BLACKFADEEFFECT.isFadeOutComplete()) {

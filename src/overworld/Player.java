@@ -155,7 +155,16 @@ public class Player {
         if (img != null) {
             int sx = worldX - gp.getCameraX();
             int sy = worldY - gp.getCameraY();
-            g.drawImage(img, sx, sy, TILE_SIZE, TILE_SIZE, null);
+            if (gp.TELEPORTEFFECT.isActive()) {
+                java.awt.geom.AffineTransform old = g.getTransform();
+                double cx = sx + TILE_SIZE / 2.0;
+                double cy = sy + TILE_SIZE / 2.0;
+                g.rotate(gp.TELEPORTEFFECT.getRotation(), cx, cy);
+                g.drawImage(img, sx, sy, TILE_SIZE, TILE_SIZE, null);
+                g.setTransform(old);
+            } else {
+                g.drawImage(img, sx, sy, TILE_SIZE, TILE_SIZE, null);
+            }
         }
     }
 
@@ -245,6 +254,18 @@ public class Player {
         if (tl != null) {
             tl.interact(gp);
             gp.player.getInventory().appendInventory(tl.getInventory());
+
+            StringBuilder names = new StringBuilder();
+            if (tl.getInventory() != null) {
+                for (items.Item it : tl.getInventory().getRawItems()) {
+                    if (it == null) continue;
+                    if (names.length() > 0) names.append(", ");
+                    names.append(it.getName());
+                }
+            }
+            String body = names.length() == 0 ? "Picked up an item." : names.toString();
+            gp.NOTIFICATION.push("Item Found!", body);
+            utils.AudioManager.playSFX(utils.Constants.SFX_ITEM_FOUND);
 
             // Persist the pickup: mark the tile as gone in the matrix + remove from loots ArrayList.
             String key = gp.CURRENT_PATH + "@" + tl.getX() + "," + tl.getY();

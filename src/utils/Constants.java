@@ -78,6 +78,9 @@ public class Constants {
     public static final String BGM_CAUGHT_ROT  = "/res/Sounds/CaughtRot.mp3";
     public static final String SFX_SELECT      = "/res/Sounds/SelectSoundEffect.mp3";
     public static final String SFX_ENTER       = "/res/Sounds/EnterSoundEffect.mp3";
+    public static final String SFX_TELEPORT    = "/res/Sounds/Teleport.mp3";
+    public static final String SFX_SAVE        = "/res/Sounds/Save.mp3";
+    public static final String SFX_ITEM_FOUND  = "/res/Sounds/ItemFound.mp3";
 
 
     // Battle Rewards Economy

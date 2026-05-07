@@ -356,6 +356,8 @@ public class BattleUI {
                 utils.AudioManager.playMusic(utils.Constants.BGM_CAUGHT_ROT, false);
 
                 queueMessage("Gotcha!", battle.getEnemyRot().getName() + " was caught!");
+                gp.NOTIFICATION.push("Captured!", battle.getEnemyRot().getName(),
+                        new java.awt.Color(120, 200, 240));
                 gp.player.getPCSYSTEM().addBrainRot(battle.getEnemyRot());
                 playNextMessage(BattleState.FINISH);
             } else {

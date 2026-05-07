@@ -64,29 +64,56 @@ public class TrainerNPC extends NPC {
         return defeatedAtGameTime >= 0 && currentGameTime - defeatedAtGameTime >= COOLDOWN_TICKS;
     }
 
-    /**
-     * Direction derived from the trainer's current sprite frame.
-     * Image mapping: 1=down, 2=right, 3=left, 4=up, 5=down (spriteNum is 0-indexed).
-     */
+    /** Trainers face the direction stored in their sprite frame index (0=down, 1=right, 2=left, 3=up). */
     public String getFacingDirection() {
+        // Use the last direction the trainer was set to face (defaults from spriteNum on spawn).
+        if (direction != null && !direction.isEmpty()) return direction;
         return switch (spriteNum) {
-            case 0 -> "down";
             case 1 -> "right";
             case 2 -> "left";
             case 3 -> "up";
-            case 4 -> "down";
             default -> "down";
+        };
+    }
+
+    /** Trainers stand still and just animate their idle frame. */
+    @Override
+    public void update(GamePanel gp) {
+        if (direction == null || direction.isEmpty()) {
+            direction = switch (spriteNum) {
+                case 1 -> "right";
+                case 2 -> "left";
+                case 3 -> "up";
+                default -> "down";
+            };
+        }
+        // Lock the visible sprite to the directional idle frame.
+        spriteNum = switch (direction) {
+            case "right" -> 1;
+            case "left"  -> 2;
+            case "up"    -> 3;
+            default      -> 0;
         };
     }
 
     @Override
     public void interact(GamePanel gp) {
         if (defeated) {
-            System.out.println(name + ": You're strong… but I'll come back tougher!");
+            gp.DIALOGUEBOX.startDialogue(name,
+                    new ArrayList<>(java.util.List.of("You're strong... but I'll come back tougher!")));
             return;
         }
         facePlayer(gp.player);
-        System.out.println(name + " locked eyes with you! Time to battle!");
-        gp.encounterSystem.startTrainerBattle(gp.player, this, gp);
+        startEncounter(gp);
+    }
+
+    /** Plays the trainer's dialogue then kicks off the battle when it ends. */
+    public void startEncounter(GamePanel gp) {
+        ArrayList<String> lines = (dialogues == null || dialogues.isEmpty())
+                ? new ArrayList<>(java.util.List.of("Let's battle!"))
+                : new ArrayList<>(dialogues);
+        gp.DIALOGUEBOX.startDialogue(name, lines);
+        gp.DIALOGUEBOX.setOnFinish(() ->
+                gp.encounterSystem.startTrainerBattle(gp.player, this, gp));
     }
 }

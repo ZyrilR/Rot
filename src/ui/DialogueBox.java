@@ -24,6 +24,10 @@ public class DialogueBox {
     // Set to true when a MarketNPC interaction is pending shop open
     private boolean pendingShopOpen = false;
 
+    // One-shot callback fired when the current dialogue finishes naturally.
+    private Runnable onFinish = null;
+    public void setOnFinish(Runnable cb) { this.onFinish = cb; }
+
     public DialogueBox(GamePanel gp) {
         this.gp = gp;
     }
@@ -107,6 +111,9 @@ public class DialogueBox {
         resetTypewriter();
         gp.GAMESTATE = "play";
         isPlaying = false;
+        Runnable cb = onFinish;
+        onFinish = null;
+        if (cb != null) cb.run();
     }
 
     public void draw(Graphics2D g2) {

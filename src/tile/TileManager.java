@@ -207,12 +207,21 @@ public class TileManager {
                                 if (!item.isEmpty())
                                     inventory.addItem(ItemRegistry.getItem(item));
 
+                            int npcX = Integer.parseInt(parts[3]);
+                            int npcY = Integer.parseInt(parts[4]);
+                            int folderId = resolveSpriteFolder(map, npcX, npcY, Integer.parseInt(parts[2]));
+                            String facing = resolveFacing(map, npcX, npcY);
+
                             npc1 = switch(parts[1].toUpperCase()) {
-                                case "TRAINERNPC" -> new TrainerNPC(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[7]));
-                                case "GYMLEADER" -> new GymLeader(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[8]), parts[5]);
-                                case "GYMMASTER" -> new GymMaster(parts[0], Integer.parseInt(parts[2]), Integer.parseInt(parts[3]), Integer.parseInt(parts[4]), inventory, party, Integer.parseInt(parts[8]));
+                                case "TRAINERNPC" -> new TrainerNPC(parts[0], folderId, npcX, npcY, inventory, party, Integer.parseInt(parts[7]));
+                                case "GYMLEADER" -> new GymLeader(parts[0], folderId, npcX, npcY, inventory, party, Integer.parseInt(parts[8]), parts[5]);
+                                case "GYMMASTER" -> new GymMaster(parts[0], folderId, npcX, npcY, inventory, party, Integer.parseInt(parts[8]));
                                 default -> null;
                             };
+                            if (npc1 != null && facing != null) {
+                                npc1.direction = facing;
+                                npc1.spriteNum = facingToSpriteNum(facing);
+                            }
 
                             break;
                         case "MARKETNPC":
@@ -315,6 +324,45 @@ public class TileManager {
             else
                 INTERACTIVE_TILES.add(new Tile(loadImage("/res/InteractiveTiles/Interactives/" + i + ".png"), false));
         }
+    }
+
+    /**
+     * Look at the tile actually placed on the interactive layer at (x,y) and
+     * derive the sprite folder id that the NPC should pull frames from.
+     * Sprite folders 1..5 are stored as INTERACTIVE_TILES indices 1..25
+     * (5 frames per folder, in order). Falls back to the metadata-provided
+     * folderId if the matrix entry is empty/out of range.
+     */
+    private int resolveSpriteFolder(int[][] map, int x, int y, int fallback) {
+        if (map == null) return fallback;
+        if (y < 0 || y >= map.length) return fallback;
+        if (x < 0 || x >= map[0].length) return fallback;
+        int raw = map[y][x];
+        if (raw <= 0 || raw > 25) return fallback;
+        return (raw - 1) / 5; // 0..4 → NPC.loadSprites uses (folderId+1)
+    }
+
+    /** Sprite index 0..4 within a folder maps to a facing direction. */
+    private String resolveFacing(int[][] map, int x, int y) {
+        if (map == null || y < 0 || y >= map.length || x < 0 || x >= map[0].length) return null;
+        int raw = map[y][x];
+        if (raw <= 0 || raw > 25) return null;
+        int spriteIdx = (raw - 1) % 5; // 0=down, 1=right, 2=left, 3=up, 4=down(alt)
+        return switch (spriteIdx) {
+            case 1 -> "right";
+            case 2 -> "left";
+            case 3 -> "up";
+            default -> "down";
+        };
+    }
+
+    private int facingToSpriteNum(String facing) {
+        return switch (facing) {
+            case "right" -> 1;
+            case "left"  -> 2;
+            case "up"    -> 3;
+            default      -> 0;
+        };
     }
 
     public ArrayList<TileTeleporter> getTeleporters() {
