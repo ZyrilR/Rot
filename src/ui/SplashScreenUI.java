@@ -117,39 +117,45 @@ public class SplashScreenUI {
     }
 
     private void drawMenu(Graphics2D g2) {
-        int btnW = 220;
-        int btnH = 44;
+        Font menuFont = (AssetManager.pokemonGb != null)
+                ? AssetManager.pokemonGb.deriveFont(Font.BOLD, 14f)
+                : new Font("SansSerif", Font.BOLD, 14);
 
+        int btnW  = 220;
+        int btnH  = 44;
         int startY = (int)(SCREEN_HEIGHT * 0.54);
-        int btnX = (SCREEN_WIDTH - btnW) / 2;
+        int btnX  = (SCREEN_WIDTH - btnW) / 2;
 
         for (int i = 0; i < BUTTON_LABELS.length; i++) {
-            boolean sel = (i == cursor);
-            int btnY = startY + i * (btnH + 12);
+            boolean sel  = (i == cursor);
+            int     btnY = startY + i * (btnH + 12);
 
+            // Fill
+            g2.setColor(sel ? new Color(44, 44, 42) : new Color(60, 58, 54, 200));
+            g2.fillRoundRect(btnX, btnY, btnW, btnH, 8, 8);
+
+            // Border — gold on selected, dim on unselected
             if (sel) {
-                g2.setColor(COLOR_MAROON);
-                int pulse = (int)(Math.sin(tick * 0.1) * 3);
-                g2.fillRoundRect(btnX - pulse, btnY, btnW + (pulse * 2), btnH, 5, 5);
-
-                g2.setColor(Color.WHITE);
-                g2.setStroke(new BasicStroke(2));
-                g2.drawRoundRect(btnX - pulse, btnY, btnW + (pulse * 2), btnH, 5, 5);
+                g2.setStroke(new BasicStroke(3));
+                g2.setColor(new Color(216, 184, 88));
+                g2.drawRoundRect(btnX, btnY, btnW, btnH, 8, 8);
+                g2.setStroke(new BasicStroke(1.5f));
+                g2.setColor(new Color(80, 80, 80));
+                g2.drawRoundRect(btnX + 2, btnY + 2, btnW - 4, btnH - 4, 6, 6);
+                g2.setStroke(new BasicStroke(1));
             } else {
-                g2.setColor(new Color(0, 0, 0, 150));
-                g2.fillRoundRect(btnX, btnY, btnW, btnH, 5, 5);
+                g2.setStroke(new BasicStroke(1));
+                g2.setColor(new Color(100, 96, 90));
+                g2.drawRoundRect(btnX, btnY, btnW, btnH, 8, 8);
             }
-
-            Font menuFont = (AssetManager.pokemonGb != null) ? AssetManager.pokemonGb.deriveFont(Font.BOLD, 18)
-                    : new Font("SansSerif", Font.BOLD, 18);
 
             g2.setFont(menuFont);
             FontMetrics fm = g2.getFontMetrics();
             String label = BUTTON_LABELS[i];
             int tx = btnX + (btnW - fm.stringWidth(label)) / 2;
-            int ty = btnY + (btnH + fm.getAscent() - 2) / 2;
+            int ty = btnY + (btnH - fm.getHeight()) / 2 + fm.getAscent() + 4;
 
-            g2.setColor(sel ? Color.WHITE : COLOR_TEXT_UNSELECTED);
+            g2.setColor(sel ? new Color(241, 239, 232) : new Color(160, 156, 148));
             g2.drawString(label, tx, ty);
         }
     }
