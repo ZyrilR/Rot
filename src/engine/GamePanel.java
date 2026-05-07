@@ -77,6 +77,26 @@ public class GamePanel extends JPanel {
 
     public long getGameTime() { return gameTime; }
 
+    /** Camera X clamped to map bounds. Uses player's centered screenX as the desired offset. */
+    public int getCameraX() {
+        int worldW = MAX_WORLD_COL * TILE_SIZE;
+        int desired = player.worldX - player.screenX;
+        int max = Math.max(0, worldW - SCREEN_WIDTH);
+        return Math.max(0, Math.min(desired, max));
+    }
+
+    /** Camera Y clamped to map bounds. */
+    public int getCameraY() {
+        int worldH = MAX_WORLD_ROW * TILE_SIZE;
+        int desired = player.worldY - player.screenY;
+        int max = Math.max(0, worldH - SCREEN_HEIGHT);
+        return Math.max(0, Math.min(desired, max));
+    }
+
+    /** Player's actual on-screen position (accounts for clamped camera at map edges). */
+    public int getPlayerScreenX() { return player.worldX - getCameraX(); }
+    public int getPlayerScreenY() { return player.worldY - getCameraY(); }
+
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
         this.setBackground(Color.BLACK);
@@ -370,8 +390,8 @@ public class GamePanel extends JPanel {
                     world.draw(g2);
                     player.draw(g2);
                     DARKNESSOVERLAY.draw(g2,
-                            player.screenX + TILE_SIZE / 2,
-                            player.screenY + TILE_SIZE / 2);
+                            getPlayerScreenX() + TILE_SIZE / 2,
+                            getPlayerScreenY() + TILE_SIZE / 2);
                 }
                 INVENTORYUI.draw(g2);
             }

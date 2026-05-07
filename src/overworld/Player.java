@@ -60,7 +60,7 @@ public class Player {
         worldY = TILE_SIZE * 24;
         screenX = (SCREEN_WIDTH / 2) - (TILE_SIZE / 2);
         screenY = (SCREEN_HEIGHT / 2) - (TILE_SIZE / 2);
-        speed = 32;
+        speed = 8;
 
         direction = "down";
         walk_up = new ArrayList<>();
@@ -152,8 +152,11 @@ public class Player {
 
         spriteCounter++;
 
-        if (img != null)
-            g.drawImage(img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+        if (img != null) {
+            int sx = worldX - gp.getCameraX();
+            int sy = worldY - gp.getCameraY();
+            g.drawImage(img, sx, sy, TILE_SIZE, TILE_SIZE, null);
+        }
     }
 
     public void update() {

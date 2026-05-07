@@ -25,7 +25,8 @@ public class BattleUI {
     private enum BattleState {
         INITIALIZING, MENU, SKILL_SELECT, TEAM_SELECT, TEAM_CONFIRM,
         BAG_OPEN, ANIMATION, ENEMY_AI, CLEANUP, FINISH, MESSAGE,
-        LEVELUP_CHECK, LEVELUP_REPLACE_CONFIRM, LEVELUP_REPLACE_SELECT
+        LEVELUP_CHECK, LEVELUP_REPLACE_CONFIRM, LEVELUP_REPLACE_SELECT,
+        TRAINER_POSE, ENEMY_REVEAL, SWAP_PROMPT
     }
     private enum MenuOption { FIGHT, BAG, TEAM, RUN }
 
@@ -75,6 +76,21 @@ public class BattleUI {
     private int animTick = 0;
     private int currentHurtFrame = 2;
 
+    // Trainer pose intro animation
+    private int poseTick = 0;
+    private static final int POSE_SLIDE_IN_END = 18;
+    private static final int POSE_HOLD_END     = 48;
+    private static final int POSE_SLIDE_OUT_END = 66;
+    private BufferedImage trainerPoseSprite;
+
+    // Reveal delay between enemy showing alone and player rot showing
+    private int revealTick = 0;
+    private static final int REVEAL_DELAY = 45;
+
+    // Flow flags
+    private boolean awaitingSwapPrompt = false; // true when next state should be SWAP_PROMPT (trainer subsequent send-out)
+    private int swapCursor = 0;
+
     public BattleUI(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
         this.kh = kh;
@@ -95,6 +111,10 @@ public class BattleUI {
         this.turnOneComplete = false;
         this.turnTwoComplete = false;
         this.isInitialSendOut = true;
+        this.awaitingSwapPrompt = false;
+        this.poseTick = 0;
+        this.revealTick = 0;
+        this.trainerPoseSprite = null;
         this.messageQueue.clear();
         this.inputCooldown = INPUT_DELAY * 2;
     }
@@ -125,6 +145,84 @@ public class BattleUI {
             case LEVELUP_CHECK            -> updateLevelupCheck();
             case LEVELUP_REPLACE_CONFIRM  -> updateLevelupReplaceConfirm();
             case LEVELUP_REPLACE_SELECT   -> updateLevelupReplaceSelect();
+            case TRAINER_POSE             -> updateTrainerPose();
+            case ENEMY_REVEAL             -> updateEnemyReveal();
+            case SWAP_PROMPT              -> updateSwapPrompt();
+        }
+    }
+
+    private void loadTrainerPoseSprite() {
+        npc.TrainerNPC tr = battle.getTrainer();
+        if (tr == null) { trainerPoseSprite = null; return; }
+        // Trainer NPC sprites are loaded from /res/InteractiveTiles/<folderId+1>/.
+        // The "iconic pose" is the 5th image. We can't easily access folderId, so try
+        // a few candidates by sniffing the existing sprites list.
+        if (tr.sprites != null && tr.sprites.size() >= 5) {
+            trainerPoseSprite = tr.sprites.get(4);
+        } else {
+            trainerPoseSprite = null;
+        }
+    }
+
+    private void updateTrainerPose() {
+        poseTick++;
+        if (poseTick >= POSE_SLIDE_OUT_END) {
+            poseTick = 0;
+            // After pose, queue the "sent out X!" line, then enemy reveal
+            BrainRot er = battle.getEnemyRot();
+            if (battle.getTrainer() != null && er != null) {
+                queueMessage(battle.getTrainer().name + " sent out", er.getName() + "!", 2);
+            }
+            playNextMessage(BattleState.ENEMY_REVEAL);
+        }
+    }
+
+    private void updateEnemyReveal() {
+        revealTick++;
+        if (revealTick >= REVEAL_DELAY) {
+            revealTick = 0;
+            if (isInitialSendOut) {
+                // First time the player sends out their rot in this battle.
+                BrainRot lead = battle.getPlayerRot();
+                isInitialSendOut = false;
+                if (lead != null) queueMessage("Go! " + lead.getName() + "!", "", 1);
+                playNextMessage(BattleState.MENU);
+            } else if (awaitingSwapPrompt) {
+                awaitingSwapPrompt = false;
+                swapCursor = 0;
+                dialogueLine1 = "Swap your BrainRot?";
+                dialogueLine2 = "";
+                dialogueTicks = 0;
+                currentState = BattleState.SWAP_PROMPT;
+                inputCooldown = INPUT_DELAY;
+            } else {
+                setPrompt();
+                currentState = BattleState.MENU;
+                inputCooldown = INPUT_DELAY;
+            }
+        }
+    }
+
+    private void updateSwapPrompt() {
+        if (kh.upPressed || kh.downPressed) {
+            swapCursor = (swapCursor == 0) ? 1 : 0;
+            utils.AudioManager.playSFX(utils.Constants.SFX_SELECT);
+            inputCooldown = INPUT_DELAY;
+        }
+        if (kh.enterPressed) {
+            kh.enterPressed = false;
+            utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
+            if (swapCursor == 0) {
+                // YES — open team select to choose new rot
+                dialogueLine1 = "Who will you";
+                dialogueLine2 = "send out?";
+                dialogueTicks = 0;
+                currentState = BattleState.TEAM_SELECT;
+            } else {
+                setPrompt();
+                currentState = BattleState.MENU;
+            }
+            inputCooldown = INPUT_DELAY;
         }
     }
 
@@ -171,13 +269,21 @@ public class BattleUI {
     }
 
     private void updateInitializing() {
+        // Auto-deploy the lead party member; skip the manual send-out picker.
+        isInitialSendOut = true;
+        awaitingSwapPrompt = false;
+
         if (battle.isWildBattle()) {
             queueWildIntroDialogue(battle.getEnemyRot());
+            // Wild: enemy rot already on screen; just delay then send out player rot.
+            playNextMessage(BattleState.ENEMY_REVEAL);
         } else {
             queueMessage("Trainer wants to battle!", "Get ready!");
+            // Trainer: show iconic pose, then their rot, then send out player rot.
+            loadTrainerPoseSprite();
+            poseTick = 0;
+            playNextMessage(BattleState.TRAINER_POSE);
         }
-        queueMessage("Who will you", "send out?");
-        playNextMessage(BattleState.TEAM_SELECT);
     }
 
     private void updateMenu() {
@@ -385,10 +491,15 @@ public class BattleUI {
     private void updateLevelupCheck() {
         if (pendingReplacements.isEmpty()) {
             // If a trainer battle is still ONGOING (next BrainRot was sent out),
-            // hand control back to the player instead of finishing.
+            // play the trainer pose intro for the next rot before handing control back.
             if (!battle.isOver()) {
-                setPrompt();
-                currentState = BattleState.MENU;
+                if (battle.getTrainer() != null) {
+                    poseTick = 0;
+                    currentState = BattleState.TRAINER_POSE;
+                } else {
+                    setPrompt();
+                    currentState = BattleState.MENU;
+                }
                 inputCooldown = INPUT_DELAY;
                 return;
             }
@@ -493,6 +604,7 @@ public class BattleUI {
             int damage = oldHp - defender.getCurrentHp();
             if (damage > 0)      queueMessage(defender.getName(), "took " + damage + " damage!",      defenderActor);
             else if (damage < 0) queueMessage(defender.getName(), "recovered " + (-damage) + " HP!");
+            queueEffectMessage(skill, attacker, defender, attackerActor, defenderActor);
             if (defender.isFainted()) queueMessage(defender.getName() + " fainted!", "");
         }
         playNextMessage(BattleState.ANIMATION);
@@ -517,6 +629,7 @@ public class BattleUI {
                 int damage = oldHp - defender.getCurrentHp();
                 if (damage > 0)      queueMessage(defender.getName(), "took " + damage + " damage!",      defenderActor);
                 else if (damage < 0) queueMessage(defender.getName(), "recovered " + (-damage) + " HP!");
+                queueEffectMessage(skill, attacker, defender, attackerActor, defenderActor);
                 if (defender.isFainted()) queueMessage(defender.getName() + " fainted!", "");
             }
         }
@@ -560,10 +673,13 @@ public class BattleUI {
                 if (trainerHasMore) {
                     BrainRot next = battle.advanceToNextTrainerEnemy();
                     if (next != null) {
-                        // Resume battle; play victory music for fainted message, then back to overworld feel
+                        // Resume battle; play wild-battle music
                         utils.AudioManager.playMusic(utils.Constants.BGM_WILD_BATTLE, true);
-                        queueMessage(battle.getTrainer().name + " sent out", next.getName() + "!", 2);
                         playerMovesFirst = battle.getPlayerRot().getSpeed() >= next.getSpeed();
+                        // Show iconic pose → reveal new enemy → ask player to swap.
+                        awaitingSwapPrompt = true;
+                        loadTrainerPoseSprite();
+                        poseTick = 0;
                     }
                 } else if (battle.getTrainer() != null) {
                     // Trainer is fully defeated: persist defeat + start cooldown
@@ -576,7 +692,7 @@ public class BattleUI {
 
                 BattleState afterMessages;
                 if (!pendingReplacements.isEmpty()) afterMessages = BattleState.LEVELUP_CHECK;
-                else if (trainerHasMore)            afterMessages = BattleState.MENU;
+                else if (trainerHasMore)            afterMessages = BattleState.TRAINER_POSE;
                 else                                afterMessages = BattleState.FINISH;
                 playNextMessage(afterMessages);
             } else {
@@ -616,6 +732,28 @@ public class BattleUI {
         this.dialogueLine1 = "What will";
         this.dialogueLine2 = battle.getPlayerRot().getName() + " do?";
         this.dialogueTicks = 0;
+    }
+
+    /** Queues a human-readable buff/debuff/status line after a skill is used. */
+    private void queueEffectMessage(Skill skill, BrainRot user, BrainRot target, int userActor, int targetActor) {
+        if (skill == null || skill.getEffect() == null) return;
+        String e = skill.getEffect().toUpperCase();
+        String userName = user.getName();
+        String tgtName  = target.getName();
+        switch (e) {
+            case "RAISE_ATK" -> queueMessage(userName + " raised", "its Attack stat!", userActor);
+            case "RAISE_DEF" -> queueMessage(userName + " raised", "its Defense stat!", userActor);
+            case "RAISE_SPD" -> queueMessage(userName + " raised", "its Speed stat!", userActor);
+            case "LOWER_ATK" -> queueMessage(tgtName + "'s",       "Attack fell!",     targetActor);
+            case "LOWER_DEF" -> queueMessage(tgtName + "'s",       "Defense fell!",    targetActor);
+            case "LOWER_SPD" -> queueMessage(tgtName + "'s",       "Speed fell!",      targetActor);
+            case "HEAL"      -> queueMessage(userName,             "restored some HP!", userActor);
+            case "BURN"      -> queueMessage(tgtName,              "was burned!",       targetActor);
+            case "PARALYZE"  -> queueMessage(tgtName,              "was paralyzed!",    targetActor);
+            case "CONFUSE"   -> queueMessage(tgtName,              "became confused!",  targetActor);
+            case "SLEEP"     -> queueMessage(tgtName,              "fell asleep!",      targetActor);
+            default -> {}
+        }
     }
 
     private void queueWildIntroDialogue(BrainRot wildRot) {
@@ -672,20 +810,49 @@ public class BattleUI {
             if (l1.startsWith("used ")) pFrame = 4;
         }
 
-        boolean showTrainer = (currentState == BattleState.INITIALIZING || isInitialSendOut);
+        boolean inTrainerPose  = (currentState == BattleState.TRAINER_POSE);
+        boolean inEnemyReveal  = (currentState == BattleState.ENEMY_REVEAL);
+        boolean inSwapPrompt   = (currentState == BattleState.SWAP_PROMPT);
+        boolean hidePlayerRot  = inTrainerPose || inEnemyReveal || inSwapPrompt
+                || currentState == BattleState.INITIALIZING || isInitialSendOut;
+        boolean hideEnemyRot   = inTrainerPose;
 
-        BufferedImage enemySprite = AssetManager.getBrainRotSprite(battle.getEnemyRot().getName(), battle.getEnemyRot().getTier().name(), false, eFrame);
-        if (enemySprite != null) g2.drawImage(enemySprite, 500, 40, 200, 200, null);
+        if (!hideEnemyRot) {
+            BufferedImage enemySprite = AssetManager.getBrainRotSprite(battle.getEnemyRot().getName(), battle.getEnemyRot().getTier().name(), false, eFrame);
+            if (enemySprite != null) g2.drawImage(enemySprite, 500, 40, 200, 200, null);
+        }
 
-        if (showTrainer) {
-            if (playerBackSprite != null) g2.drawImage(playerBackSprite, 80, 240, 220, 220, null);
+        if (hidePlayerRot) {
+            if (!inTrainerPose && playerBackSprite != null)
+                g2.drawImage(playerBackSprite, 80, 240, 220, 220, null);
         } else {
             BufferedImage playerSprite = AssetManager.getBrainRotSprite(battle.getPlayerRot().getName(), battle.getPlayerRot().getTier().name(), true, pFrame);
             if (playerSprite != null) g2.drawImage(playerSprite, 60, 220, 260, 260, null);
         }
 
-        drawEnemyHpBlock(g2);
-        if (!showTrainer) drawPlayerHpBlock(g2);
+        if (!hideEnemyRot) drawEnemyHpBlock(g2);
+        if (!hidePlayerRot) drawPlayerHpBlock(g2);
+
+        // Trainer iconic pose with slide in/out animation
+        if (inTrainerPose && trainerPoseSprite != null) {
+            int targetX = SCREEN_WIDTH / 2 - 160;
+            int finalY  = 60;
+            int x;
+            float alpha = 1f;
+            if (poseTick < POSE_SLIDE_IN_END) {
+                float t = (float) poseTick / POSE_SLIDE_IN_END;
+                x = (int)(SCREEN_WIDTH - (SCREEN_WIDTH - targetX) * t);
+            } else if (poseTick < POSE_HOLD_END) {
+                x = targetX;
+            } else {
+                float t = (float)(poseTick - POSE_HOLD_END) / (POSE_SLIDE_OUT_END - POSE_HOLD_END);
+                x = (int)(targetX - (targetX + 320) * t);
+            }
+            Composite prev = g2.getComposite();
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+            g2.drawImage(trainerPoseSprite, x, finalY, 320, 380, null);
+            g2.setComposite(prev);
+        }
 
         // Dialogue box
         int boxY = SCREEN_HEIGHT - 136;
@@ -699,6 +866,18 @@ public class BattleUI {
         else if (currentState == BattleState.SKILL_SELECT)         drawSkillSelect(g2, boxY);
         else if (currentState == BattleState.LEVELUP_REPLACE_CONFIRM) drawLevelupConfirm(g2, boxY);
         else if (currentState == BattleState.LEVELUP_REPLACE_SELECT)  drawLevelupReplaceSelect(g2, boxY);
+        else if (currentState == BattleState.SWAP_PROMPT)          drawSwapPrompt(g2, boxY);
+    }
+
+    private void drawSwapPrompt(Graphics2D g2, int boxY) {
+        int menuW = 160, menuX = SCREEN_WIDTH - menuW - 10;
+        drawBattleBox(g2, menuX, boxY, menuW, 126);
+
+        g2.setFont(getCustomFont(Font.BOLD, 16f));
+        g2.setColor(new Color(44, 44, 42));
+        g2.drawString("YES", menuX + 60, boxY + 50);
+        g2.drawString("NO",  menuX + 60, boxY + 90);
+        drawCursor(g2, menuX + 35, boxY + (swapCursor == 0 ? 36 : 76));
     }
 
     // ── Full team screen ──────────────────────────────────────────────────────
