@@ -42,8 +42,8 @@ public class WorldSelectUI {
 
     private static final String[] ACTION_LABELS = { "PLAY", "NEW WORLD", "RENAME", "DELETE" };
     // All four buttons share the same gray tone; selected state brightens it
-    private static final Color    ACTION_BASE   = new Color(90, 88, 84);
-    private static final Color    ACTION_SEL    = new Color(130, 126, 118);
+    private static final Color    ACTION_BASE   = new Color(60, 58, 54);
+    private static final Color    ACTION_SEL    = new Color(44, 44, 42);
 
     // ── Fields ────────────────────────────────────────────────────────────────
 
@@ -580,30 +580,35 @@ public class WorldSelectUI {
             int bx      = startX + i * (btnW + gap);
             int by      = btnBarY + 6;
             boolean sel = (i == actionCursor);
-            boolean dim = (i >= 2 && slots.isEmpty()); // dim Rename/Delete if no slots
+            boolean dim = (i >= 2 && slots.isEmpty());
 
-            // Single gray palette for all buttons
-            Color bg = dim ? new Color(55, 53, 50)
-                    : sel  ? ACTION_SEL
-                    :        ACTION_BASE;
-            g2.setColor(bg);
+            // Fill
+            g2.setColor(dim ? new Color(55, 53, 50) : sel ? new Color(44, 44, 42) : new Color(60, 58, 54));
             g2.fillRoundRect(bx, by, btnW, btnH, 8, 8);
 
-            // White border on selected
+            // Border
             if (sel && !dim) {
-                g2.setColor(new Color(210, 206, 198));
-                g2.setStroke(new BasicStroke(2));
+                g2.setStroke(new BasicStroke(3));
+                g2.setColor(new Color(216, 184, 88));
+                g2.drawRoundRect(bx, by, btnW, btnH, 8, 8);
+                g2.setStroke(new BasicStroke(1.5f));
+                g2.setColor(new Color(80, 80, 80));
+                g2.drawRoundRect(bx + 2, by + 2, btnW - 4, btnH - 4, 6, 6);
+                g2.setStroke(new BasicStroke(1));
+            } else if (!dim) {
+                g2.setStroke(new BasicStroke(1));
+                g2.setColor(new Color(100, 96, 90));
                 g2.drawRoundRect(bx, by, btnW, btnH, 8, 8);
                 g2.setStroke(new BasicStroke(1));
             }
 
             g2.setFont(base.deriveFont(Font.BOLD, 10f));
             FontMetrics fm = g2.getFontMetrics();
-            g2.setColor(dim ? new Color(80, 76, 70) : sel ? new Color(241, 239, 232) : new Color(190, 186, 178));
+            g2.setColor(dim ? new Color(80, 76, 70) : sel ? new Color(241, 239, 232) : new Color(160, 156, 148));
             String lbl = ACTION_LABELS[i];
             g2.drawString(lbl,
                     bx + (btnW - fm.stringWidth(lbl)) / 2,
-                    by + (btnH - fm.getHeight()) / 2 + fm.getAscent());
+                    by + (btnH - fm.getHeight()) / 2 + fm.getAscent() + 2);
         }
     }
 
