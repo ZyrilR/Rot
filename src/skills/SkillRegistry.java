@@ -195,6 +195,19 @@ public class SkillRegistry {
                 "Bludgeons the target with a steel milk frother in rapid mechanical bursts.  Power: 15."));
         register(new Skill("Double Shot", SkillType.DARK, 10, 10, "NONE",
                 "Two rapid espresso-powered Dark strikes fired in quick succession.  Power: 10."));
+
+        // ── Special: Struggle ───────────────────────────────────────────────
+        // Auto-used when a BrainRot has no remaining UP on any move. Damages
+        // both target and user (recoil).
+        register(new Skill("Struggle", SkillType.NORMAL, 15, 999, "STRUGGLE",
+                "A desperate attack used when out of energy.  The user takes recoil damage."));
+    }
+
+    /** Always-fresh Struggle instance for the no-UP fallback. */
+    public static Skill struggle() {
+        Skill s = get("Struggle");
+        return s != null ? s : new Skill("Struggle", SkillType.NORMAL, 15, 999, "STRUGGLE",
+                "A desperate attack used when out of energy.  The user takes recoil damage.");
     }
 
     public static void register(Skill skill) {

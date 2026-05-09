@@ -41,6 +41,21 @@ public class Player {
     //Handle Sprite Images
     ArrayList<BufferedImage> walk_up, walk_down, walk_right, walk_left;
     private int spriteCounter;
+    private int spriteAccumulator;
+    private int currentFrameIndex;
+
+    // ── Movement / animation tuning ────────────────────────────────────────
+    /** Base speed used as the reference point for animation pacing. */
+    public static final int BASE_SPEED = 4;
+    /** Pixels of movement required to advance one walk-cycle frame. */
+    public static final int ANIM_FRAME_DISTANCE = 12;
+    /** Maximum bonus added to base speed at full sprint. */
+    public static final int MAX_SPRINT_BONUS = 12;
+    /** Frames it takes for the sprint to fully ramp up from 0 → max bonus. */
+    public static final int SPRINT_RAMP_FRAMES = 24;
+
+    /** How many consecutive frames the sprint key has been held while moving. */
+    private int sprintTicks = 0;
 
     //Collision Handling
     public Rectangle solidArea;
@@ -86,7 +101,21 @@ public class Player {
     public Inventory getInventory() {
         return inventory;
     }
-    public int getCurrentSpeed() {return kh.running ? speed + 8 : speed;}
+    public int getCurrentSpeed() { return computeCurrentSpeed(); }
+
+    /**
+     * Sprint speed formula: ramps from base speed up to (speed + MAX_SPRINT_BONUS)
+     * over SPRINT_RAMP_FRAMES while the sprint key is held. Released → instant reset.
+     * Tile movement still snaps to the grid (Player.update handles overshoot), so any
+     * non-divisible speed is fine here.
+     */
+    private int computeCurrentSpeed() {
+        boolean sprinting = (kh != null && (kh.running || kh.shiftPressed));
+        if (!sprinting) return speed;
+        int bonus = Math.min(MAX_SPRINT_BONUS,
+                (sprintTicks * MAX_SPRINT_BONUS) / Math.max(1, SPRINT_RAMP_FRAMES));
+        return speed + bonus;
+    }
 
     // --- Currency methods ---
     public int getRotCoins() {
@@ -128,6 +157,8 @@ public class Player {
 
     public void resetSpriteCounter() {
         spriteCounter = 0;
+        spriteAccumulator = 0;
+        currentFrameIndex = 0;
     }
 
     public void draw(Graphics2D g) {
@@ -144,11 +175,18 @@ public class Player {
                 }
             }
         } else if (isMoving) {
+            // Frame index advances proportional to current movement speed:
+            //   advance one frame for every ANIM_FRAME_DISTANCE pixels travelled.
+            spriteAccumulator += computeCurrentSpeed();
+            while (spriteAccumulator >= ANIM_FRAME_DISTANCE) {
+                spriteAccumulator -= ANIM_FRAME_DISTANCE;
+                currentFrameIndex++;
+            }
             switch (direction) {
-                case "up" -> img = walk_up.get(spriteCounter % walk_up.size());
-                case "down" -> img = walk_down.get(spriteCounter % walk_down.size());
-                case "right" -> img = walk_right.get(spriteCounter % walk_right.size());
-                case "left" -> img = walk_left.get(spriteCounter % walk_left.size());
+                case "up"    -> img = walk_up.get(currentFrameIndex % walk_up.size());
+                case "down"  -> img = walk_down.get(currentFrameIndex % walk_down.size());
+                case "right" -> img = walk_right.get(currentFrameIndex % walk_right.size());
+                case "left"  -> img = walk_left.get(currentFrameIndex % walk_left.size());
             }
         } else {
             switch (direction) {
@@ -160,8 +198,6 @@ public class Player {
             resetSpriteCounter();
         }
 
-        spriteCounter++;
-
         if (img != null) {
             int sx = worldX - gp.getCameraX();
             int sy = worldY - gp.getCameraY();
@@ -170,9 +206,17 @@ public class Player {
     }
 
     public void update() {
+        // Sprint ramp-up tick: held while moving = builds, released = resets.
+        boolean sprintHeld = (kh.running || kh.shiftPressed);
+        if (sprintHeld && (isWalking || kh.isMoving())) {
+            if (sprintTicks < SPRINT_RAMP_FRAMES) sprintTicks++;
+        } else {
+            sprintTicks = 0;
+        }
+
         if (isWalking) {
             // Continue moving if already in a tile transition
-            int currentSpeed = kh.running ? speed + SPRINT_SPEED : speed;
+            int currentSpeed = computeCurrentSpeed();
 
             switch (direction) {
                 case "up"    -> worldY -= currentSpeed;

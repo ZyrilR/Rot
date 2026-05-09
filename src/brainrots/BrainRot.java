@@ -200,6 +200,15 @@ public class BrainRot {
     /**
      * Deducts 1 UP from the move at the given index. Returns false if that move has 0 UP left.
      */
+    /** True when every move on this BrainRot has 0 UP remaining. */
+    public boolean isOutOfUP() {
+        if (moves == null || moves.isEmpty()) return true;
+        for (Skill s : moves) {
+            if (s != null && s.getCurrentUP() > 0) return false;
+        }
+        return true;
+    }
+
     public boolean useSkill(int moveIndex) {
         if (moveIndex < 0 || moveIndex >= moves.size()) return false;
         Skill skill = moves.get(moveIndex);

@@ -278,6 +278,10 @@ public class GamePanel extends JPanel {
         }
 
         gameTime++;
+        // Keep the cave darkness overlay in sync with the current map every tick.
+        // Catches edge cases (save loads, dev-console teleport, exit-via-warp) where
+        // setActive(false) might otherwise be missed when leaving a cave.
+        DARKNESSOVERLAY.setActive(CURRENT_PATH != null && CURRENT_PATH.toLowerCase().contains("cave"));
         player.update();
         encounterSystem.checkTrainerLook(player, world.getInteractiveLayer().getNPCs(), this);
 

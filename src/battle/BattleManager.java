@@ -9,6 +9,7 @@ import overworld.Player;
 import progression.QuestSystem;
 import skills.Skill;
 import skills.SkillEffect;
+import skills.SkillRegistry;
 
 import java.util.List;
 
@@ -125,6 +126,41 @@ public class BattleManager {
         }
 
         SkillEffect.apply(skill, enemyRot, playerRot);
+        checkFainted();
+    }
+
+    /** Sentinel index passed to executePlayerTurn/executeEnemyTurn to trigger Struggle. */
+    public static final int STRUGGLE_INDEX = -10;
+
+    /** Last struggle recoil amount, exposed so the UI can display it. */
+    private int lastStruggleRecoil = 0;
+    public int getLastStruggleRecoil() { return lastStruggleRecoil; }
+
+    /**
+     * Pokemon-style Struggle: deals normal damage to the defender and recoils 1/4 of
+     * the damage back to the attacker. Used when a BrainRot has no remaining UP.
+     */
+    public void executeStruggleTurn(boolean isPlayerSide) {
+        if (result != BattleResult.ONGOING) return;
+        BrainRot attacker = isPlayerSide ? playerRot : enemyRot;
+        BrainRot defender = isPlayerSide ? enemyRot : playerRot;
+        if (attacker == null || defender == null) return;
+        if (attacker.isFainted()) return;
+        if (!StatusEffectManager.canAct(attacker)) { endTurnCleanup(); return; }
+
+        Skill struggle = SkillRegistry.struggle();
+        int dmg = DamageCalculator.calculate(struggle, attacker, defender, player.gp);
+        if (dmg < 1) dmg = 1;
+        defender.takeDamage(dmg);
+
+        // Recoil: 1/4 of damage dealt, minimum 1.
+        int recoil = Math.max(1, dmg / 4);
+        attacker.takeDamage(recoil);
+        lastStruggleRecoil = recoil;
+
+        System.out.println(attacker.getName() + " has no UP left and used Struggle! "
+                + dmg + " dmg / " + recoil + " recoil");
+
         checkFainted();
     }
 

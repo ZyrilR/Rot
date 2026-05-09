@@ -29,12 +29,40 @@ public class BattleUI {
         TRAINER_POSE, ENEMY_REVEAL, SWAP_PROMPT
     }
     private enum MenuOption { FIGHT, BAG, TEAM, RUN }
+    private enum AnimMode { IDLE, HURT, BUFF, ATTACK }
+
+    /** Resolve the current sprite frame for an actor given its animation mode. */
+    private int pickAnimFrame(AnimMode mode) {
+        switch (mode) {
+            case HURT: {
+                int span = HURT_END - HURT_START + 1;
+                int idx  = (globalAnimTick / Math.max(1, HURT_TICKS_PER_FRAME)) % span;
+                return HURT_START + idx;
+            }
+            case ATTACK: {
+                int span = ATK_END - ATK_START + 1;
+                int idx  = (globalAnimTick / Math.max(1, ATK_TICKS_PER_FRAME)) % span;
+                return ATK_START + idx;
+            }
+            case BUFF: {
+                // Loop: BUFF_FRAME, then IDLE_FRAME — alternates each step.
+                int idx = (globalAnimTick / Math.max(1, BUFF_TICKS_PER_FRAME)) % 2;
+                return (idx == 0) ? BUFF_FRAME : IDLE_FRAME;
+            }
+            default: return IDLE_FRAME;
+        }
+    }
 
     private static class BattleMessage {
         String line1, line2;
         int activeActor;
+        int tickDuration; // -1 → use default
         BattleMessage(String l1, String l2, int activeActor) {
+            this(l1, l2, activeActor, -1);
+        }
+        BattleMessage(String l1, String l2, int activeActor, int tickDuration) {
             this.line1 = l1; this.line2 = l2; this.activeActor = activeActor;
+            this.tickDuration = tickDuration;
         }
     }
 
@@ -73,8 +101,26 @@ public class BattleUI {
     private final Map<String, BufferedImage> spriteCache = new HashMap<>();
     private BufferedImage hpFrame_player, hpFrame_enemy, dialogueBoxFrame, playerBackSprite;
 
-    private int animTick = 0;
-    private int currentHurtFrame = 2;
+    // ── Brainrot battle-sprite animation tuning ─────────────────────────────
+    //  Frames per animation in /res/InteractiveTiles/Brainrots/<rot>/<TIER>[_BACK]_N.png
+    //   1            → idle
+    //   HURT_START..HURT_END → take-damage loop
+    //   BUFF_FRAME   → buff/debuff (cycled with idle)
+    //   ATK_START..ATK_END   → attack loop
+    private static final int IDLE_FRAME = 1;
+    private static final int HURT_START = 2;
+    private static final int HURT_END   = 3;
+    private static final int BUFF_FRAME = 4;
+    private static final int ATK_START  = 5;
+    private static final int ATK_END    = 6;
+
+    // Ticks per frame — tweak to slow down / speed up each animation.
+    private static final int IDLE_TICKS_PER_FRAME = 30;
+    private static final int HURT_TICKS_PER_FRAME = 6;
+    private static final int BUFF_TICKS_PER_FRAME = 8;
+    private static final int ATK_TICKS_PER_FRAME  = 5;
+
+    private int globalAnimTick = 0;
 
     // Trainer pose intro animation
     private int poseTick = 0;
@@ -122,11 +168,7 @@ public class BattleUI {
     public void update() {
         if (gp.GAMESTATE.equalsIgnoreCase("INVENTORY")) return;
 
-        animTick++;
-        if (animTick >= 10) {
-            animTick = 0;
-            currentHurtFrame = (currentHurtFrame == 2) ? 3 : 2;
-        }
+        globalAnimTick++;
 
         if (inputCooldown > 0) { inputCooldown--; return; }
 
@@ -234,13 +276,17 @@ public class BattleUI {
         messageQueue.add(new BattleMessage(line1, line2, activeActor));
     }
 
+    private void queueMessage(String line1, String line2, int activeActor, int tickDuration) {
+        messageQueue.add(new BattleMessage(line1, line2, activeActor, tickDuration));
+    }
+
     private void playNextMessage(BattleState nextState) {
         if (!messageQueue.isEmpty()) {
             BattleMessage msg = messageQueue.poll();
             dialogueLine1 = msg.line1;
             dialogueLine2 = msg.line2;
             currentMessageActor = msg.activeActor;
-            dialogueTicks = 90;
+            dialogueTicks = (msg.tickDuration > 0) ? msg.tickDuration : 90;
             stateAfterMessage = nextState;
             currentState = BattleState.MESSAGE;
         } else {
@@ -312,9 +358,16 @@ public class BattleUI {
             switch (menuCursor) {
                 case FIGHT -> {
                     setPrompt();
-                    int moveCount = battle.getPlayerRot().getMoves().size();
-                    if (skillCursor >= moveCount) skillCursor = 0;
-                    currentState = BattleState.SKILL_SELECT;
+                    BrainRot pr = battle.getPlayerRot();
+                    if (pr != null && pr.isOutOfUP()) {
+                        // Forced Struggle path — no skill select, go straight to action.
+                        playerChosenIndex = battle.STRUGGLE_INDEX;
+                        currentState = playerMovesFirst ? BattleState.ENEMY_AI : BattleState.ANIMATION;
+                    } else {
+                        int moveCount = pr.getMoves().size();
+                        if (skillCursor >= moveCount) skillCursor = 0;
+                        currentState = BattleState.SKILL_SELECT;
+                    }
                 }
                 case BAG   -> {
                     currentState = BattleState.BAG_OPEN;
@@ -356,17 +409,24 @@ public class BattleUI {
             }
             gp.player.getInventory().removeItem(item);
             boolean success = battle.executeCapture(item);
+
+            // Pokemon-style 3-wobble suspense before result.
+            String rotName = battle.getEnemyRot().getName();
+            queueMessage("You threw a " + item.getName() + "!", "", 1, 45);
+            queueMessage("Catching...", "*shake*",   2, 35);
+            queueMessage("Catching...", "*shake shake*", 2, 35);
+            queueMessage("Catching...", "*shake shake shake*", 2, 35);
+
             if (success) {
-
                 utils.AudioManager.playMusic(utils.Constants.BGM_CAUGHT_ROT, false);
-
-                queueMessage("Gotcha!", battle.getEnemyRot().getName() + " was caught!");
-                gp.NOTIFICATION.push("Captured!", battle.getEnemyRot().getName(),
+                queueMessage("Click!", "Gotcha!", 1, 50);
+                queueMessage(rotName, "was caught!", 1);
+                gp.NOTIFICATION.push("Captured!", rotName,
                         new java.awt.Color(120, 200, 240));
                 gp.player.getPCSYSTEM().addBrainRot(battle.getEnemyRot());
                 playNextMessage(BattleState.FINISH);
             } else {
-                queueMessage("Oh no!", "The BrainRot broke free!");
+                queueMessage("Oh no!", "The BrainRot broke free!", 2);
                 playerChosenIndex = -2;
                 playNextMessage(BattleState.ENEMY_AI);
             }
@@ -591,7 +651,12 @@ public class BattleUI {
     }
 
     private void updateEnemyAI() {
-        enemyChosenIndex = Math.max(0, battle.getEnemyRot().getMoves().size() - 1);
+        BrainRot er = battle.getEnemyRot();
+        if (er != null && er.isOutOfUP()) {
+            enemyChosenIndex = battle.STRUGGLE_INDEX;
+        } else {
+            enemyChosenIndex = Math.max(0, er.getMoves().size() - 1);
+        }
         currentState = playerMovesFirst ? BattleState.ANIMATION : BattleState.MENU;
     }
 
@@ -612,16 +677,30 @@ public class BattleUI {
             playNextMessage(BattleState.ANIMATION); return;
         }
         if (!attacker.isFainted()) {
-            Skill skill = attacker.getMoves().get(skillIdx);
-            queueMessage(attacker.getName() + " used", skill.getName() + "!", attackerActor);
-            int oldHp = defender.getCurrentHp();
-            if (playerMovesFirst) battle.executePlayerTurn(skillIdx);
-            else                  battle.executeEnemyTurn(skillIdx);
-            int damage = oldHp - defender.getCurrentHp();
-            if (damage > 0)      queueMessage(defender.getName(), "took " + damage + " damage!",      defenderActor);
-            else if (damage < 0) queueMessage(defender.getName(), "recovered " + (-damage) + " HP!");
-            queueEffectMessage(skill, attacker, defender, attackerActor, defenderActor);
-            if (defender.isFainted()) queueMessage(defender.getName() + " fainted!", "");
+            if (skillIdx == battle.STRUGGLE_INDEX) {
+                queueMessage(attacker.getName() + " has no UP left!", "", attackerActor);
+                queueMessage(attacker.getName() + " used", "Struggle!", attackerActor);
+                int defOldHp = defender.getCurrentHp();
+                int atkOldHp = attacker.getCurrentHp();
+                battle.executeStruggleTurn(playerMovesFirst);
+                int damage = defOldHp - defender.getCurrentHp();
+                int recoil = atkOldHp - attacker.getCurrentHp();
+                if (damage > 0) queueMessage(defender.getName(), "took " + damage + " damage!", defenderActor);
+                if (recoil > 0) queueMessage(attacker.getName(), "is hit by recoil! (" + recoil + ")", attackerActor);
+                if (defender.isFainted()) queueMessage(defender.getName() + " fainted!", "");
+                if (attacker.isFainted()) queueMessage(attacker.getName() + " fainted!", "");
+            } else {
+                Skill skill = attacker.getMoves().get(skillIdx);
+                queueMessage(attacker.getName() + " used", skill.getName() + "!", attackerActor);
+                int oldHp = defender.getCurrentHp();
+                if (playerMovesFirst) battle.executePlayerTurn(skillIdx);
+                else                  battle.executeEnemyTurn(skillIdx);
+                int damage = oldHp - defender.getCurrentHp();
+                if (damage > 0)      queueMessage(defender.getName(), "took " + damage + " damage!",      defenderActor);
+                else if (damage < 0) queueMessage(defender.getName(), "recovered " + (-damage) + " HP!");
+                queueEffectMessage(skill, attacker, defender, attackerActor, defenderActor);
+                if (defender.isFainted()) queueMessage(defender.getName() + " fainted!", "");
+            }
         }
         playNextMessage(BattleState.ANIMATION);
     }
@@ -636,6 +715,20 @@ public class BattleUI {
         if (!battle.getEnemyRot().isFainted() && !battle.getPlayerRot().isFainted() && !attacker.isFainted()) {
             if (!playerMovesFirst && (playerChosenIndex == -1 || playerChosenIndex == -2)) {
                 // no-op
+            } else if (skillIdx == battle.STRUGGLE_INDEX) {
+                queueMessage(attacker.getName() + " has no UP left!", "", attackerActor);
+                queueMessage(attacker.getName() + " used", "Struggle!", attackerActor);
+                int defOldHp = defender.getCurrentHp();
+                int atkOldHp = attacker.getCurrentHp();
+                // playerMovesFirst tells us who is attacker NOW: in turn-two, the
+                // attacker is the *opposite* side of playerMovesFirst.
+                battle.executeStruggleTurn(!playerMovesFirst);
+                int damage = defOldHp - defender.getCurrentHp();
+                int recoil = atkOldHp - attacker.getCurrentHp();
+                if (damage > 0) queueMessage(defender.getName(), "took " + damage + " damage!", defenderActor);
+                if (recoil > 0) queueMessage(attacker.getName(), "is hit by recoil! (" + recoil + ")", attackerActor);
+                if (defender.isFainted()) queueMessage(defender.getName() + " fainted!", "");
+                if (attacker.isFainted()) queueMessage(attacker.getName() + " fainted!", "");
             } else {
                 Skill skill = attacker.getMoves().get(skillIdx);
                 queueMessage(attacker.getName() + " used", skill.getName() + "!", attackerActor);
@@ -842,21 +935,34 @@ public class BattleUI {
         g2.fillOval(480, 200, 240, 60);
         g2.fillOval(40, 440, 300, 70);
 
-        // Animation frame selection
-        int pFrame = 1, eFrame = 1;
+        // Animation frame selection — derive per-actor mode from dialogue text.
+        AnimMode pMode = AnimMode.IDLE, eMode = AnimMode.IDLE;
         if (currentState == BattleState.MESSAGE) {
             String l1 = (dialogueLine1 != null) ? dialogueLine1.toLowerCase() : "";
             String l2 = (dialogueLine2 != null) ? dialogueLine2.toLowerCase() : "";
-            if (l1.contains("used") && !l1.startsWith("used ")) {
-                if (currentMessageActor == 1) pFrame = (dialogueTicks > 45) ? 4 : 5;
-                else if (currentMessageActor == 2) eFrame = (dialogueTicks > 45) ? 4 : 5;
+            boolean usedSkill = l1.contains(" used");
+            boolean tookHit   = l2.contains("took") || l2.contains("damage");
+            boolean buffMsg   = l1.contains("raised") || l2.contains("raised")
+                             || l1.contains("fell")   || l2.contains("fell")
+                             || l1.contains("recover")|| l2.contains("recover")
+                             || l2.contains("burned")  || l2.contains("paralyzed")
+                             || l2.contains("confused")|| l2.contains("asleep");
+
+            if (usedSkill) {
+                if (currentMessageActor == 1) pMode = AnimMode.ATTACK;
+                else if (currentMessageActor == 2) eMode = AnimMode.ATTACK;
             }
-            if (l2.contains("took") || l2.contains("damage")) {
-                if (currentMessageActor == 1) pFrame = currentHurtFrame;
-                else if (currentMessageActor == 2) eFrame = currentHurtFrame;
+            if (tookHit) {
+                if (currentMessageActor == 1) pMode = AnimMode.HURT;
+                else if (currentMessageActor == 2) eMode = AnimMode.HURT;
             }
-            if (l1.startsWith("used ")) pFrame = 4;
+            if (buffMsg) {
+                if (currentMessageActor == 1) pMode = AnimMode.BUFF;
+                else if (currentMessageActor == 2) eMode = AnimMode.BUFF;
+            }
         }
+        int pFrame = pickAnimFrame(pMode);
+        int eFrame = pickAnimFrame(eMode);
 
         boolean inTrainerPose  = (currentState == BattleState.TRAINER_POSE);
         boolean inEnemyReveal  = (currentState == BattleState.ENEMY_REVEAL);
