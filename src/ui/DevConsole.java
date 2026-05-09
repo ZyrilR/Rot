@@ -380,7 +380,7 @@ public class DevConsole {
         info("  /help                            Show this list");
         info("  /teleport <map> <x> <y>          Teleport player");
         info("     Maps: ROUTE131 ROUTE132 ROUTE130 CAVE131 MARKET");
-        info("  /speed <multiplier>              Set speed (1=normal)");
+        info("  /speed <multiplier>              Set speed (2=normal)");
         info("  /levelup <slot|all> [amount]     Level up slot or party");
         info("  /healall                         Restore entire party");
         info("  /heal <slot> [amount]            Heal party slot 1-6");
