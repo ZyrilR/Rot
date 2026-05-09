@@ -48,6 +48,9 @@ public class TrainerNPC extends NPC {
 
     public void addToParty(BrainRot rot) { party.add(rot); }
     public List<BrainRot> getParty()     { return party; }
+    public int  getRotCoins()            { return rotCoins; }
+    public void clearRotCoins()          { rotCoins = 0; }
+    public Inventory getInventory()      { return inventory; }
     public boolean hasBeenDefeated()     { return defeated; }
     public void setDefeated(boolean b)   { defeated = b; if (!b) defeatedAtGameTime = -1; }
 

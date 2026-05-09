@@ -182,13 +182,20 @@ public class BattleManager {
         QuestSystem.getInstance().onLongBattle(turnCount);
 
         reward.levelUps = playerRot.gainXp(reward.xp);
-        player.earnRotCoins(reward.coins);
 
-        if (reward.hasScroll() && reward.scroll != null)
-            reward.scrollAdded = player.getInventory().addItem(reward.scroll);
+        // Trainer battles: per-rot coin/scroll drops are suppressed. Coins and items
+        // come from the trainer's own stash, awarded once on full defeat (BattleUI).
+        if (trainer == null) {
+            player.earnRotCoins(reward.coins);
+            if (reward.hasScroll() && reward.scroll != null)
+                reward.scrollAdded = player.getInventory().addItem(reward.scroll);
+        } else {
+            reward.coins = 0;
+            reward.suppressDrops = true;
+        }
 
         System.out.println("[BattleManager] Rewards: " + reward.xp + " XP, " + reward.coins + " coins"
-                + (reward.hasScroll() ? ", " + reward.scrollSkillName + " scroll"
+                + (reward.hasScroll() && !reward.suppressDrops ? ", " + reward.scrollSkillName + " scroll"
                 + (reward.scrollAdded ? " added" : " (bag full)") : ""));
     }
 

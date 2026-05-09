@@ -436,8 +436,8 @@ public class GamePanel extends JPanel {
                 world.draw(g2);
                 player.draw(g2);
                 DARKNESSOVERLAY.draw(g2,
-                        player.screenX + TILE_SIZE / 2,
-                        player.screenY + TILE_SIZE / 2);
+                        getPlayerScreenX() + TILE_SIZE / 2,
+                        getPlayerScreenY() + TILE_SIZE / 2);
 
                 // UI overlays on top of the world
                 switch (GAMESTATE.toLowerCase()) {

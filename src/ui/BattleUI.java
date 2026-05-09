@@ -310,7 +310,12 @@ public class BattleUI {
             utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
 
             switch (menuCursor) {
-                case FIGHT -> { setPrompt(); currentState = BattleState.SKILL_SELECT; }
+                case FIGHT -> {
+                    setPrompt();
+                    int moveCount = battle.getPlayerRot().getMoves().size();
+                    if (skillCursor >= moveCount) skillCursor = 0;
+                    currentState = BattleState.SKILL_SELECT;
+                }
                 case BAG   -> {
                     currentState = BattleState.BAG_OPEN;
                     gp.INVENTORYUI.openInBattle();
@@ -380,6 +385,12 @@ public class BattleUI {
 
     private void updateSkillSelect() {
         int moveCount = battle.getPlayerRot().getMoves().size();
+        if (moveCount <= 0) {
+            queueMessage(battle.getPlayerRot().getName(), "has no moves!");
+            playNextMessage(BattleState.MENU);
+            return;
+        }
+        if (skillCursor >= moveCount) skillCursor = 0;
         if (kh.upPressed && skillCursor >= 2) {
             skillCursor -= 2; utils.AudioManager.playSFX(utils.Constants.SFX_SELECT); inputCooldown = INPUT_DELAY;
         }
@@ -470,6 +481,7 @@ public class BattleUI {
             if (confirmCursor == 0) {
                 BrainRot selected = gp.player.getPCSYSTEM().getPartyMember(partyCursor);
                 battle.setPlayerRot(selected);
+                skillCursor = 0;        // reset so old cursor doesn't index past new rot's moves
                 queueMessage("Go! " + selected.getName() + "!", "");
                 if (isInitialSendOut) {
                     isInitialSendOut = false;
@@ -493,11 +505,13 @@ public class BattleUI {
     private void updateLevelupCheck() {
         if (pendingReplacements.isEmpty()) {
             // If a trainer battle is still ONGOING (next BrainRot was sent out),
-            // play the trainer pose intro for the next rot before handing control back.
+            // skip the trainer pose (only shown once, at fight start) and go straight
+            // to the swap prompt via the enemy reveal.
             if (!battle.isOver()) {
                 if (battle.getTrainer() != null) {
-                    poseTick = 0;
-                    currentState = BattleState.TRAINER_POSE;
+                    awaitingSwapPrompt = true;
+                    revealTick = 0;
+                    currentState = BattleState.ENEMY_REVEAL;
                 } else {
                     setPrompt();
                     currentState = BattleState.MENU;
@@ -652,9 +666,11 @@ public class BattleUI {
                 BattleReward.Result reward = battle.getReward();
                 queueMessage(battle.getEnemyRot().getName() + " fainted!", "");
                 queueMessage(battle.getPlayerRot().getName() + " gained", reward.xp + " XP!", 1);
-                queueMessage("Coins earned:", "+" + reward.coins + " RotCoins!");
-                if (reward.hasScroll())
-                    queueMessage("Loot drop!", reward.scrollSkillName + " Scroll" + (reward.scrollAdded ? " found!" : " [Bag full]"));
+                if (!reward.suppressDrops) {
+                    queueMessage("Coins earned:", "+" + reward.coins + " RotCoins!");
+                    if (reward.hasScroll())
+                        queueMessage("Loot drop!", reward.scrollSkillName + " Scroll" + (reward.scrollAdded ? " found!" : " [Bag full]"));
+                }
 
                 BrainRot playerRot = battle.getPlayerRot();
                 for (LevelUpResult lu : reward.levelUps) {
@@ -678,23 +694,43 @@ public class BattleUI {
                         // Resume battle; play wild-battle music
                         utils.AudioManager.playMusic(utils.Constants.BGM_WILD_BATTLE, true);
                         playerMovesFirst = battle.getPlayerRot().getSpeed() >= next.getSpeed();
-                        // Show iconic pose → reveal new enemy → ask player to swap.
+                        // Skip the iconic pose for subsequent rots — go straight to
+                        // reveal-then-swap.
                         awaitingSwapPrompt = true;
-                        loadTrainerPoseSprite();
-                        poseTick = 0;
+                        revealTick = 0;
+                        if (battle.getTrainer() != null)
+                            queueMessage(battle.getTrainer().name + " sent out", next.getName() + "!", 2);
                     }
                 } else if (battle.getTrainer() != null) {
                     // Trainer is fully defeated: persist defeat + start cooldown
-                    battle.getTrainer().markDefeated(gp.getGameTime());
+                    npc.TrainerNPC tr = battle.getTrainer();
+                    tr.markDefeated(gp.getGameTime());
                     String key = gp.CURRENT_PATH + "@"
-                            + (battle.getTrainer().worldX / TILE_SIZE) + ","
-                            + (battle.getTrainer().worldY / TILE_SIZE);
+                            + (tr.worldX / TILE_SIZE) + ","
+                            + (tr.worldY / TILE_SIZE);
                     gp.defeatedTrainers.put(key, gp.getGameTime());
+
+                    // Award the trainer's stored RotCoins + inventory drops.
+                    int trainerCoins = tr.getRotCoins();
+                    if (trainerCoins > 0) {
+                        gp.player.earnRotCoins(trainerCoins);
+                        queueMessage("Coins earned:", "+" + trainerCoins + " RotCoins!");
+                        tr.clearRotCoins();
+                    }
+                    if (tr.getInventory() != null) {
+                        java.util.List<items.Item> drops = new java.util.ArrayList<>(tr.getInventory().getRawItems());
+                        for (items.Item it : drops) {
+                            if (it == null) continue;
+                            boolean added = gp.player.getInventory().addItem(it);
+                            queueMessage("Loot drop!", it.getName() + (added ? " obtained!" : " [Bag full]"));
+                            if (added) tr.getInventory().removeItem(it);
+                        }
+                    }
                 }
 
                 BattleState afterMessages;
                 if (!pendingReplacements.isEmpty()) afterMessages = BattleState.LEVELUP_CHECK;
-                else if (trainerHasMore)            afterMessages = BattleState.TRAINER_POSE;
+                else if (trainerHasMore)            afterMessages = BattleState.ENEMY_REVEAL;
                 else                                afterMessages = BattleState.FINISH;
                 playNextMessage(afterMessages);
             } else {
@@ -702,6 +738,16 @@ public class BattleUI {
                 playNextMessage(pendingReplacements.isEmpty() ? BattleState.FINISH : BattleState.LEVELUP_CHECK);
             }
         } else {
+            // Player rot fainted but team has reserves — force a swap before continuing.
+            if (battle.getPlayerRot() != null && battle.getPlayerRot().isFainted()
+                    && battle.hasHealthyReserves()) {
+                queueMessage(battle.getPlayerRot().getName() + " fainted!", "");
+                queueMessage("Choose your next", "BrainRot!", 1);
+                isInitialSendOut = true;        // re-use initial send-out flow
+                playerChosenIndex = -1;
+                playNextMessage(BattleState.TEAM_SELECT);
+                return;
+            }
             if (playerMovesFirst) setPrompt();
             currentState = playerMovesFirst ? BattleState.MENU : BattleState.ENEMY_AI;
         }
@@ -1183,12 +1229,43 @@ public class BattleUI {
         Font badgeFont = getCustomFont(Font.PLAIN, 10);
         int badgeY = barY + 16;
         int bx = x + 20;
+        int bxAfter = bx;
         if (rot.getPrimaryType() != null) {
             int bw1 = drawTypeBadgeBattle(g2, badgeFont, rot.getPrimaryType().name(), bx, badgeY, 14);
+            bxAfter = bx + bw1 + 4;
             if (rot.getSecondaryType() != null) {
-                drawTypeBadgeBattle(g2, badgeFont, rot.getSecondaryType().name(), bx + bw1 + 4, badgeY, 14);
+                int bw2 = drawTypeBadgeBattle(g2, badgeFont, rot.getSecondaryType().name(), bxAfter, badgeY, 14);
+                bxAfter += bw2 + 4;
             }
         }
+
+        // Status badge (BURN, PARALYZE, CONFUSE, SLEEP, etc.) — drawn next to type badges.
+        if (rot.getStatus() != null && !rot.getStatus().equalsIgnoreCase("NONE")) {
+            drawStatusBadge(g2, badgeFont, rot.getStatus(), bxAfter, badgeY, 14);
+        }
+    }
+
+    private int drawStatusBadge(Graphics2D g2, Font base, String status, int x, int y, int h) {
+        g2.setFont(base.deriveFont(8f));
+        FontMetrics fm = g2.getFontMetrics();
+        String label = status.toUpperCase();
+        int w = fm.stringWidth(label) + 14;
+        g2.setColor(statusColor(label));
+        g2.fillRoundRect(x, y, w, h, 4, 4);
+        g2.setColor(Color.WHITE);
+        g2.drawString(label, x + 7, y + h - 4);
+        return w;
+    }
+
+    private Color statusColor(String s) {
+        return switch (s) {
+            case "BURN"     -> new Color(220,  90,  40);
+            case "PARALYZE" -> new Color(220, 180,  40);
+            case "CONFUSE"  -> new Color(180,  90, 200);
+            case "SLEEP"    -> new Color( 80, 100, 180);
+            case "FLINCH"   -> new Color(120, 120, 120);
+            default         -> new Color(130, 126, 118);
+        };
     }
 
     // ── Menu overlays ─────────────────────────────────────────────────────────
@@ -1226,6 +1303,13 @@ public class BattleUI {
             // Skill type badge under the move name
             if (sk.getType() != null)
                 drawTypeBadgeBattle(g2, badgeFont, sk.getType().name(), dx, dy + 4, 14);
+
+            // UP counter — right side of each row
+            String upStr = "UP " + sk.getCurrentUP() + "/" + sk.getMaxUP();
+            g2.setFont(getCustomFont(Font.BOLD, 11f));
+            g2.setColor(sk.getCurrentUP() < 1 ? new Color(200, 80, 60) : new Color(80, 76, 70));
+            FontMetrics upFm = g2.getFontMetrics();
+            g2.drawString(upStr, dx + 200 - upFm.stringWidth(upStr), dy + 16);
 
             if (i == skillCursor) drawCursor(g2, dx - 25, dy - 14);
         }
