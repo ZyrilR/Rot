@@ -133,7 +133,17 @@ public class Player {
     public void draw(Graphics2D g) {
         BufferedImage img = null;
 
-        if (isMoving) {
+        if (gp.TELEPORTEFFECT.isActive()) {
+            String dir = gp.TELEPORTEFFECT.getDirectionFrame();
+            if (dir != null) {
+                switch (dir) {
+                    case "up"    -> img = walk_up.getFirst();
+                    case "down"  -> img = walk_down.getFirst();
+                    case "right" -> img = walk_right.getFirst();
+                    case "left"  -> img = walk_left.getFirst();
+                }
+            }
+        } else if (isMoving) {
             switch (direction) {
                 case "up" -> img = walk_up.get(spriteCounter % walk_up.size());
                 case "down" -> img = walk_down.get(spriteCounter % walk_down.size());
@@ -155,16 +165,7 @@ public class Player {
         if (img != null) {
             int sx = worldX - gp.getCameraX();
             int sy = worldY - gp.getCameraY();
-            if (gp.TELEPORTEFFECT.isActive()) {
-                java.awt.geom.AffineTransform old = g.getTransform();
-                double cx = sx + TILE_SIZE / 2.0;
-                double cy = sy + TILE_SIZE / 2.0;
-                g.rotate(gp.TELEPORTEFFECT.getRotation(), cx, cy);
-                g.drawImage(img, sx, sy, TILE_SIZE, TILE_SIZE, null);
-                g.setTransform(old);
-            } else {
-                g.drawImage(img, sx, sy, TILE_SIZE, TILE_SIZE, null);
-            }
+            g.drawImage(img, sx, sy, TILE_SIZE, TILE_SIZE, null);
         }
     }
 

@@ -31,12 +31,14 @@ public class BattleReward {
 
     public static class Result {
         public final int    xp;
-        public final int    coins;
+        public       int    coins;
         public final Item   scroll;
         public final String scrollSkillName;
 
-        public List<LevelUpResult> levelUps    = new ArrayList<>();
-        public boolean             scrollAdded = false;
+        public List<LevelUpResult> levelUps      = new ArrayList<>();
+        public boolean             scrollAdded   = false;
+        /** Set true for trainer battles: BattleUI should hide the random coin / scroll lines. */
+        public boolean             suppressDrops = false;
 
         public Result(int xp, int coins, Item scroll, String scrollSkillName) {
             this.xp              = xp;
