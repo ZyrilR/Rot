@@ -30,8 +30,6 @@ public class Constants {
     //Dialogue Settings
     public static final int TEXT_SPEED = 1;
 
-    public static final int MAX_LEVEL = 100;
-
     // PC UI Constants
     public static final int    GRID_COLS    = 5;
     public static final int    GRID_ROWS    = 5;
@@ -69,7 +67,9 @@ public class Constants {
     };
 
     //Brainrot Attributes
+    public static final int MAX_LEVEL = 100;
     public static final int MAX_SPEED = 100;
+
     //AUDIOO
     public static final String SND_SPLASH = "/res/Sounds/Splash_Screen.mp3";
     public static final String BGM_WILD_BATTLE = "/res/Sounds/Wild_Battle.mp3";
