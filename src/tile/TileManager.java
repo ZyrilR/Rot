@@ -191,10 +191,10 @@ public class TileManager {
                                 itemString = parts[7];
                             }
 
-                            System.out.println(rots);
+//                            System.out.println(rots);
 
                             String[] brainrots = rots.split(";");
-                            System.out.println(line);
+//                            System.out.println(line);
 
                             for (String brainrot : brainrots) {
                                 String[] rot = brainrot.split(":");
