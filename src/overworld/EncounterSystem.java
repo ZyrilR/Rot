@@ -9,6 +9,8 @@ import npc.TrainerNPC;
 import tile.TileManager;
 import utils.Directories;
 import java.util.List;
+
+import static utils.AudioManager.playMusic;
 import static utils.Constants.*;
 
 public class EncounterSystem {
@@ -102,8 +104,8 @@ public class EncounterSystem {
         }
         activeBattle = new BattleManager(playerRot, wildRot, gp.player.getPCSYSTEM().getParty(), player, true);
         System.out.println("[EncounterSystem] Wild battle: " + wildRot.getName() + " Lv." + wildRot.getLevel());
+        playMusic(utils.Constants.BGM_WILD_BATTLE, true);
 
-        utils.AudioManager.playMusic(utils.Constants.BGM_WILD_BATTLE, true);
     }
 
     public void startTrainerBattle(Player player, TrainerNPC trainer, GamePanel gp) {
@@ -131,6 +133,7 @@ public class EncounterSystem {
             return;
         }
 
+        playMusic(BGM_TRAINER_BATTLE, true);
         activeBattle = new BattleManager(playerRot, trainerLead, gp.player.getPCSYSTEM().getParty(), player, false);
         activeBattle.setTrainer(trainer);
         System.out.println("[EncounterSystem] Trainer battle: " + trainer.name);

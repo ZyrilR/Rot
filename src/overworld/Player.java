@@ -48,7 +48,7 @@ public class Player {
     /** Base speed used as the reference point for animation pacing. */
     public static final int BASE_SPEED = 4;
     /** Pixels of movement required to advance one walk-cycle frame. */
-    public static final int ANIM_FRAME_DISTANCE = 12;
+    public static final int ANIM_FRAME_DISTANCE = 24;
     /** Maximum bonus added to base speed at full sprint. */
     public static final int MAX_SPRINT_BONUS = 12;
     /** Frames it takes for the sprint to fully ramp up from 0 → max bonus. */

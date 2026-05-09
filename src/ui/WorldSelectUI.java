@@ -377,7 +377,8 @@ public class WorldSelectUI {
         gp.GAMESTATE = "starter";
         System.out.println("[WorldSelectUI] New world \"" + name + "\" — spawned at (13, 68).");
 
-        utils.AudioManager.playMusic(utils.Constants.BGM_OVERWORLD, true);
+        if (gp.GAMESTATE.equalsIgnoreCase("play"))
+            utils.AudioManager.playMusic(utils.Constants.BGM_OVERWORLD, true);
     }
 
     private void startRename() {

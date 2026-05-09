@@ -226,7 +226,6 @@ public class BattleManager {
             if (reward.hasScroll() && reward.scroll != null)
                 reward.scrollAdded = player.getInventory().addItem(reward.scroll);
         } else {
-            reward.coins = 0;
             reward.suppressDrops = true;
         }
 

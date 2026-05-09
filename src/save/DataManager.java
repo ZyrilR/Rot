@@ -53,6 +53,7 @@ public class DataManager {
     private static void saveData(GamePanel gp, int folderID, boolean newFolder) {
         File folder = new File(SAVES.getPath(), String.valueOf(folderID));
         gp.GAMESTATE = "play";
+        CURRENT_LOAD = folderID;
 
         try {
             if (newFolder) folder.mkdirs();
