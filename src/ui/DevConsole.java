@@ -354,7 +354,7 @@ public class DevConsole {
     private void cmdTeleport(List<String> t) {
         if (t.size() < 4) {
             err("Usage: /teleport <mapname> <x> <y>");
-            info("  Maps: ROUTE131, ROUTE132, ROUTE130, CAVE131, MARKET");
+            info("  Maps: ROUTE131, ROUTE132, ROUTE130, CAVE131, MARKET, DEWDROPPIER");
             info("  Ex: /teleport ROUTE131 20 30");
             return;
         }

@@ -15,6 +15,7 @@ public enum Directories {
     FLYINGGYMFLOOR1("/res/Worlds/Rooms/FlyingGymFloor1/", 0, 0, 0, 0),
     FLYINGGYMFLOOR2("/res/Worlds/Rooms/FlyingGymFloor2/", 0, 0, 0, 0),
     DEWDROPPIER("/res/Worlds/Rooms/DewdropPier/", 0, 0, 0, 0),
+    MARKET("/res/Worlds/Rooms/Route130Market/", 0, 0, 0, 0),
 
     SAVES("src/res/Saves/", 0, 0, 0, 0); // Kept exactly the same for DataManager!
 

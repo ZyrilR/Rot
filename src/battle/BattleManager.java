@@ -4,6 +4,7 @@ import brainrots.BrainRot;
 import brainrots.LevelUpResult;
 import items.Item;
 import items.Capsule;
+import npc.TrainerNPC;
 import overworld.Player;
 import progression.QuestSystem;
 import skills.Skill;
@@ -16,11 +17,12 @@ public class BattleManager {
     public enum BattleResult { ONGOING, PLAYER_WIN, ENEMY_WIN, CAPTURED, FLED }
 
     private BrainRot             playerRot;
-    private final BrainRot       enemyRot;
+    private BrainRot             enemyRot;
     private final List<BrainRot> playerTeam;
     private final Player         player;
     private final boolean        wildBattle;
     private final boolean        caveBonus;
+    private TrainerNPC           trainer;
 
     private BattleResult        result    = BattleResult.ONGOING;
     private BattleReward.Result reward    = null;
@@ -47,6 +49,27 @@ public class BattleManager {
 
     public void setPlayerRot(BrainRot rot) { this.playerRot = rot; }
     public boolean isWildBattle()          { return wildBattle; }
+
+    public void setTrainer(TrainerNPC t)   { this.trainer = t; }
+    public TrainerNPC getTrainer()         { return trainer; }
+
+    /** True if the trainer has another non-fainted BrainRot waiting after the current one. */
+    public boolean trainerHasNextEnemy() {
+        return trainer != null && trainer.getNextBrainRot(enemyRot) != null;
+    }
+
+    /**
+     * Switches enemyRot to the trainer's next non-fainted BrainRot and resets the
+     * battle to ONGOING so the player keeps fighting. Returns the new enemy or null.
+     */
+    public BrainRot advanceToNextTrainerEnemy() {
+        if (trainer == null) return null;
+        BrainRot next = trainer.getNextBrainRot(enemyRot);
+        if (next == null) return null;
+        this.enemyRot  = next;
+        this.result    = BattleResult.ONGOING;
+        return next;
+    }
 
     // ── Turn execution ────────────────────────────────────────────────────────
 
@@ -133,9 +156,23 @@ public class BattleManager {
             result = BattleResult.PLAYER_WIN;
             resolveRewards();
         } else if (playerRot.isFainted()) {
-            System.out.println(playerRot.getName() + " fainted! Enemy wins!");
-            result = BattleResult.ENEMY_WIN;
+            if (hasHealthyReserves()) {
+                System.out.println(playerRot.getName() + " fainted! Awaiting replacement send-out...");
+                // Battle stays ONGOING; BattleUI will force a TEAM_SELECT.
+            } else {
+                System.out.println(playerRot.getName() + " fainted! Enemy wins!");
+                result = BattleResult.ENEMY_WIN;
+            }
         }
+    }
+
+    /** True if the player has at least one non-fainted BrainRot besides the active one. */
+    public boolean hasHealthyReserves() {
+        if (playerTeam == null) return false;
+        for (BrainRot rot : playerTeam) {
+            if (rot != null && rot != playerRot && !rot.isFainted()) return true;
+        }
+        return false;
     }
 
     private void resolveRewards() {

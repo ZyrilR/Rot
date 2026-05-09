@@ -1,6 +1,11 @@
-5,75,50,42,28
+10,75,50,42,28
 Background:BACKGROUND
+Path:BACKGROUND
 Background_Collision:BACKGROUND
-Decoration:DECORATION
+Bushes:DECORATION
+Flowers:DECORATION
+Trees_Collision:DECORATION
+Collision:DECORATION
 Building:BUILDING
+Building2:BUILDING
 Interactive:INTERACTIVE

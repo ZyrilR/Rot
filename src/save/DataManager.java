@@ -123,6 +123,27 @@ public class DataManager {
             }
         }
 
+        // ── Game time ─────────────────────────────────────────────────────────
+        format += "[GAMETIME]\n" + gp.gameTime + "\n";
+
+        // ── Picked loots ──────────────────────────────────────────────────────
+        format += "[PICKEDLOOTS]\n";
+        StringBuilder lootSb = new StringBuilder();
+        for (String key : gp.pickedLoots) {
+            if (lootSb.length() > 0) lootSb.append(";");
+            lootSb.append(key);
+        }
+        format += lootSb + "\n";
+
+        // ── Defeated trainers (key=defeatedAtGameTime) ────────────────────────
+        format += "[DEFEATEDTRAINERS]\n";
+        StringBuilder trSb = new StringBuilder();
+        for (java.util.Map.Entry<String, Long> e : gp.defeatedTrainers.entrySet()) {
+            if (trSb.length() > 0) trSb.append(";");
+            trSb.append(e.getKey()).append("=").append(e.getValue());
+        }
+        format += trSb + "\n";
+
         return format;
     }
 
@@ -135,6 +156,11 @@ public class DataManager {
     public static void loadData(GamePanel gp, int slotNo) {
         gp.player.reset();
         CURRENT_LOAD = slotNo;
+
+        // Reset persistent runtime state — will be repopulated below if present in save.
+        gp.gameTime = 0;
+        gp.pickedLoots.clear();
+        gp.defeatedTrainers.clear();
 
         // ── Load quests (graceful if missing) ─────────────────────────────────
         QuestSystem.reset();
@@ -243,6 +269,36 @@ public class DataManager {
                 if (rot != null) gp.player.getPCSYSTEM().addBrainRot(rot, box, slot);
             }
 
+            // ── Optional new sections (graceful for old saves) ────────────────
+            String section;
+            while ((section = br.readLine()) != null) {
+                if (section.equalsIgnoreCase("[GAMETIME]")) {
+                    String t = br.readLine();
+                    gp.gameTime = (t == null) ? 0 : safeParseLong(t);
+                } else if (section.equalsIgnoreCase("[PICKEDLOOTS]")) {
+                    String l = br.readLine();
+                    if (l != null && !l.isBlank()) {
+                        for (String key : l.split(";"))
+                            if (!key.isBlank()) gp.pickedLoots.add(key.trim());
+                    }
+                } else if (section.equalsIgnoreCase("[DEFEATEDTRAINERS]")) {
+                    String l = br.readLine();
+                    if (l != null && !l.isBlank()) {
+                        for (String entry : l.split(";")) {
+                            if (entry.isBlank()) continue;
+                            int eq = entry.indexOf('=');
+                            if (eq < 0) continue;
+                            gp.defeatedTrainers.put(
+                                    entry.substring(0, eq).trim(),
+                                    safeParseLong(entry.substring(eq + 1).trim()));
+                        }
+                    }
+                }
+            }
+
+            // Re-apply pruned loots / defeated trainer state to the freshly-loaded map
+            gp.applyPersistentMapState();
+
         } catch (Exception e) {
             System.err.println("[DataManager] loadData error: " + e.getMessage());
             e.printStackTrace();
@@ -311,6 +367,14 @@ public class DataManager {
         String v = value.trim();
         if (v.isEmpty() || v.equalsIgnoreCase("NONE") || v.equalsIgnoreCase("null")) return 0;
         try { return Integer.parseInt(v); }
+        catch (NumberFormatException e) { return 0; }
+    }
+
+    private static long safeParseLong(String value) {
+        if (value == null) return 0;
+        String v = value.trim();
+        if (v.isEmpty() || v.equalsIgnoreCase("NONE") || v.equalsIgnoreCase("null")) return 0;
+        try { return Long.parseLong(v); }
         catch (NumberFormatException e) { return 0; }
     }
 

@@ -145,6 +145,8 @@ public class MenuUI {
             }
             case SAVE -> {
                 DataManager.saveCurrentLoad(gp);
+                gp.NOTIFICATION.push("Saved", "Game progress saved.", new java.awt.Color(120, 200, 120));
+                utils.AudioManager.playSFX(utils.Constants.SFX_SAVE);
                 gp.GAMESTATE = "play";
                 System.out.println("[MenuUI] Saving Current Slot.");
             }

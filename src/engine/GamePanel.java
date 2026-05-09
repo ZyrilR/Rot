@@ -7,10 +7,11 @@ import input.KeyboardHandler;
 import map.WorldLoader;
 import overworld.EncounterSystem;
 import overworld.Player;
+import progression.QuestSystem;
 import storage.PCSystem;
-import tile.CollisionChecker;
-import tile.TileManager;
-import tile.TileTeleporter;
+import npc.NPC;
+import npc.TrainerNPC;
+import tile.*;
 import ui.*;
 
 import javax.swing.JPanel;
@@ -19,6 +20,11 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import items.ItemRegistry;
 import utils.RandomUtil;
@@ -28,11 +34,10 @@ import static utils.Constants.*;
 import static utils.Directories.*;
 
 public class GamePanel extends JPanel {
-
     // ── Core handlers ─────────────────────────────────────────────────────────
     public KeyboardHandler  KEYBOARDHANDLER  = new KeyboardHandler();
     public EncounterSystem  encounterSystem  = new EncounterSystem();
-    public CollisionChecker COLLISIONCHECKER = new CollisionChecker(this);
+    public TileChecker      TILECHECKER      = new TileChecker(this);
     public Player           player           = new Player(this, KEYBOARDHANDLER);
 
     public String     GAMESTATE   = "splash";   // start on splash screen
@@ -50,6 +55,8 @@ public class GamePanel extends JPanel {
     public final PCUI        PCUI        = new PCUI(this, player.getPCSYSTEM());
     public final QuestUI     QUESTUI     = new QuestUI(this);
     public final QuestToast  QUESTTOAST  = new QuestToast();
+    public final NotificationToast NOTIFICATION = new NotificationToast();
+    public final TeleportEffect TELEPORTEFFECT = new TeleportEffect();
     public final MenuUI      MENUUI      = new MenuUI(this);
     public final InventoryUI INVENTORYUI = new InventoryUI(this);
     public final MapUI       MAPUI       = new MapUI(this);
@@ -61,6 +68,36 @@ public class GamePanel extends JPanel {
 
     public final WorldLoader world = new WorldLoader(this);
     public String CURRENT_PATH;
+
+    // ── Persistent runtime state (saved/loaded across slots) ──────────────────
+    /** Game time in ticks (frames). Advances only while updatePlayState is running. */
+    public long gameTime = 0;
+    /** Keys ("mapPath@col,row") for loots already picked up. */
+    public final Set<String> pickedLoots = new HashSet<>();
+    /** Keys ("mapPath@col,row") for trainers defeated, mapped to gameTime when defeated. */
+    public final Map<String, Long> defeatedTrainers = new HashMap<>();
+
+    public long getGameTime() { return gameTime; }
+
+    /** Camera X clamped to map bounds. Uses player's centered screenX as the desired offset. */
+    public int getCameraX() {
+        int worldW = MAX_WORLD_COL * TILE_SIZE;
+        int desired = player.worldX - player.screenX;
+        int max = Math.max(0, worldW - SCREEN_WIDTH);
+        return Math.max(0, Math.min(desired, max));
+    }
+
+    /** Camera Y clamped to map bounds. */
+    public int getCameraY() {
+        int worldH = MAX_WORLD_ROW * TILE_SIZE;
+        int desired = player.worldY - player.screenY;
+        int max = Math.max(0, worldH - SCREEN_HEIGHT);
+        return Math.max(0, Math.min(desired, max));
+    }
+
+    /** Player's actual on-screen position (accounts for clamped camera at map edges). */
+    public int getPlayerScreenX() { return player.worldX - getCameraX(); }
+    public int getPlayerScreenY() { return player.worldY - getCameraY(); }
 
     public GamePanel() {
         this.setPreferredSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -101,7 +138,7 @@ public class GamePanel extends JPanel {
     }
 
     private void testQuests() {
-        progression.QuestSystem qs = progression.QuestSystem.getInstance();
+        QuestSystem qs = QuestSystem.getInstance();
         qs.complete("SPEED_DEMON");
         System.out.println("[DEV] Quests force-completed for testing.");
     }
@@ -111,6 +148,47 @@ public class GamePanel extends JPanel {
     public ArrayList<TileManager> getWorldBackgroundLayer() { return world.getBackgroundLayer(); }
     public ArrayList<TileManager> getWorldBuildingLayer()   { return world.getBuildingLayer(); }
     public TileManager            getWorldInteractiveLayer() { return world.getInteractiveLayer(); }
+
+    /**
+     * Re-applies persistent state to the freshly-loaded interactive layer:
+     *  - removes already-picked loots from the map matrix and the loot ArrayList
+     *  - restores defeated/cooldown state on trainer NPCs
+     * Safe to call after every world.loadMap().
+     */
+    public void applyPersistentMapState() {
+        TileManager interactive = world.getInteractiveLayer();
+        if (interactive == null || CURRENT_PATH == null) return;
+
+        // Prune picked-up loots
+        Iterator<TileLoot> it = interactive.getLoots().iterator();
+        while (it.hasNext()) {
+            TileLoot tl = it.next();
+            String key = CURRENT_PATH + "@" + tl.getX() + "," + tl.getY();
+            if (pickedLoots.contains(key)) {
+                int[][] map = interactive.getMap();
+                if (tl.getY() >= 0 && tl.getY() < map.length
+                        && tl.getX() >= 0 && tl.getX() < map[0].length) {
+                    map[tl.getY()][tl.getX()] = 0;
+                }
+                it.remove();
+            }
+        }
+
+        // Restore defeated/cooldown state for trainers on this map
+        for (NPC npc : interactive.getNPCs()) {
+            if (npc instanceof TrainerNPC trainer) {
+                String key = CURRENT_PATH + "@" + (trainer.worldX / TILE_SIZE) + "," + (trainer.worldY / TILE_SIZE);
+                Long defAt = defeatedTrainers.get(key);
+                if (defAt != null) {
+                    if (gameTime - defAt >= TrainerNPC.COOLDOWN_TICKS) {
+                        defeatedTrainers.remove(key);
+                    } else {
+                        trainer.restoreDefeatedState(defAt);
+                    }
+                }
+            }
+        }
+    }
 
     // ── Game loop ─────────────────────────────────────────────────────────────
 
@@ -133,6 +211,7 @@ public class GamePanel extends JPanel {
                 BATTLEUI.update();
                 if (encounterSystem.getActiveBattle() == null) GAMESTATE = "play";
             }
+            case "teleport"  -> updateTeleportState();
             case "dialogue"  -> DIALOGUEBOX.update();
             case "shop"      -> SHOPUI.update();
             case "pc"        -> PCUI.update();
@@ -198,6 +277,7 @@ public class GamePanel extends JPanel {
             return;
         }
 
+        gameTime++;
         player.update();
         encounterSystem.checkTrainerLook(player, world.getInteractiveLayer().getNPCs(), this);
 
@@ -207,7 +287,7 @@ public class GamePanel extends JPanel {
             return;
         }
 
-        TileTeleporter tr = tile.CollisionChecker.getTeleporterTileInCurrentPosition(this, player);
+        TileTeleporter tr = TileChecker.getTeleporterTileInCurrentPosition(this, player);
         if (tr != null) handleTeleport(tr);
 
         if (KEYBOARDHANDLER.ePressed) {
@@ -230,9 +310,53 @@ public class GamePanel extends JPanel {
         }
     }
 
+    // Pending teleport target captured before the spin animation runs
+    private String  pendingTeleportPath;
+    private String  pendingTeleportName;
+    private TileTeleporter pendingTeleportTile;
+
+    private void updateTeleportState() {
+        boolean phaseDone = TELEPORTEFFECT.update();
+        if (!phaseDone) return;
+
+        switch (TELEPORTEFFECT.getPhase()) {
+            case SPIN_IN -> {
+                // Swap maps, reposition player, then spin out
+                TELEPORTEFFECT.markReadyToSwap();
+                CURRENT_PATH = pendingTeleportPath;
+                world.loadMap(CURRENT_PATH, true);
+                DARKNESSOVERLAY.setActive(CURRENT_PATH.toLowerCase().contains("cave"));
+
+                int[] coords = new int[2];
+                for (TileTeleporter tile : getWorldInteractiveLayer().getTeleporters()) {
+                    if (tile != null && tile.getName().equalsIgnoreCase(pendingTeleportName)) {
+                        coords = tile.getCoordinates().clone();
+                        switch (tile.getDirection().toUpperCase()) {
+                            case "LEFT"  -> coords[0] -= 1;
+                            case "RIGHT" -> coords[0] += 1;
+                            case "DOWN"  -> coords[1] += 1;
+                            case "UP"    -> coords[1] -= 1;
+                        }
+                    }
+                }
+                player.teleport(coords);
+                if (pendingTeleportTile != null) pendingTeleportTile.isInteracted = false;
+                TELEPORTEFFECT.startSpinOut();
+            }
+            case SPIN_OUT -> {
+                TELEPORTEFFECT.stop();
+                pendingTeleportPath = null;
+                pendingTeleportName = null;
+                pendingTeleportTile = null;
+                GAMESTATE = "play";
+            }
+            default -> {}
+        }
+    }
+
     private void handleTeleport(TileTeleporter tr) {
-        Directories currentMapData = Directories.getByPath(CURRENT_PATH);
-        String targetPath = Directories.getPath(tr.getLinkTo());
+        Directories currentMapData = getByPath(CURRENT_PATH);
+        String targetPath = getPath(tr.getLinkTo());
 
         if (!targetPath.equalsIgnoreCase(CURRENT_PATH)) {
             int totalRots = player.getPCSYSTEM().getPartySize() + player.getPCSYSTEM().getPCCount();
@@ -258,25 +382,13 @@ public class GamePanel extends JPanel {
 
         if (!tr.isInteracted) tr.interact(this);
 
-        if (!DIALOGUEBOX.isPlaying) {
-            CURRENT_PATH = targetPath;
-            world.loadMap(CURRENT_PATH, true);
-            DARKNESSOVERLAY.setActive(CURRENT_PATH.toLowerCase().contains("cave"));
-
-            int[] coords = new int[2];
-            for (TileTeleporter tile : getWorldInteractiveLayer().getTeleporters()) {
-                if (tile != null && tile.getName().equalsIgnoreCase(tr.getLinkToTeleporterName())) {
-                    coords = tile.getCoordinates().clone();
-                    switch (tile.getDirection().toUpperCase()) {
-                        case "LEFT"  -> coords[0] -= 1;
-                        case "RIGHT" -> coords[0] += 1;
-                        case "DOWN"  -> coords[1] += 1;
-                        case "UP"    -> coords[1] -= 1;
-                    }
-                }
-            }
-            player.teleport(coords);
-            tr.isInteracted = false;
+        if (!DIALOGUEBOX.isPlaying && !TELEPORTEFFECT.isActive()) {
+            pendingTeleportPath = targetPath;
+            pendingTeleportName = tr.getLinkToTeleporterName();
+            pendingTeleportTile = tr;
+            utils.AudioManager.playSFX(utils.Constants.SFX_TELEPORT);
+            TELEPORTEFFECT.startSpinIn();
+            GAMESTATE = "teleport";
         }
     }
 
@@ -313,8 +425,8 @@ public class GamePanel extends JPanel {
                     world.draw(g2);
                     player.draw(g2);
                     DARKNESSOVERLAY.draw(g2,
-                            player.screenX + TILE_SIZE / 2,
-                            player.screenY + TILE_SIZE / 2);
+                            getPlayerScreenX() + TILE_SIZE / 2,
+                            getPlayerScreenY() + TILE_SIZE / 2);
                 }
                 INVENTORYUI.draw(g2);
             }
@@ -347,6 +459,9 @@ public class GamePanel extends JPanel {
 
         BADGETOAST.update();
         BADGETOAST.draw(g2);
+
+        NOTIFICATION.update();
+        NOTIFICATION.draw(g2);
 
         // Fade is the absolute top layer
         if (!BLACKFADEEFFECT.isFadeOutComplete()) {

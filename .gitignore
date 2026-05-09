@@ -5,8 +5,8 @@
 
 # IntelliJ IDEA files
 /.idea/
-*.iml
 *.iws
+*.xml
 *.ipr
 /.idea/workspace.xml
 /.idea/material_theme_project_new.xml

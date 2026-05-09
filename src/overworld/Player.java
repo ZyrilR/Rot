@@ -4,7 +4,7 @@ import engine.GamePanel;
 import input.KeyboardHandler;
 import items.Inventory;
 import storage.PCSystem;
-import tile.CollisionChecker;
+import tile.TileChecker;
 import tile.TileLoot;
 import tile.TileManager;
 import tile.TileTeleporter;
@@ -60,7 +60,7 @@ public class Player {
         worldY = TILE_SIZE * 24;
         screenX = (SCREEN_WIDTH / 2) - (TILE_SIZE / 2);
         screenY = (SCREEN_HEIGHT / 2) - (TILE_SIZE / 2);
-        speed = 32;
+        speed = 8;
 
         direction = "down";
         walk_up = new ArrayList<>();
@@ -152,8 +152,20 @@ public class Player {
 
         spriteCounter++;
 
-        if (img != null)
-            g.drawImage(img, screenX, screenY, TILE_SIZE, TILE_SIZE, null);
+        if (img != null) {
+            int sx = worldX - gp.getCameraX();
+            int sy = worldY - gp.getCameraY();
+            if (gp.TELEPORTEFFECT.isActive()) {
+                java.awt.geom.AffineTransform old = g.getTransform();
+                double cx = sx + TILE_SIZE / 2.0;
+                double cy = sy + TILE_SIZE / 2.0;
+                g.rotate(gp.TELEPORTEFFECT.getRotation(), cx, cy);
+                g.drawImage(img, sx, sy, TILE_SIZE, TILE_SIZE, null);
+                g.setTransform(old);
+            } else {
+                g.drawImage(img, sx, sy, TILE_SIZE, TILE_SIZE, null);
+            }
+        }
     }
 
     public void update() {
@@ -193,10 +205,10 @@ public class Player {
             collisionOn = false;
 
             // 1. CHECK WALLS/BUILDINGS
-            gp.COLLISIONCHECKER.checkTile(this);
+            gp.TILECHECKER.checkTile(this);
 
             // 2. CHECK NPCS (This is what stops you from ghosting!)
-            gp.COLLISIONCHECKER.checkNPC(this, gp.getWorldInteractiveLayer().getNPCs());
+            gp.TILECHECKER.checkNPC(this, gp.getWorldInteractiveLayer().getNPCs());
 
             if (!collisionOn) {
                 isWalking = true;
@@ -238,10 +250,32 @@ public class Player {
             }
         }
 
-        TileLoot tl = CollisionChecker.getTileLootInFront(gp);
+        TileLoot tl = TileChecker.getTileLootInFront(gp);
         if (tl != null) {
             tl.interact(gp);
             gp.player.getInventory().appendInventory(tl.getInventory());
+
+            StringBuilder names = new StringBuilder();
+            if (tl.getInventory() != null) {
+                for (items.Item it : tl.getInventory().getRawItems()) {
+                    if (it == null) continue;
+                    if (names.length() > 0) names.append(", ");
+                    names.append(it.getName());
+                }
+            }
+            String body = names.length() == 0 ? "Picked up an item." : names.toString();
+            gp.NOTIFICATION.push("Item Found!", body);
+            utils.AudioManager.playSFX(utils.Constants.SFX_ITEM_FOUND);
+
+            // Persist the pickup: mark the tile as gone in the matrix + remove from loots ArrayList.
+            String key = gp.CURRENT_PATH + "@" + tl.getX() + "," + tl.getY();
+            gp.pickedLoots.add(key);
+            int[][] m = gp.getWorldInteractiveLayer().getMap();
+            if (tl.getY() >= 0 && tl.getY() < m.length
+                    && tl.getX() >= 0 && tl.getX() < m[0].length) {
+                m[tl.getY()][tl.getX()] = 0;
+            }
+            gp.getWorldInteractiveLayer().getLoots().remove(tl);
         }
     }
 

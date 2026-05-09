@@ -64,7 +64,7 @@ public class NPC {
         }
 
         collisionOn = false;
-        gp.COLLISIONCHECKER.checkTileForNPC(this);
+        gp.TILECHECKER.checkTileForNPC(this);
 
         if (!collisionOn) {
             switch (direction) {
@@ -86,13 +86,15 @@ public class NPC {
     }
 
     public void draw(Graphics2D g2, GamePanel gp) {
-        int screenX = worldX - gp.player.worldX + gp.player.screenX;
-        int screenY = worldY - gp.player.worldY + gp.player.screenY;
+        int camX = gp.getCameraX();
+        int camY = gp.getCameraY();
+        int screenX = worldX - camX;
+        int screenY = worldY - camY;
 
-        if (worldX + TILE_SIZE > gp.player.worldX - gp.player.screenX &&
-                worldX - TILE_SIZE < gp.player.worldX + (SCREEN_WIDTH - gp.player.screenX) &&
-                worldY + TILE_SIZE > gp.player.worldY - gp.player.screenY &&
-                worldY - TILE_SIZE < gp.player.worldY + (SCREEN_HEIGHT - gp.player.screenY)) {
+        if (worldX + TILE_SIZE > camX &&
+                worldX - TILE_SIZE < camX + SCREEN_WIDTH &&
+                worldY + TILE_SIZE > camY &&
+                worldY - TILE_SIZE < camY + SCREEN_HEIGHT) {
 
             BufferedImage img = null;
             if (!sprites.isEmpty()) {

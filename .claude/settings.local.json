@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Read(//mnt/c/Users/Kyle Angelo/Documents/IdeaProjects/**)",
-      "Bash(sed -i 's/new Skill\\(\"\\\\\\([^\"]*\\\\\\)\", SkillType\\\\.\\\\\\([A-Z]*\\\\\\), \\\\\\([0-9]*\\\\\\), [0-9]*, \"/new Skill\\(\"\\\\1\", SkillType.\\\\2, \\\\3, \"/g' src/skills/SkillRegistry.java)"
+      "Bash(sed -i 's/new Skill\\(\"\\\\\\([^\"]*\\\\\\)\", SkillType\\\\.\\\\\\([A-Z]*\\\\\\), \\\\\\([0-9]*\\\\\\), [0-9]*, \"/new Skill\\(\"\\\\1\", SkillType.\\\\2, \\\\3, \"/g' src/skills/SkillRegistry.java)",
+      "Bash(xargs javac *)",
+      "Bash(javac -d /tmp/rotbuild -cp \"src;libs/*\" src/engine/GamePanel.java src/ui/BattleUI.java src/tile/TileManager.java src/npc/NPC.java src/overworld/Player.java src/utils/Constants.java)",
+      "Bash(mkdir -p out/build)",
+      "Bash(javac -d out/build -cp \"libs/jl1.0.1.jar\" @/tmp/srcs.txt)",
+      "Bash(javac -d out/build -cp \"libs/jl1.0.1.jar\" -Xlint:all @/tmp/srcs.txt)"
     ]
   }
 }

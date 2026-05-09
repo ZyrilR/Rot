@@ -53,7 +53,12 @@ public class DamageCalculator {
         return finalDamage;
     }
 
-    private static double getTypeMultiplier(SkillType attackType, Type defPrimary, Type defSecondary) {
+    /** Convenience: effectiveness of a skill against a defender (1.0 = neutral, >1 SE, <1 NVE, 0 immune). */
+    public static double effectiveness(Skill skill, BrainRot defender) {
+        return getTypeMultiplier(skill.getType(), defender.getPrimaryType(), defender.getSecondaryType());
+    }
+
+    public static double getTypeMultiplier(SkillType attackType, Type defPrimary, Type defSecondary) {
         double multiplier = 1.0;
         multiplier *= singleMatchup(attackType, defPrimary);
 

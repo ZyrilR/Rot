@@ -35,7 +35,7 @@ public class MovementSystem {
 
             // 2. CHECK COLLISION BEFORE STARTING
             player.collisionOn = false;
-            gp.COLLISIONCHECKER.checkTile(player);
+            gp.TILECHECKER.checkTile(player);
 
             //You only need to check the tile if its collidable or not! Every Interactive Tile should be collideable
 //            gp.collisionChecker.checkEntity(player, gp.npcs);

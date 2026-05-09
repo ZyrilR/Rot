@@ -3,6 +3,6 @@ Background:BACKGROUND
 Background_Collision:BACKGROUND
 Decoration:DECORATION
 Decoration_Collision:DECORATION
-Building:BUILDING
 Building_Collision:BUILDING
+Building:BUILDING
 Interactive:INTERACTIVE
