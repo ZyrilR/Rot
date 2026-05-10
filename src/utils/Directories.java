@@ -4,16 +4,27 @@ public enum Directories {
     // FORMAT: Path, Min Level, Max Level, Rots Needed to Leave, Level Needed to Leave
 
     //ROUTES
-    ROUTE131("/res/Worlds/Routes/Route131/", 1, 10, 5, 15),
-    ROUTE132("/res/Worlds/Routes/Route132/", 10, 25, 8, 30),
+
+    //Route130
     ROUTE130("/res/Worlds/Routes/Route130/", 25, 35, 8, 20),
+    ROUTE130Market("/res/Worlds/Rooms/Route130Market/", 0, 0, 0, 0),
+
+    //Route131
+    ROUTE131("/res/Worlds/Routes/Route131/", 1, 10, 5, 15),
+
+    //Route132
+    ROUTE132("/res/Worlds/Routes/Route132/", 10, 25, 8, 30),
+
+    //Route140
+    ROUTE140("/res/Worlds/Routes/Route140/", 35, 50, 8, 35),
+    GYMMASTER("/res/Worlds/Rooms/GymMaster/", 35, 50, 8, 35),
+    GYMMASTERROOM1("/res/Worlds/Rooms/GymMaster/Room1/", 35, 50, 8, 35),
+    GYMMASTERROOM2("/res/Worlds/Rooms/GymMaster/Room2/", 35, 50, 8, 35),
 
     //CAVES
     CAVE131("/res/Worlds/Caves/Cave131/", 30, 45, 8, 20),
 
     //ROOMS
-    FLYINGGYMFLOOR1("/res/Worlds/Rooms/FlyingGymFloor1/", 0, 0, 0, 0),
-    FLYINGGYMFLOOR2("/res/Worlds/Rooms/FlyingGymFloor2/", 0, 0, 0, 0),
     DEWDROPPIER("/res/Worlds/Rooms/DewdropPier/", 0, 0, 0, 0),
     WATERGYMFLOOR1("/res/Worlds/Rooms/WaterGymFloor1/", 0, 0, 0, 0),
     WATERGYMFLOOR2("/res/Worlds/Rooms/WaterGymFloor2/", 0, 0, 0, 0),

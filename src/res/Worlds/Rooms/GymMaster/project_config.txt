@@ -1,0 +1,4 @@
+3,9,21,10,3
+Background:BACKGROUND
+GymCollision:BACKGROUND
+Interactive:INTERACTIVE
