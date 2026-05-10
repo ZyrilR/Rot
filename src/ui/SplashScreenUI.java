@@ -207,11 +207,11 @@ public class SplashScreenUI {
 
         // Members — two columns
         String[][] members = {
-                { "Caipang, Chrisnel Graine",  "Programmer" },
-                { "Restauro, Zyril Ryle",      "Programmer" },
-                { "Din, Jon Vincent",          "Programmer" },
-                { "Dira, Luther Derrick",      "Programmer" },
-                { "Castro, Kyle Angelo",       "Programmer" },
+                { "Caipang, Chrisnel Graine",  "Developer" },
+                { "Restauro, Zyril Ryle",      "Developer" },
+                { "Din, Jon Vincent",          "Developer" },
+                { "Dira, Luther Derrick",      "Developer" },
+                { "Castro, Kyle Angelo",       "Developer" },
         };
         for (String[] m : members) {
             // Name
@@ -249,8 +249,8 @@ public class SplashScreenUI {
         ty += fm.getHeight() + 8;
 
         String[][] assets = {
-                { "Font",  "PokemonGB (RAeo)" },
-                { "Tiles", "Placeholder assets" },
+                { "Font",  "PokemonGB(RAeo)" },
+                { "Tiles", "tuxemon.org" },
         };
         for (String[] a : assets) {
             g2.setFont(base.deriveFont(9f));
@@ -296,27 +296,31 @@ public class SplashScreenUI {
         g2.drawLine(innerX + (innerW + labelW) / 2 + gap, lineY, innerX + innerW, lineY);
         ty += fm.getHeight() + 8;
 
-        String[] thanks = { "Sir Khai", "Claude", "ChatGPT", "Gemini" };
+        String[] thanksRow1 = { "Sir Khai" };
+        String[] thanks = { "Claude", "ChatGPT", "Gemini" };
         // Render as centered pills in one row
         g2.setFont(base.deriveFont(9f));
         fm = g2.getFontMetrics();
         int pillH = 16, pillPadX = 10, pillGap = 6;
-        int totalPillW = 0;
-        for (String t : thanks) totalPillW += fm.stringWidth(t) + pillPadX * 2 + pillGap;
-        totalPillW -= pillGap;
-        int pillStartX = innerX + (innerW - totalPillW) / 2;
-        int pillY = ty;
-        for (String t : thanks) {
-            int pw = fm.stringWidth(t) + pillPadX * 2;
-            g2.setColor(new Color(230, 226, 218));
-            g2.fillRoundRect(pillStartX, pillY, pw, pillH, 8, 8);
-            g2.setColor(new Color(190, 185, 172));
-            g2.drawRoundRect(pillStartX, pillY, pw, pillH, 8, 8);
-            g2.setColor(new Color(80, 76, 70));
-            g2.drawString(t, pillStartX + pillPadX, pillY + 12);
-            pillStartX += pw + pillGap;
+
+        for (String[] row : new String[][]{ thanksRow1, thanks }) {
+            int rowTotalW = 0;
+            for (String t : row) rowTotalW += fm.stringWidth(t) + pillPadX * 2 + pillGap;
+            rowTotalW -= pillGap;
+            int pillStartX = innerX + (innerW - rowTotalW) / 2;
+            for (String t : row) {
+                int pw = fm.stringWidth(t) + pillPadX * 2;
+                g2.setColor(new Color(230, 226, 218));
+                g2.fillRoundRect(pillStartX, ty, pw, pillH, 8, 8);
+                g2.setColor(new Color(190, 185, 172));
+                g2.drawRoundRect(pillStartX, ty, pw, pillH, 8, 8);
+                g2.setColor(new Color(80, 76, 70));
+                g2.drawString(t, pillStartX + pillPadX, ty + 12);
+                pillStartX += pw + pillGap;
+            }
+            ty += pillH + 4; // gap between rows
         }
-        ty += pillH + 2 + sectionGap;
+        ty += sectionGap - 4;
 
         // ── INSPIRED BY ───────────────────────────────────────────────────
         g2.setFont(base.deriveFont(Font.BOLD, 9f));
@@ -336,7 +340,7 @@ public class SplashScreenUI {
         int inspTotalW = 0;
         for (String s : inspired) inspTotalW += fm.stringWidth(s) + pillPadX * 2 + pillGap;
         inspTotalW -= pillGap;
-        pillStartX = innerX + (innerW - inspTotalW) / 2;
+        int pillStartX = innerX + (innerW - inspTotalW) / 2;
         for (String s : inspired) {
             int pw = fm.stringWidth(s) + pillPadX * 2;
             g2.setColor(new Color(230, 226, 218));

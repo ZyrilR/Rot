@@ -531,7 +531,7 @@ public class StarterUI {
             if (speaker.equals("Sir Khai")) {
                 g2.drawString(speaker + " [VIDEO CALL]:", textX, startY);
             } else {
-                g2.drawString(speaker + ":", textX, startY);
+                g2.drawString(speaker + ":", textX, startY - 8);
             }
             startY += speakerSpacing;
         }
@@ -597,6 +597,7 @@ public class StarterUI {
     }
 
     private void drawWrappedTextDynamically(Graphics2D g2, String text, int x, int y, int maxWidth, int lineHeight) {
+        if (text.toLowerCase().contains("do you want to choose")) { maxWidth -= 200; lineHeight = 28;}
         FontMetrics fm = g2.getFontMetrics();
 
         for (String line : text.split("\n")) {
@@ -619,7 +620,6 @@ public class StarterUI {
     }
 
     private void drawWrappedTextPlain(Graphics2D g2, Font font, String text, int x, int y, int maxWidth, int lineHeight) {
-        if (text.toLowerCase().contains("do you want to choose")) maxWidth -= 200;
         g2.setFont(font);
         FontMetrics fm = g2.getFontMetrics();
         int curY = y;

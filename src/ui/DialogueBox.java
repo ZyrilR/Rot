@@ -190,7 +190,7 @@ public class DialogueBox {
             // Dynamic Center for normal bottom-boxes
             int totalLines = countWrappedLines(targetText, fm, maxTextWidth);
             int totalContentHeight = speakerSpacing + (totalLines * lineHeight);
-            startY = y + ((height - totalContentHeight) / 2) + fm.getAscent();
+            startY = y + ((height - totalContentHeight) / 2) + fm.getAscent() + 8;
         }
 
         if (currentSpeaker != null && !currentSpeaker.isEmpty()) {
@@ -201,7 +201,7 @@ public class DialogueBox {
         }
 
         g2.setColor(new Color(64, 64, 64));
-        g2.setFont(dialogueFont.deriveFont(16f));
+        g2.setFont(dialogueFont.deriveFont(15f));
         drawWrappedText(g2, displayedText, textX, startY, maxTextWidth, lineHeight);
     }
 

@@ -720,7 +720,7 @@ public class WorldSelectUI {
         FontMetrics fm = g2.getFontMetrics();
         g2.setColor(Color.WHITE);
         g2.drawString("YES", yesX + (btnW - fm.stringWidth("YES")) / 2,
-                btnY + (btnH + fm.getAscent()) / 2 - 2);
+                btnY + (btnH + fm.getAscent()) / 2);
 
         // NO
         g2.setColor(deleteChoice == 1 ? ACTION_SEL : ACTION_BASE);
