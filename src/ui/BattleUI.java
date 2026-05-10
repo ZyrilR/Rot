@@ -654,8 +654,11 @@ public class BattleUI {
         BrainRot er = battle.getEnemyRot();
         if (er != null && er.isOutOfUP()) {
             enemyChosenIndex = battle.STRUGGLE_INDEX;
+        } else if (er != null && !er.getMoves().isEmpty()) {
+            enemyChosenIndex = utils.RandomUtil.range(0, er.getMoves().size() - 1);
+
         } else {
-            enemyChosenIndex = Math.max(0, er.getMoves().size() - 1);
+            enemyChosenIndex = battle.STRUGGLE_INDEX;
         }
         currentState = playerMovesFirst ? BattleState.ANIMATION : BattleState.MENU;
     }
@@ -690,6 +693,10 @@ public class BattleUI {
                 if (defender.isFainted()) queueMessage(defender.getName() + " fainted!", "");
                 if (attacker.isFainted()) queueMessage(attacker.getName() + " fainted!", "");
             } else {
+                if (skillIdx < 0 || skillIdx >= attacker.getMoves().size()) {
+                    System.err.println("[BattleUI] Prevented Crash! Invalid move index: " + skillIdx);
+                    skillIdx = 0;
+                }
                 Skill skill = attacker.getMoves().get(skillIdx);
                 queueMessage(attacker.getName() + " used", skill.getName() + "!", attackerActor);
                 int oldHp = defender.getCurrentHp();
@@ -730,6 +737,10 @@ public class BattleUI {
                 if (defender.isFainted()) queueMessage(defender.getName() + " fainted!", "");
                 if (attacker.isFainted()) queueMessage(attacker.getName() + " fainted!", "");
             } else {
+                if (skillIdx < 0 || skillIdx >= attacker.getMoves().size()) {
+                    System.err.println("[BattleUI] Prevented Crash! Invalid move index: " + skillIdx);
+                    skillIdx = 0;
+                }
                 Skill skill = attacker.getMoves().get(skillIdx);
                 queueMessage(attacker.getName() + " used", skill.getName() + "!", attackerActor);
                 int oldHp = defender.getCurrentHp();

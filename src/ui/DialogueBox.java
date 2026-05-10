@@ -3,6 +3,7 @@ package ui;
 import engine.GamePanel;
 import utils.AssetManager;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import static utils.Constants.*;
@@ -10,21 +11,22 @@ import static utils.Constants.*;
 public class DialogueBox {
 
     GamePanel gp;
+    private ArrayList<String> speakers;
     private ArrayList<String> currentDialogues;
     private int dialogueIndex = 0;
     public boolean isPlaying = false;
 
-    // Typewriter state
+    // --- CINEMATIC MODE FLAG ---
+    public boolean cinematicMode = false;
+
     private String displayedText = "";
     private int charIndex = 0;
-    private int textSpeedCounter = 0;
 
-    private String npcName = "";
+    // Float accumulator for 1.5x speed
+    private float charAccumulator = 0f;
 
-    // Set to true when a MarketNPC interaction is pending shop open
     private boolean pendingShopOpen = false;
 
-    // One-shot callback fired when the current dialogue finishes naturally.
     private Runnable onFinish = null;
     public void setOnFinish(Runnable cb) { this.onFinish = cb; }
 
@@ -39,7 +41,15 @@ public class DialogueBox {
     }
 
     public void startDialogue(String name, ArrayList<String> dialogues) {
-        this.npcName = name;
+        ArrayList<String> speakerList = new ArrayList<>();
+        for (int i = 0; i < dialogues.size(); i++) {
+            speakerList.add(name);
+        }
+        startCutscene(speakerList, dialogues);
+    }
+
+    public void startCutscene(ArrayList<String> speakerList, ArrayList<String> dialogues) {
+        this.speakers = speakerList;
         this.currentDialogues = dialogues;
         this.dialogueIndex = 0;
         resetTypewriter();
@@ -50,62 +60,56 @@ public class DialogueBox {
     private void resetTypewriter() {
         displayedText = "";
         charIndex = 0;
-        textSpeedCounter = 0;
+        charAccumulator = 0f;
     }
 
     public void update() {
-        // Guard: no dialogues loaded
         if (currentDialogues == null || currentDialogues.isEmpty()) {
             gp.GAMESTATE = "play";
             return;
         }
 
-        // Guard: dialogue index out of bounds — dialogue is finished
         if (dialogueIndex >= currentDialogues.size()) {
             finishDialogue();
-            isPlaying = false;
             return;
         }
 
         String targetText = currentDialogues.get(dialogueIndex);
         if (targetText == null) {
-            isPlaying = false;
             finishDialogue();
             return;
         }
 
-        // 1. Typewriter: reveal one character at a time
+        // --- 1.5x TYPEWRITER SPEED LOGIC ---
         if (charIndex < targetText.length()) {
-            textSpeedCounter++;
-            if (textSpeedCounter > TEXT_SPEED) {
+            float baseCharsPerFrame = 1.0f / (TEXT_SPEED + 1.0f);
+            float speedMultiplier = 1.5f;
+
+            charAccumulator += (baseCharsPerFrame * speedMultiplier);
+
+            while (charAccumulator >= 1.0f && charIndex < targetText.length()) {
                 displayedText += targetText.charAt(charIndex);
                 charIndex++;
-                textSpeedCounter = 0;
+                charAccumulator -= 1.0f;
             }
         }
 
-        // 2. Player presses ENTER to advance or skip
         if (gp.KEYBOARDHANDLER.enterPressed) {
             gp.KEYBOARDHANDLER.enterPressed = false;
-
             if (charIndex < targetText.length()) {
-                // Skip typewriter — show full line immediately
                 displayedText = targetText;
                 charIndex = targetText.length();
             } else {
-                // Advance to next line
-                dialogueIndex++;
-
-                if (dialogueIndex >= currentDialogues.size()) {
+                if (dialogueIndex + 1 >= currentDialogues.size()) {
                     finishDialogue();
                 } else {
+                    dialogueIndex++;
                     resetTypewriter();
                 }
             }
         }
     }
 
-    /** Called when all dialogue lines have been shown */
     private void finishDialogue() {
         dialogueIndex = 0;
         resetTypewriter();
@@ -117,62 +121,138 @@ public class DialogueBox {
     }
 
     public void draw(Graphics2D g2) {
-        // 1. Box position & size (Spans across the bottom of the screen)
-        int x = TILE_SIZE;
-        int y = TILE_SIZE * 8;
-        int width = SCREEN_WIDTH - (TILE_SIZE * 2);
-        int height = TILE_SIZE * 3;
+        if (speakers == null || currentDialogues == null || dialogueIndex >= speakers.size()) {
+            return;
+        }
+
+        int x, y, width, height;
         int arc = 12;
 
-        // 2. White background
+        if (cinematicMode) {
+            // --- AESTHETIC CENTERED MODAL ---
+            width = SCREEN_WIDTH - (TILE_SIZE * 4); // Nice margins on the side
+            height = TILE_SIZE * 6;                 // Tall enough for the longest paragraph
+            x = (SCREEN_WIDTH - width) / 2;         // Perfectly centered X
+            y = (SCREEN_HEIGHT - height) / 2;       // Perfectly centered Y
+        } else {
+            // Standard RPG box at the bottom
+            x = TILE_SIZE;
+            y = TILE_SIZE * 8;
+            width = SCREEN_WIDTH - (TILE_SIZE * 2);
+            height = TILE_SIZE * 3;
+        }
+
         g2.setColor(Color.WHITE);
         g2.fillRoundRect(x, y, width, height, arc, arc);
-
-        // 3. Three-layered border (Kept exactly as you designed it)
         g2.setColor(new Color(80, 80, 80));
         g2.setStroke(new BasicStroke(6));
         g2.drawRoundRect(x, y, width, height, arc, arc);
-
         g2.setColor(new Color(216, 184, 88));
         g2.setStroke(new BasicStroke(4));
         g2.drawRoundRect(x + 1, y + 1, width - 2, height - 2, arc, arc);
-
         g2.setColor(new Color(80, 80, 80));
         g2.setStroke(new BasicStroke(2));
         g2.drawRoundRect(x + 4, y + 4, width - 8, height - 8, arc - 2, arc - 2);
-
         g2.setStroke(new BasicStroke(1));
 
-        // 4. Font setup
         Font dialogueFont = (AssetManager.pokemonGb != null)
                 ? AssetManager.pokemonGb
                 : new Font("Arial", Font.PLAIN, 18);
 
-        // THE LEFT ALIGNMENT LOCK
-        // textX acts as a strict left margin (35 pixels from the box's left edge)
+        String currentSpeaker = speakers.get(dialogueIndex);
+        String targetText = currentDialogues.get(dialogueIndex);
+
         int textX = x + 35;
-        int textY = y + 50;
 
-        // 5. NPC name (Left-aligned)
-        if (npcName != null && !npcName.isEmpty()) {
+        BufferedImage portrait = getPortrait(currentSpeaker);
+        if (portrait != null) {
+            g2.setColor(new Color(230, 226, 218));
+            g2.fillRoundRect(x + 16, y + 16, 112, 112, 8, 8);
+            g2.setColor(new Color(190, 185, 172));
+            g2.drawRoundRect(x + 16, y + 16, 112, 112, 8, 8);
+            g2.drawImage(portrait, x + 24, y + 24, 96, 96, null);
+            textX += 115;
+        }
+
+        int maxTextWidth = (x + width) - textX - 25;
+
+        g2.setFont(dialogueFont.deriveFont(16f));
+        FontMetrics fm = g2.getFontMetrics();
+
+        int lineHeight = 26;
+        int speakerSpacing = (currentSpeaker != null && !currentSpeaker.isEmpty()) ? 28 : 0;
+
+        int startY;
+        if (cinematicMode) {
+            // Static Top-Left for the cinematic box (Leaves a clean 40px top margin)
+            startY = y + 40 + fm.getAscent();
+        } else {
+            // Dynamic Center for normal bottom-boxes
+            int totalLines = countWrappedLines(targetText, fm, maxTextWidth);
+            int totalContentHeight = speakerSpacing + (totalLines * lineHeight);
+            startY = y + ((height - totalContentHeight) / 2) + fm.getAscent();
+        }
+
+        if (currentSpeaker != null && !currentSpeaker.isEmpty()) {
             g2.setColor(new Color(40, 40, 40));
-            g2.setFont(dialogueFont.deriveFont(Font.BOLD, 22f));
-            g2.drawString(npcName + ":", textX, textY);
-
-            // Push the dialogue text down below the name
-            textY += 35;
+            g2.setFont(dialogueFont.deriveFont(Font.BOLD, 20f));
+            g2.drawString(currentSpeaker + ":", textX, startY);
+            startY += speakerSpacing;
         }
 
-        // 6. Typewriter text (Strictly left-aligned)
         g2.setColor(new Color(64, 64, 64));
-        g2.setFont(dialogueFont.deriveFont(18f));
+        g2.setFont(dialogueFont.deriveFont(16f));
+        drawWrappedText(g2, displayedText, textX, startY, maxTextWidth, lineHeight);
+    }
 
-        for (String line : displayedText.split("\n")) {
-            // Because we use textX here, every new line snaps to the left margin!
-            g2.drawString(line, textX, textY);
-
-            // Push the next line down
-            textY += 40;
+    private int countWrappedLines(String text, FontMetrics fm, int maxWidth) {
+        if (text == null || text.isEmpty()) return 0;
+        int count = 0;
+        for (String line : text.split("\n")) {
+            StringBuilder currentLine = new StringBuilder();
+            for (String word : line.split(" ")) {
+                String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
+                if (fm.stringWidth(testLine) > maxWidth && currentLine.length() > 0) {
+                    count++;
+                    currentLine = new StringBuilder(word);
+                } else {
+                    currentLine = new StringBuilder(testLine);
+                }
+            }
+            if (currentLine.length() > 0) count++;
         }
+        return count;
+    }
+
+    private void drawWrappedText(Graphics2D g2, String text, int x, int y, int maxWidth, int lineHeight) {
+        FontMetrics fm = g2.getFontMetrics();
+
+        for (String line : text.split("\n")) {
+            StringBuilder currentLine = new StringBuilder();
+            for (String word : line.split(" ")) {
+                String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
+                if (fm.stringWidth(testLine) > maxWidth && currentLine.length() > 0) {
+                    g2.drawString(currentLine.toString(), x, y);
+                    y += lineHeight;
+                    currentLine = new StringBuilder(word);
+                } else {
+                    currentLine = new StringBuilder(testLine);
+                }
+            }
+            if (currentLine.length() > 0) {
+                g2.drawString(currentLine.toString(), x, y);
+                y += lineHeight;
+            }
+        }
+    }
+
+    private BufferedImage getPortrait(String speakerName) {
+        if (speakerName == null || speakerName.isEmpty() || speakerName.equals("System") || speakerName.equals("ROT")) return null;
+        String safeName = speakerName.toUpperCase();
+        if (safeName.contains("TUNG TUNG")) return AssetManager.getBrainRotSprite("TUNG TUNG TUNG SAHUR", "NORMAL", false, 1);
+        if (safeName.contains("SIR KHAI")) return AssetManager.loadImage("/res/InteractiveTiles/Trainer_Portraits/SirKhai.png");
+        if (safeName.contains("DIN") || safeName.contains("PLAYER") || speakerName.equals(gp.player.name)) return AssetManager.loadImage("/res/InteractiveTiles/Player/4.png");
+
+        return null;
     }
 }
