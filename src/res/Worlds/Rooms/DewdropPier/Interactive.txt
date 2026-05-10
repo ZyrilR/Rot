@@ -13,7 +13,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,27,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -57,13 +57,14 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 [METADATA]
-Brendan|TrainerNPC|2|12|38|TRALALERO TRALALA:8;BOMBARDINO CROCODILO:7||300|0|
-Precious|TrainerNPC|4|16|44|LIRILI LARILA:7;BRR BRR PATAPIM:9||400|0|
+Brendan|TrainerNPC|2|12|38|TRALALERO TRALALA:8;BOMBARDINO CROCODILO:7||300|0
+Precious|TrainerNPC|4|16|44|LIRILI LARILA:7;BRR BRR PATAPIM:9||400|0
 Rick|NPC|1|38|28||This place is very calm.
 Carlo|NPC|3|32|55||It's a great day to fish.
 Dean|NPC|2|26|15||This is the gym of the great Graine, ;the water master!
 Adam|NPC|2|7|6||The water gym leader is up ahead.
-Lee|TrainerNPC|1|19|26|TUNG TUNG TUNG SAHUR:6;BOMBARDINO CROCODILO:8||400|0|
-Law|TrainerNPC|1|21|46|CAPUCCINO ASSASSINO:7;TUNG TUNG TUNG SAHUR:6||350|0|
+Lee|TrainerNPC|1|19|26|TUNG TUNG TUNG SAHUR:6;BOMBARDINO CROCODILO:8||400|0
+Law|TrainerNPC|1|21|46|CAPUCCINO ASSASSINO:7;TUNG TUNG TUNG SAHUR:6||350|0
 ToRoute132_2|Teleporter|29|0|6|ROUTE132~TODEWDROPPIER_1~RIGHT|You are about to exit;Dewdrop Pier.
 ToRoute132_3|Teleporter|29|0|51|ROUTE132~TODEWDROPPIER_2~RIGHT|You are about to exit;Dewdrop Pier.
+ToWaterGymFloor1|Teleporter|27|24|15|WATERGYMFLOOR1~TODEWDROPPIER_3~UP|Entering Water Gym.
