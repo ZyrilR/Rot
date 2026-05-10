@@ -374,7 +374,7 @@ public class WorldSelectUI {
         subState      = SubState.BROWSING;
         statusMessage = "[ \"" + name + "\" created ]";
 
-        gp.GAMESTATE = "starter";
+        progression.NarrativeManager.playIntroSequence(gp);
         System.out.println("[WorldSelectUI] New world \"" + name + "\" — spawned at (13, 68).");
 
         if (gp.GAMESTATE.equalsIgnoreCase("play"))

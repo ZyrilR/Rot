@@ -312,6 +312,8 @@ public class GamePanel extends JPanel {
             MAPUI.open();
             GAMESTATE = "map";
         }
+
+        progression.NarrativeManager.checkTriggers(this);
     }
 
     // Pending teleport target captured before the spin animation runs

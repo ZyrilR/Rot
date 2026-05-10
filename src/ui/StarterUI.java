@@ -3,7 +3,6 @@ package ui;
 import brainrots.BrainRot;
 import brainrots.BrainRotFactory;
 import engine.GamePanel;
-import ui.BlackFadeEffect;
 import input.KeyboardHandler;
 import skills.Skill;
 import utils.AssetManager;
@@ -22,22 +21,37 @@ import static utils.Constants.*;
 
 public class StarterUI {
 
-    // --- ADDED FADE_TO_BLACK STATE ---
-    private enum State { INTRO_TEXT, CHOOSE, CONFIRM, FINISH_TEXT, FADE_TO_BLACK }
+    private enum State { TRANSITION_TO_BLACK, FADE_IN_LAB, INTRO_TEXT, CHOOSE, CONFIRM, FINISH_TEXT, FADE_TO_BLACK }
 
     private final GamePanel gp;
     private final KeyboardHandler kh;
 
-    private State currentState = State.INTRO_TEXT;
+    private State currentState = State.TRANSITION_TO_BLACK;
     private int textIndex = 0;
     private int capsuleCursor = 1;
     private int confirmCursor = 0;
     private int inputCooldown = 0;
 
+    // --- TYPEWRITER STATE VARIABLES ---
+    private String targetText = "";
+    private String displayedText = "";
+    private int charIndex = 0;
+
+    // --- THE FIX: FLOAT ACCUMULATOR FOR 1.5x SPEED ---
+    private float charAccumulator = 0f;
+
+    private final String[] introSpeakers = {
+            "Sir Khai", "Sir Khai", "Sir Khai", "Player", "Sir Khai", "Player", "Sir Khai"
+    };
+
     private final String[] introLines = {
-            "Welcome to the laboratory!",
-            "It's dangerous to go alone into the tall grass.",
-            "Choose one of these 3 partners to begin!"
+            "Yo. You're the new one? Cool. Take a Brainrot. Any of these three.",
+            "They're all unhinged in different ways. Good luck, no pressure.",
+            "Everything is on fire a little bit. You'll be fine. Probably.",
+            "Which one do I choose?",
+            "That depends. Are you the type of person who hits things, or dances at problems?",
+            "...",
+            "Bro just pick one. We're losing daylight."
     };
 
     private final String[] fullPool = {
@@ -55,27 +69,108 @@ public class StarterUI {
         this.gp = gp;
         this.kh = kh;
         loadAssets();
+    }
+
+    public void open() {
+        currentState = State.TRANSITION_TO_BLACK;
+        gp.BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_IN_TO_BLACK, 8);
+
+        textIndex = 0;
+        capsuleCursor = 1;
+        confirmCursor = 0;
+        charIndex = 0;
+        displayedText = "";
+        targetText = "";
+        charAccumulator = 0f;
+        inputCooldown = 0;
+
         rollRandomStarters();
     }
 
     private void loadAssets() {
-        capsuleImg = AssetManager.loadImage("/res/Templates/Items/9.png");
-//        dialogueBoxFrame = AssetManager.loadImage("/res/UI/Battle/dialogue_box.png");
+        capsuleImg = AssetManager.loadImage("/res/Items/Capsule/BLUE.png");
+        if (capsuleImg == null) {
+            capsuleImg = AssetManager.loadImage("/res/Templates/Items/9.png");
+        }
     }
 
     private void rollRandomStarters() {
         List<String> poolList = new ArrayList<>(Arrays.asList(fullPool));
         Collections.shuffle(poolList);
-
         for (int i = 0; i < 3; i++) {
             starterRots[i] = BrainRotFactory.create(poolList.get(i), 5);
         }
     }
 
-    public void update() {
-        if (inputCooldown > 0) { inputCooldown--; return; }
+    private void setTargetText(String text) {
+        if (!this.targetText.equals(text)) {
+            this.targetText = text;
+            this.displayedText = "";
+            this.charIndex = 0;
+            this.charAccumulator = 0f;
+        }
+    }
 
+    public void update() {
+        // --- 1. DETERMINE TEXT ---
+        if (currentState == State.INTRO_TEXT || currentState == State.CHOOSE ||
+                currentState == State.CONFIRM || currentState == State.FINISH_TEXT) {
+
+            String expectedText = switch (currentState) {
+                case INTRO_TEXT  -> introLines[textIndex];
+                case CHOOSE      -> "Choose your first BrainRot partner.";
+                case CONFIRM     -> "Do you want to choose " + starterRots[capsuleCursor].getName() + "?";
+                case FINISH_TEXT -> "You received " + starterRots[capsuleCursor].getName() + "!";
+                default          -> "";
+            };
+            setTargetText(expectedText);
+        }
+
+        // --- 2. 1.5x TYPEWRITER SPEED LOGIC ---
+        if (charIndex < targetText.length() && currentState != State.FADE_TO_BLACK && currentState != State.FADE_IN_LAB && currentState != State.TRANSITION_TO_BLACK) {
+            float baseCharsPerFrame = 1.0f / (TEXT_SPEED + 1.0f);
+            float speedMultiplier = 1.5f; // 1.5x Speed Boost
+
+            charAccumulator += (baseCharsPerFrame * speedMultiplier);
+
+            while (charAccumulator >= 1.0f && charIndex < targetText.length()) {
+                displayedText += targetText.charAt(charIndex);
+                charIndex++;
+                charAccumulator -= 1.0f;
+            }
+        }
+
+        // --- 3. INPUT COOLDOWN ---
+        if (inputCooldown > 0) {
+            inputCooldown--;
+            kh.enterPressed = false;
+            return;
+        }
+
+        // --- 4. SKIP TYPEWRITER ---
+        if (kh.enterPressed && charIndex < targetText.length() && currentState != State.FADE_TO_BLACK && currentState != State.FADE_IN_LAB && currentState != State.TRANSITION_TO_BLACK) {
+            kh.enterPressed = false;
+            displayedText = targetText;
+            charIndex = targetText.length();
+            inputCooldown = INPUT_DELAY;
+            return;
+        }
+
+        // --- 5. NORMAL STATE LOGIC ---
         switch (currentState) {
+            case TRANSITION_TO_BLACK -> {
+                gp.BLACKFADEEFFECT.update();
+                if (gp.BLACKFADEEFFECT.isFullyBlack()) {
+                    currentState = State.FADE_IN_LAB;
+                    gp.BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_OUT_TO_PLAY, 8);
+                }
+            }
+            case FADE_IN_LAB -> {
+                gp.BLACKFADEEFFECT.update();
+                if (gp.BLACKFADEEFFECT.isFadeOutComplete()) {
+                    currentState = State.INTRO_TEXT;
+                }
+            }
             case INTRO_TEXT -> {
                 if (kh.enterPressed) {
                     kh.enterPressed = false;
@@ -127,18 +222,24 @@ public class StarterUI {
                 if (gp.BLACKFADEEFFECT.isFullyBlack()) {
                     gp.GAMESTATE = "play";
                     gp.BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_OUT_TO_PLAY, 8);
-
                     utils.AudioManager.playMusic(utils.Constants.BGM_OVERWORLD, true);
+                    progression.NarrativeManager.pendingWorldIntro = true;
                 }
             }
         }
     }
 
     public void draw(Graphics2D g2) {
+        if (currentState == State.TRANSITION_TO_BLACK) {
+            if (gp.world != null) gp.world.draw(g2);
+            if (gp.player != null) gp.player.draw(g2);
+            gp.BLACKFADEEFFECT.draw(g2);
+            return;
+        }
+
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // pokemonGb everywhere; Arial fallback only if font failed to load
         Font baseFont = (AssetManager.pokemonGb != null)
                 ? AssetManager.pokemonGb : new Font("Arial", Font.PLAIN, 18);
 
@@ -155,29 +256,31 @@ public class StarterUI {
             }
         }
 
-        if (currentState != State.FADE_TO_BLACK) {
-            String currentText = switch (currentState) {
-                case INTRO_TEXT  -> introLines[textIndex];
-                case CHOOSE      -> "Choose your first BrainRot partner.";
-                case CONFIRM     -> "Do you want to choose " + starterRots[capsuleCursor].getName() + "?";
-                case FINISH_TEXT -> "You received " + starterRots[capsuleCursor].getName() + "!";
-                default          -> "";
-            };
+        if (currentState != State.FADE_TO_BLACK && currentState != State.FADE_IN_LAB && currentState != State.TRANSITION_TO_BLACK) {
+            String currentSpeaker = "";
+
+            switch (currentState) {
+                case INTRO_TEXT  -> {
+                    String rawSpeaker = introSpeakers[textIndex];
+                    currentSpeaker = rawSpeaker.equals("Player") ? gp.player.name : rawSpeaker;
+                }
+                case CHOOSE      -> currentSpeaker = "ROT";
+                case CONFIRM     -> currentSpeaker = "ROT";
+                case FINISH_TEXT -> currentSpeaker = "ROT";
+            }
 
             int boxY = SCREEN_HEIGHT - 136;
-            drawDialogueBox(g2, baseFont, currentText, boxY);
+            drawDialogueBox(g2, baseFont, currentSpeaker, displayedText, targetText, boxY);
 
             if (currentState == State.CONFIRM) {
                 drawYesNoMenu(g2, baseFont, boxY);
             }
         }
 
-        if (currentState == State.FADE_TO_BLACK) {
+        if (currentState == State.FADE_TO_BLACK || currentState == State.FADE_IN_LAB) {
             gp.BLACKFADEEFFECT.draw(g2);
         }
     }
-
-    // ── Desk + capsules — completely unchanged ────────────────────────────────
 
     private void drawDeskAndCapsules(Graphics2D g2) {
         int deskW = 500;
@@ -230,8 +333,6 @@ public class StarterUI {
         }
     }
 
-    // ── Preview card — same layout, pokemonGb font + PC triple-stroke border ──
-
     private void drawPreviewCard(Graphics2D g2, Font base) {
         int cardW = 540, cardH = 225;
         int cardX = (SCREEN_WIDTH - cardW) / 2;
@@ -250,7 +351,6 @@ public class StarterUI {
         g2.setColor(new Color(44, 44, 42));
         g2.drawString(preview.getName(), cardX + 170, cardY + 45);
 
-        // Header Badges
         int bX = cardX + 170;
         int bY = cardY + 68;
         int pW = drawTypeBadge(g2, preview.getPrimaryType().name(), bX, bY, 9f);
@@ -269,10 +369,8 @@ public class StarterUI {
         g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(60, 64, 70));
         String desc = Constants.getDescription(preview.getName());
-        drawWrappedText(g2, base.deriveFont(10f), desc, cardX + 170, cardY + 102, cardW - 190);
+        drawWrappedTextPlain(g2, base.deriveFont(10f), desc, cardX + 170, cardY + 102, cardW - 190, 16);
     }
-
-    // ── Received card — same layout except skills section replaced with 4×1 rows
 
     private void drawReceivedCard(Graphics2D g2, Font base) {
         int cardW = SCREEN_WIDTH - 60;
@@ -293,7 +391,6 @@ public class StarterUI {
         g2.setColor(new Color(44, 44, 42));
         g2.drawString(received.getName(), cardX + 210, cardY + 60);
 
-        // Header Badges
         int bX = cardX + 210;
         int bY = cardY + 88;
         int pW = drawTypeBadge(g2, received.getPrimaryType().name(), bX, bY, 9f);
@@ -315,9 +412,8 @@ public class StarterUI {
         g2.setFont(base.deriveFont(10f));
         g2.setColor(new Color(60, 64, 70));
         String desc = Constants.getDescription(received.getName());
-        drawWrappedText(g2, base.deriveFont(10f), desc, cardX + 210, cardY + 155, cardW - 500);
+        drawWrappedTextPlain(g2, base.deriveFont(10f), desc, cardX + 210, cardY + 155, cardW - 500, 16);
 
-        // ── Starting skills: 4×1 move rows
         int skillsX = cardX + cardW - 280;
         int skillsY = cardY + 155;
         int rowW    = 250;
@@ -349,7 +445,6 @@ public class StarterUI {
             if (i < moves.size()) {
                 Skill mv = moves.get(i);
 
-                // --- Type badge using helper ---
                 int skillBadgeW = drawTypeBadge(g2, mv.getType().name(), skillsX + 6, baseline, 6f);
 
                 g2.setFont(base.deriveFont(Font.PLAIN, 9f));
@@ -377,21 +472,15 @@ public class StarterUI {
         FontMetrics fm = g2.getFontMetrics();
 
         int padX = 10;
-        // fm.getHeight() is safer than Ascent+Descent for pixel fonts to prevent clipping
         int badgeH = fm.getHeight() + 5;
         int badgeW = fm.stringWidth(typeName.toUpperCase()) + (padX * 2);
 
-        // Position the badge top relative to the baseline (y)
-        // We subtract the ascent to get to the 'top' of the text,
-        // then subtract 1 or 2 pixels for the top padding.
         int badgeTopY = y - fm.getAscent() - 5;
 
         g2.setColor(typeColor(typeName));
-        // Increase badgeH slightly if it still looks tight on the bottom
         g2.fillRoundRect(x, badgeTopY, badgeW, badgeH + 2, 4, 4);
 
         g2.setColor(Color.WHITE);
-        // Standardize text rendering to prevent sub-pixel shifting
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.drawString(typeName.toUpperCase(), x + padX, y);
 
@@ -399,9 +488,7 @@ public class StarterUI {
         return badgeW;
     }
 
-    // ── Dialogue box — PC triple-stroke border + pokemonGb ───────────────────
-
-    private void drawDialogueBox(Graphics2D g2, Font base, String text, int boxY) {
+    private void drawDialogueBox(Graphics2D g2, Font base, String speaker, String drawnText, String fullText, int boxY) {
         int boxH = 126;
         int boxX = 10;
         int boxW = SCREEN_WIDTH - 20;
@@ -412,9 +499,46 @@ public class StarterUI {
             drawPCBorder(g2, boxX, boxY, boxW, boxH, 15);
         }
 
-        g2.setFont(base.deriveFont(Font.BOLD, 16f));
-        g2.setColor(new Color(44, 44, 42));
-        drawWrappedText(g2, base.deriveFont(Font.BOLD, 16f), text, boxX + 28, boxY + 55, boxW - 20);
+        int textX = boxX + 35;
+
+        BufferedImage portrait = getPortrait(speaker);
+        if (portrait != null) {
+            g2.setColor(new Color(230, 226, 218));
+            g2.fillRoundRect(boxX + 16, boxY + 16, 90, 90, 8, 8);
+            g2.setColor(new Color(190, 185, 172));
+            g2.drawRoundRect(boxX + 16, boxY + 16, 90, 90, 8, 8);
+
+            g2.drawImage(portrait, boxX + 21, boxY + 21, 80, 80, null);
+            textX += 85;
+        }
+
+        int maxTextWidth = boxW - (textX - boxX) - 25;
+
+        g2.setFont(base.deriveFont(Font.BOLD, 14f));
+        FontMetrics fm = g2.getFontMetrics();
+
+        int lineHeight = 22;
+        int speakerSpacing = (speaker != null && !speaker.isEmpty()) ? 24 : 0;
+
+        int totalLines = countWrappedLines(fullText, fm, maxTextWidth);
+        int totalContentHeight = speakerSpacing + (totalLines * lineHeight);
+        int startY = boxY + ((boxH - totalContentHeight) / 2) + fm.getAscent();
+
+        if (speaker != null && !speaker.isEmpty()) {
+            g2.setColor(new Color(40, 40, 40));
+            g2.setFont(base.deriveFont(Font.BOLD, 18f));
+
+            if (speaker.equals("Sir Khai")) {
+                g2.drawString(speaker + " [VIDEO CALL]:", textX, startY);
+            } else {
+                g2.drawString(speaker + ":", textX, startY);
+            }
+            startY += speakerSpacing;
+        }
+
+        g2.setFont(base.deriveFont(Font.BOLD, 14f));
+        g2.setColor(new Color(64, 64, 64));
+        drawWrappedTextDynamically(g2, drawnText, textX, startY, maxTextWidth, lineHeight);
     }
 
     private void drawYesNoMenu(Graphics2D g2, Font base, int boxY) {
@@ -429,7 +553,6 @@ public class StarterUI {
         g2.drawString("YES", menuX + 60, menuY + 45);
         g2.drawString("NO",  menuX + 60, menuY + 88);
 
-        // Cursor triangle — fillPolygon, no ▶ glyph (pokemonGb limitation)
         int ts = 8;
         int cx = menuX + 35;
         int cy = menuY + (confirmCursor == 0 ? 38 : 81);
@@ -439,12 +562,6 @@ public class StarterUI {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
     }
 
-    // ── Shared helpers ────────────────────────────────────────────────────────
-
-    /**
-     * Triple-stroke window border — exactly matches PC / Inventory / Quest UIs.
-     * dark 6px → gold 4px → dark 2px
-     */
     private void drawPCBorder(Graphics2D g2, int x, int y, int w, int h, int arc) {
         g2.setColor(new Color(245, 242, 235));
         g2.fillRoundRect(x, y, w, h, arc, arc);
@@ -460,11 +577,51 @@ public class StarterUI {
         g2.setStroke(new BasicStroke(1));
     }
 
-    private void drawWrappedText(Graphics2D g2, Font font, String text, int x, int y, int maxWidth) {
+    private int countWrappedLines(String text, FontMetrics fm, int maxWidth) {
+        if (text == null || text.isEmpty()) return 0;
+        int count = 0;
+        for (String line : text.split("\n")) {
+            StringBuilder currentLine = new StringBuilder();
+            for (String word : line.split(" ")) {
+                String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
+                if (fm.stringWidth(testLine) > maxWidth && currentLine.length() > 0) {
+                    count++;
+                    currentLine = new StringBuilder(word);
+                } else {
+                    currentLine = new StringBuilder(testLine);
+                }
+            }
+            if (currentLine.length() > 0) count++;
+        }
+        return count;
+    }
+
+    private void drawWrappedTextDynamically(Graphics2D g2, String text, int x, int y, int maxWidth, int lineHeight) {
+        FontMetrics fm = g2.getFontMetrics();
+
+        for (String line : text.split("\n")) {
+            StringBuilder currentLine = new StringBuilder();
+            for (String word : line.split(" ")) {
+                String testLine = currentLine.length() == 0 ? word : currentLine + " " + word;
+                if (fm.stringWidth(testLine) > maxWidth && currentLine.length() > 0) {
+                    g2.drawString(currentLine.toString(), x, y);
+                    y += lineHeight;
+                    currentLine = new StringBuilder(word);
+                } else {
+                    currentLine = new StringBuilder(testLine);
+                }
+            }
+            if (currentLine.length() > 0) {
+                g2.drawString(currentLine.toString(), x, y);
+                y += lineHeight;
+            }
+        }
+    }
+
+    private void drawWrappedTextPlain(Graphics2D g2, Font font, String text, int x, int y, int maxWidth, int lineHeight) {
         if (text.toLowerCase().contains("do you want to choose")) maxWidth -= 200;
         g2.setFont(font);
         FontMetrics fm = g2.getFontMetrics();
-        int lineHeight = fm.getHeight() + 6;
         int curY = y;
         StringBuilder line = new StringBuilder();
         for (String word : text.split(" ")) {
@@ -480,7 +637,6 @@ public class StarterUI {
         g2.drawString(line.toString(), x, curY);
     }
 
-    /** Type badge colors — identical to PCUI / InventoryUI. */
     private Color typeColor(String typeName) {
         return switch (typeName.toUpperCase()) {
             case "FIGHTING" -> new Color(180,  80,  60);
@@ -505,6 +661,16 @@ public class StarterUI {
         BufferedImage img = AssetManager.loadImage(path);
         if (img != null) spriteCache.put(key, img);
         return img;
+    }
+
+    private BufferedImage getPortrait(String speakerName) {
+        if (speakerName == null || speakerName.isEmpty() || speakerName.equals("System") || speakerName.equals("ROT")) return null;
+        String safeName = speakerName.toUpperCase();
+        if (safeName.contains("TUNG TUNG")) return AssetManager.getBrainRotSprite("TUNG TUNG TUNG SAHUR", "NORMAL", false, 1);
+        if (safeName.contains("SIR KHAI")) return AssetManager.loadImage("/res/InteractiveTiles/5/1.png");
+        if (safeName.contains("CHUYAOI") || safeName.contains("PLAYER") || speakerName.equals(gp.player.name)) return AssetManager.loadImage("/res/InteractiveTiles/Player/4.png");
+
+        return null;
     }
 
     private String toFolderName(String name) {
