@@ -31,7 +31,6 @@ public class BattleUI {
     private enum MenuOption { FIGHT, BAG, TEAM, RUN }
     private enum AnimMode { IDLE, HURT, BUFF, ATTACK }
 
-    /** Resolve the current sprite frame for an actor given its animation mode. */
     private int pickAnimFrame(AnimMode mode) {
         switch (mode) {
             case HURT: {
@@ -45,7 +44,6 @@ public class BattleUI {
                 return ATK_START + idx;
             }
             case BUFF: {
-                // Loop: BUFF_FRAME, then IDLE_FRAME — alternates each step.
                 int idx = (globalAnimTick / Math.max(1, BUFF_TICKS_PER_FRAME)) % 2;
                 return (idx == 0) ? BUFF_FRAME : IDLE_FRAME;
             }
@@ -56,7 +54,7 @@ public class BattleUI {
     private static class BattleMessage {
         String line1, line2;
         int activeActor;
-        int tickDuration; // -1 → use default
+        int tickDuration;
         BattleMessage(String l1, String l2, int activeActor) {
             this(l1, l2, activeActor, -1);
         }
@@ -101,12 +99,6 @@ public class BattleUI {
     private final Map<String, BufferedImage> spriteCache = new HashMap<>();
     private BufferedImage hpFrame_player, hpFrame_enemy, dialogueBoxFrame, playerBackSprite;
 
-    // ── Brainrot battle-sprite animation tuning ─────────────────────────────
-    //  Frames per animation in /res/InteractiveTiles/Brainrots/<rot>/<TIER>[_BACK]_N.png
-    //   1            → idle
-    //   HURT_START..HURT_END → take-damage loop
-    //   BUFF_FRAME   → buff/debuff (cycled with idle)
-    //   ATK_START..ATK_END   → attack loop
     private static final int IDLE_FRAME = 1;
     private static final int HURT_START = 2;
     private static final int HURT_END   = 3;
@@ -114,7 +106,6 @@ public class BattleUI {
     private static final int ATK_START  = 5;
     private static final int ATK_END    = 6;
 
-    // Ticks per frame — tweak to slow down / speed up each animation.
     private static final int IDLE_TICKS_PER_FRAME = 30;
     private static final int HURT_TICKS_PER_FRAME = 6;
     private static final int BUFF_TICKS_PER_FRAME = 8;
@@ -122,20 +113,24 @@ public class BattleUI {
 
     private int globalAnimTick = 0;
 
-    // Trainer pose intro animation
     private int poseTick = 0;
     private static final int POSE_SLIDE_IN_END = 18;
     private static final int POSE_HOLD_END     = 48;
     private static final int POSE_SLIDE_OUT_END = 66;
     private BufferedImage trainerPoseSprite;
 
-    // Reveal delay between enemy showing alone and player rot showing
     private int revealTick = 0;
     private static final int REVEAL_DELAY = 45;
 
-    // Flow flags
-    private boolean awaitingSwapPrompt = false; // true when next state should be SWAP_PROMPT (trainer subsequent send-out)
+    private boolean awaitingSwapPrompt = false;
     private int swapCursor = 0;
+
+    // --- BATTLE BG VARIABLES ---
+    private BufferedImage grassBg;
+    private BufferedImage darkGrassBg;
+    private BufferedImage caveBg;
+    private BufferedImage waterBg; // <-- NEW
+    public int currentBgTile = 2;
 
     public BattleUI(GamePanel gp, KeyboardHandler kh) {
         this.gp = gp;
@@ -149,10 +144,30 @@ public class BattleUI {
         hpFrame_enemy    = AssetManager.loadImage("/res/UI/Battle/hp_frame_enemy.png");
         dialogueBoxFrame = AssetManager.loadImage("/res/UI/Battle/dialogue_box.png");
         playerBackSprite = AssetManager.loadImage("/res/InteractiveTiles/Player/4.png");
+        grassBg = AssetManager.loadImage("/res/BattleBG/GrassBattleBG.png");
+        darkGrassBg = AssetManager.loadImage("/res/BattleBG/DarkGrassBG.png");
+        caveBg = AssetManager.loadImage("/res/BattleBG/CaveBattleBG.png");
+        waterBg = AssetManager.loadImage("/res/BattleBG/WaterBattleBG.png"); // <-- NEW
     }
 
+    // Shield to prevent fading from overwriting the background tile
     public void setBattle(BattleManager battle) {
+        if (this.battle == battle) {
+            setBattle(battle, this.currentBgTile);
+        } else {
+            setBattle(battle, 2);
+        }
+    }
+
+    public void setBattle(BattleManager battle, int bgTileId) {
         this.battle = battle;
+        this.currentBgTile = bgTileId;
+
+        System.out.println("===========================================");
+        System.out.println("BATTLE TRIGGERED!");
+        System.out.println("Tile ID passed to BattleUI: " + bgTileId);
+        System.out.println("===========================================");
+
         this.currentState = BattleState.INITIALIZING;
         this.turnOneComplete = false;
         this.turnTwoComplete = false;
@@ -196,9 +211,6 @@ public class BattleUI {
     private void loadTrainerPoseSprite() {
         npc.TrainerNPC tr = battle.getTrainer();
         if (tr == null) { trainerPoseSprite = null; return; }
-        // Trainer NPC sprites are loaded from /res/InteractiveTiles/<folderId+1>/.
-        // The "iconic pose" is the 5th image. We can't easily access folderId, so try
-        // a few candidates by sniffing the existing sprites list.
         if (tr.sprites != null && tr.sprites.size() >= 5) {
             trainerPoseSprite = tr.sprites.get(4);
         } else {
@@ -210,7 +222,6 @@ public class BattleUI {
         poseTick++;
         if (poseTick >= POSE_SLIDE_OUT_END) {
             poseTick = 0;
-            // After pose, queue the "sent out X!" line, then enemy reveal
             BrainRot er = battle.getEnemyRot();
             if (battle.getTrainer() != null && er != null) {
                 queueMessage(battle.getTrainer().name + " sent out", er.getName() + "!", 2);
@@ -224,7 +235,6 @@ public class BattleUI {
         if (revealTick >= REVEAL_DELAY) {
             revealTick = 0;
             if (isInitialSendOut) {
-                // First time the player sends out their rot in this battle.
                 BrainRot lead = battle.getPlayerRot();
                 isInitialSendOut = false;
                 if (lead != null) queueMessage("Go! " + lead.getName() + "!", "", 1);
@@ -255,7 +265,6 @@ public class BattleUI {
             kh.enterPressed = false;
             utils.AudioManager.playSFX(utils.Constants.SFX_ENTER);
             if (swapCursor == 0) {
-                // YES — open team select to choose new rot
                 dialogueLine1 = "Who will you";
                 dialogueLine2 = "send out?";
                 dialogueTicks = 0;
@@ -315,17 +324,14 @@ public class BattleUI {
     }
 
     private void updateInitializing() {
-        // Auto-deploy the lead party member; skip the manual send-out picker.
         isInitialSendOut = true;
         awaitingSwapPrompt = false;
 
         if (battle.isWildBattle()) {
             queueWildIntroDialogue(battle.getEnemyRot());
-            // Wild: enemy rot already on screen; just delay then send out player rot.
             playNextMessage(BattleState.ENEMY_REVEAL);
         } else {
             queueMessage("Trainer wants to battle!", "Get ready!");
-            // Trainer: show iconic pose, then their rot, then send out player rot.
             loadTrainerPoseSprite();
             poseTick = 0;
             playNextMessage(BattleState.TRAINER_POSE);
@@ -360,7 +366,6 @@ public class BattleUI {
                     setPrompt();
                     BrainRot pr = battle.getPlayerRot();
                     if (pr != null && pr.isOutOfUP()) {
-                        // Forced Struggle path — no skill select, go straight to action.
                         playerChosenIndex = battle.STRUGGLE_INDEX;
                         currentState = playerMovesFirst ? BattleState.ENEMY_AI : BattleState.ANIMATION;
                     } else {
@@ -410,7 +415,6 @@ public class BattleUI {
             gp.player.getInventory().removeItem(item);
             boolean success = battle.executeCapture(item);
 
-            // Pokemon-style 3-wobble suspense before result.
             String rotName = battle.getEnemyRot().getName();
             queueMessage("You threw a " + item.getName() + "!", "", 1, 45);
             queueMessage("Catching...", "*shake*",   2, 35);
@@ -541,7 +545,7 @@ public class BattleUI {
             if (confirmCursor == 0) {
                 BrainRot selected = gp.player.getPCSYSTEM().getPartyMember(partyCursor);
                 battle.setPlayerRot(selected);
-                skillCursor = 0;        // reset so old cursor doesn't index past new rot's moves
+                skillCursor = 0;
                 queueMessage("Go! " + selected.getName() + "!", "");
                 if (isInitialSendOut) {
                     isInitialSendOut = false;
@@ -560,13 +564,8 @@ public class BattleUI {
         }
     }
 
-    // ── Level-up move replacement flow ────────────────────────────────────────
-
     private void updateLevelupCheck() {
         if (pendingReplacements.isEmpty()) {
-            // If a trainer battle is still ONGOING (next BrainRot was sent out),
-            // skip the trainer pose (only shown once, at fight start) and go straight
-            // to the swap prompt via the enemy reveal.
             if (!battle.isOver()) {
                 if (battle.getTrainer() != null) {
                     awaitingSwapPrompt = true;
@@ -656,7 +655,6 @@ public class BattleUI {
             enemyChosenIndex = battle.STRUGGLE_INDEX;
         } else if (er != null && !er.getMoves().isEmpty()) {
             enemyChosenIndex = utils.RandomUtil.range(0, er.getMoves().size() - 1);
-
         } else {
             enemyChosenIndex = battle.STRUGGLE_INDEX;
         }
@@ -694,7 +692,6 @@ public class BattleUI {
                 if (attacker.isFainted()) queueMessage(attacker.getName() + " fainted!", "");
             } else {
                 if (skillIdx < 0 || skillIdx >= attacker.getMoves().size()) {
-                    System.err.println("[BattleUI] Prevented Crash! Invalid move index: " + skillIdx);
                     skillIdx = 0;
                 }
                 Skill skill = attacker.getMoves().get(skillIdx);
@@ -727,8 +724,6 @@ public class BattleUI {
                 queueMessage(attacker.getName() + " used", "Struggle!", attackerActor);
                 int defOldHp = defender.getCurrentHp();
                 int atkOldHp = attacker.getCurrentHp();
-                // playerMovesFirst tells us who is attacker NOW: in turn-two, the
-                // attacker is the *opposite* side of playerMovesFirst.
                 battle.executeStruggleTurn(!playerMovesFirst);
                 int damage = defOldHp - defender.getCurrentHp();
                 int recoil = atkOldHp - attacker.getCurrentHp();
@@ -738,7 +733,6 @@ public class BattleUI {
                 if (attacker.isFainted()) queueMessage(attacker.getName() + " fainted!", "");
             } else {
                 if (skillIdx < 0 || skillIdx >= attacker.getMoves().size()) {
-                    System.err.println("[BattleUI] Prevented Crash! Invalid move index: " + skillIdx);
                     skillIdx = 0;
                 }
                 Skill skill = attacker.getMoves().get(skillIdx);
@@ -764,7 +758,6 @@ public class BattleUI {
 
         if (battle.isOver()) {
             if (battle.getResult() == BattleManager.BattleResult.PLAYER_WIN) {
-
                 utils.AudioManager.playMusic(utils.Constants.BGM_VICTORY, false);
 
                 BattleReward.Result reward = battle.getReward();
@@ -790,23 +783,18 @@ public class BattleUI {
                     }
                 }
 
-                // ── Trainer battles: keep fighting if they have more BrainRots ──
                 boolean trainerHasMore = battle.trainerHasNextEnemy();
                 if (trainerHasMore) {
                     BrainRot next = battle.advanceToNextTrainerEnemy();
                     if (next != null) {
-                        // Resume battle; play wild-battle music
                         utils.AudioManager.playMusic(utils.Constants.BGM_WILD_BATTLE, true);
                         playerMovesFirst = battle.getPlayerRot().getSpeed() >= next.getSpeed();
-                        // Skip the iconic pose for subsequent rots — go straight to
-                        // reveal-then-swap.
                         awaitingSwapPrompt = true;
                         revealTick = 0;
                         if (battle.getTrainer() != null)
                             queueMessage(battle.getTrainer().name + " sent out", next.getName() + "!", 2);
                     }
                 } else if (battle.getTrainer() != null) {
-                    // Trainer is fully defeated: persist defeat + start cooldown
                     npc.TrainerNPC tr = battle.getTrainer();
                     tr.markDefeated(gp.getGameTime());
                     String key = gp.CURRENT_PATH + "@"
@@ -814,7 +802,6 @@ public class BattleUI {
                             + (tr.worldY / TILE_SIZE);
                     gp.defeatedTrainers.put(key, gp.getGameTime());
 
-                    // Award the trainer's stored RotCoins + inventory drops.
                     int trainerCoins = tr.getRotCoins();
                     if (trainerCoins > 0) {
                         gp.player.earnRotCoins(trainerCoins);
@@ -842,12 +829,11 @@ public class BattleUI {
                 playNextMessage(pendingReplacements.isEmpty() ? BattleState.FINISH : BattleState.LEVELUP_CHECK);
             }
         } else {
-            // Player rot fainted but team has reserves — force a swap before continuing.
             if (battle.getPlayerRot() != null && battle.getPlayerRot().isFainted()
                     && battle.hasHealthyReserves()) {
                 queueMessage(battle.getPlayerRot().getName() + " fainted!", "");
                 queueMessage("Choose your next", "BrainRot!", 1);
-                isInitialSendOut = true;        // re-use initial send-out flow
+                isInitialSendOut = true;
                 playerChosenIndex = -1;
                 playNextMessage(BattleState.TEAM_SELECT);
                 return;
@@ -886,7 +872,6 @@ public class BattleUI {
         this.dialogueTicks = 0;
     }
 
-    /** Queues a human-readable buff/debuff/status line after a skill is used. */
     private void queueEffectMessage(Skill skill, BrainRot user, BrainRot target, int userActor, int targetActor) {
         if (skill == null || skill.getEffect() == null) return;
         String e = skill.getEffect().toUpperCase();
@@ -924,29 +909,35 @@ public class BattleUI {
         queueMessage(l1, l2);
     }
 
-    // ══════════════════════════════════════════════════════════════════════════
-    // DRAWING
-    // ══════════════════════════════════════════════════════════════════════════
-
     public void draw(Graphics2D g2) {
         if (this.battle == null) return;
         if (this.battle.getEnemyRot()  == null) return;
         if (this.battle.getPlayerRot() == null) return;
 
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        g2.setColor(new Color(100, 180, 100));
-        g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        // --- NEW BATTLE BACKGROUND LOGIC WITH WATER ---
+        if (currentBgTile == 556 && waterBg != null) {
+            g2.drawImage(waterBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+        } else if (currentBgTile == 16 && darkGrassBg != null) {
+            g2.drawImage(darkGrassBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+        } else if (currentBgTile == 84 && caveBg != null) {
+            g2.drawImage(caveBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+        } else if (currentBgTile == 2 && grassBg != null) {
+            g2.drawImage(grassBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+        } else {
+            g2.setColor(new Color(100, 180, 100));
+            g2.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            g2.setColor(new Color(150, 210, 150));
+            g2.fillOval(480, 200, 240, 60);
+            g2.fillOval(40, 440, 300, 70);
+        }
 
         if (currentState == BattleState.TEAM_SELECT || currentState == BattleState.TEAM_CONFIRM) {
             drawFullTeamScreen(g2);
             return;
         }
 
-        g2.setColor(new Color(150, 210, 150));
-        g2.fillOval(480, 200, 240, 60);
-        g2.fillOval(40, 440, 300, 70);
-
-        // Animation frame selection — derive per-actor mode from dialogue text.
         AnimMode pMode = AnimMode.IDLE, eMode = AnimMode.IDLE;
         if (currentState == BattleState.MESSAGE) {
             String l1 = (dialogueLine1 != null) ? dialogueLine1.toLowerCase() : "";
@@ -954,10 +945,10 @@ public class BattleUI {
             boolean usedSkill = l1.contains(" used");
             boolean tookHit   = l2.contains("took") || l2.contains("damage");
             boolean buffMsg   = l1.contains("raised") || l2.contains("raised")
-                             || l1.contains("fell")   || l2.contains("fell")
-                             || l1.contains("recover")|| l2.contains("recover")
-                             || l2.contains("burned")  || l2.contains("paralyzed")
-                             || l2.contains("confused")|| l2.contains("asleep");
+                    || l1.contains("fell")   || l2.contains("fell")
+                    || l1.contains("recover")|| l2.contains("recover")
+                    || l2.contains("burned")  || l2.contains("paralyzed")
+                    || l2.contains("confused")|| l2.contains("asleep");
 
             if (usedSkill) {
                 if (currentMessageActor == 1) pMode = AnimMode.ATTACK;
@@ -984,21 +975,20 @@ public class BattleUI {
 
         if (!hideEnemyRot) {
             BufferedImage enemySprite = AssetManager.getBrainRotSprite(battle.getEnemyRot().getName(), battle.getEnemyRot().getTier().name(), false, eFrame);
-            if (enemySprite != null) g2.drawImage(enemySprite, 500, 40, 200, 200, null);
+            if (enemySprite != null) g2.drawImage(enemySprite, 500, 60, 200, 200, null);
         }
 
         if (hidePlayerRot) {
             if (!inTrainerPose && playerBackSprite != null)
-                g2.drawImage(playerBackSprite, 80, 240, 220, 220, null);
+                g2.drawImage(playerBackSprite, 80, SCREEN_HEIGHT - 340, 220, 220, null);
         } else {
             BufferedImage playerSprite = AssetManager.getBrainRotSprite(battle.getPlayerRot().getName(), battle.getPlayerRot().getTier().name(), true, pFrame);
-            if (playerSprite != null) g2.drawImage(playerSprite, 60, 220, 260, 260, null);
+            if (playerSprite != null) g2.drawImage(playerSprite, 60, SCREEN_HEIGHT - 360, 260, 260, null);
         }
 
         if (!hideEnemyRot) drawEnemyHpBlock(g2);
         if (!hidePlayerRot) drawPlayerHpBlock(g2);
 
-        // Trainer iconic pose with slide in/out animation
         if (inTrainerPose && trainerPoseSprite != null) {
             int targetX = SCREEN_WIDTH / 2 - 160;
             int finalY  = 60;
@@ -1019,7 +1009,6 @@ public class BattleUI {
             g2.setComposite(prev);
         }
 
-        // Dialogue box
         int boxY = SCREEN_HEIGHT - 136;
         int boxH = 126;
         if (dialogueBoxFrame != null) g2.drawImage(dialogueBoxFrame, 6, boxY, SCREEN_WIDTH - 12, boxH, null);
@@ -1045,8 +1034,6 @@ public class BattleUI {
         drawCursor(g2, menuX + 35, boxY + (swapCursor == 0 ? 36 : 76));
     }
 
-    // ── Full team screen ──────────────────────────────────────────────────────
-
     private void drawFullTeamScreen(Graphics2D g2) {
         Font base = getCustomFont(Font.PLAIN, 10);
 
@@ -1055,7 +1042,6 @@ public class BattleUI {
         int panelW = (SCREEN_WIDTH - pad * 2 - gap * 2) / 3;
         int panelH = SCREEN_HEIGHT - 165;
 
-        // Three panels with StarterUI-style border
         drawBattlePanel(g2, pad,                        pad, panelW, panelH, "TEAM");
         drawBattlePanel(g2, pad + panelW + gap,         pad, panelW, panelH, "INFO");
         drawBattlePanel(g2, pad + (panelW+gap)*2,       pad, panelW, panelH, "SKILLS");
@@ -1063,7 +1049,6 @@ public class BattleUI {
         BrainRot sel = gp.player.getPCSYSTEM().getPartyMember(partyCursor);
         int size     = gp.player.getPCSYSTEM().getPartySize();
 
-        // ── LEFT: name + HP bar + type badges ─────────────────────────────────
         int listX  = pad + 8;
         int listW  = panelW - 16;
         int rowH   = 52;
@@ -1075,7 +1060,6 @@ public class BattleUI {
             boolean  fainted = rot.isFainted();
             int      rowTop  = listY + i * rowH;
 
-            // Row bg
             Color bg = hovered ? new Color(178, 212, 244, 220) : new Color(230, 226, 218);
             g2.setColor(fainted ? new Color(210, 205, 198) : bg);
             g2.fillRoundRect(listX, rowTop, listW, rowH - 4, 8, 8);
@@ -1095,7 +1079,6 @@ public class BattleUI {
             int tx      = listX + 12;
             int nameMaxW = listW - 12 - 4;
 
-            // Name
             g2.setFont(base.deriveFont(Font.BOLD, 10f));
             g2.setColor(fainted ? new Color(160, 155, 148) : new Color(44, 44, 42));
             String nameStr = rot.getName();
@@ -1104,7 +1087,6 @@ public class BattleUI {
                 nameStr = nameStr.substring(0, nameStr.length() - 1);
             g2.drawString(nameStr, tx, rowTop + 16);
 
-            // HP bar
             int hpBarY = rowTop + 24;
             int hpBarH = 5;
             int hpBarW = listW - 12 - 10;
@@ -1120,26 +1102,22 @@ public class BattleUI {
             g2.setColor(new Color(160, 155, 145));
             g2.drawRoundRect(tx + hpLW, hpBarY, hpBarW - hpLW, hpBarH, 2, 2);
 
-            // HP numbers
             g2.setFont(base.deriveFont(7f));
             g2.setColor(new Color(64, 60, 55));
             g2.drawString(rot.getCurrentHp() + "/" + rot.getMaxHp(), tx, rowTop + rowH - 10);
 
         }
 
-        // ── MIDDLE: Info panel (previous layout + badge type + stats) ──────────
         if (sel != null) {
             int midX  = pad + panelW + gap + 12;
             int midW  = panelW - 24;
             int infoY = pad + 38;
 
-            // Sprite
             BufferedImage spr = AssetManager.getBrainRotSprite(sel.getName(), sel.getTier().name(), false, 1);
             if (spr != null) g2.drawImage(spr, midX + (midW/2 - 45), infoY, 110, 110, null);
 
             int ty = infoY + 128;
 
-            // Name
             g2.setFont(base.deriveFont(Font.BOLD, 14f));
             g2.setColor(new Color(44, 44, 42));
             StringBuilder nLine = new StringBuilder();
@@ -1150,7 +1128,6 @@ public class BattleUI {
             }
             if (!nLine.isEmpty()) { g2.drawString(nLine.toString(), midX, ty); ty += 16; }
 
-            // Lv + Type + Tier
             g2.setFont(base.deriveFont(10f));
             g2.setColor(new Color(100, 96, 90));
             String lvStr = "Lv." + sel.getLevel() + " ";
@@ -1164,7 +1141,6 @@ public class BattleUI {
 
             ty += 10;
 
-            // HP bar
             g2.setFont(base.deriveFont(10f));
             g2.setColor(new Color(80, 76, 70));
             g2.drawString("HP", midX, ty + 7);
@@ -1182,7 +1158,6 @@ public class BattleUI {
             g2.drawString(sel.getCurrentHp() + "/" + sel.getMaxHp(), midX + hpLW2 + hpBW + 4, ty + 8);
             ty += 26;
 
-            // Base stats
             g2.setFont(base.deriveFont(10f));
             g2.setColor(new Color(80, 76, 70));
             g2.drawString("ATK" + sel.getBaseAtk(), midX,       ty);
@@ -1190,12 +1165,10 @@ public class BattleUI {
             g2.drawString("SPD" + sel.getBaseSpeed(), midX + 120, ty);
             ty += 10;
 
-            // Divider
             g2.setColor(new Color(200, 195, 180));
             g2.drawLine(midX, ty, midX + midW, ty);
             ty += 16;
 
-            // Description
             g2.setFont(base.deriveFont(9f));
             g2.setColor(new Color(88, 84, 76));
             String desc = Constants.getDescription(sel.getName());
@@ -1215,12 +1188,11 @@ public class BattleUI {
             }
         }
 
-        // ── RIGHT: Skills — StarterUI-style 4×1 rows ───────────────────────────
         if (sel != null) {
             int rightX = pad + (panelW + gap) * 2 + 10;
             int rightW = panelW - 20;
             int skillsY = pad + 38;
-            int rowH2   = 44;   // compact row height
+            int rowH2   = 44;
             List<Skill> moves = sel.getMoves();
 
             for (int i = 0; i < 4; i++) {
@@ -1240,13 +1212,11 @@ public class BattleUI {
                 if (mv) {
                     Skill sk = moves.get(i);
 
-                    // Type badge
                     int bH2   = 14;
                     int bTopY = rowY + (rowH2 - bH2) / 2;
                     int bX2   = rightX + 5;
                     int bW2   = drawTypeBadgeBattle(g2, base, sk.getType().name(), bX2, bTopY, bH2);
 
-                    // Move name
                     g2.setFont(base.deriveFont(Font.BOLD, 9f));
                     g2.setColor(new Color(44, 44, 42));
                     String upStr = sk.getCurrentUP() + "/" + sk.getMaxUP();
@@ -1259,7 +1229,6 @@ public class BattleUI {
                         mName = mName.substring(0, mName.length() - 1);
                     g2.drawString(mName, nameX, baseline);
 
-                    // UP — right aligned
                     g2.setFont(base.deriveFont(8f));
                     g2.setColor(sk.getCurrentUP() < 1 ? new Color(200, 80, 60) : new Color(100, 96, 90));
                     FontMetrics upFm = g2.getFontMetrics();
@@ -1272,13 +1241,11 @@ public class BattleUI {
             }
         }
 
-        // ── Dialogue box ──────────────────────────────────────────────────────
         int boxY = SCREEN_HEIGHT - 136;
         int boxH = 126;
         drawBattleBox(g2, 10, boxY, SCREEN_WIDTH - 20, boxH);
         drawDialogueText(g2, boxY - 6, boxH);
 
-        // YES / NO confirm overlay
         if (currentState == BattleState.TEAM_CONFIRM) {
             int menuW = 160, menuH = 126;
             int menuX = SCREEN_WIDTH - menuW - 10;
@@ -1297,8 +1264,6 @@ public class BattleUI {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
         }
     }
-
-    // ── HP frames ─────────────────────────────────────────────────────────────
 
     private void drawEnemyHpBlock(Graphics2D g2) {
         drawHpFrame(g2, 40, 40, 320, 96, battle.getEnemyRot(), hpFrame_enemy);
@@ -1339,10 +1304,8 @@ public class BattleUI {
         String hpNum = rot.getCurrentHp() + "/" + rot.getMaxHp();
         FontMetrics fm2 = g2.getFontMetrics();
 
-        // Position BELOW the bar
         g2.drawString(hpNum, x + w - fm2.stringWidth(hpNum) - 20, barY + 30);
 
-        // Type badges (primary + optional secondary) below the HP bar
         Font badgeFont = getCustomFont(Font.PLAIN, 10);
         int badgeY = barY + 16;
         int bx = x + 20;
@@ -1356,7 +1319,6 @@ public class BattleUI {
             }
         }
 
-        // Status badge (BURN, PARALYZE, CONFUSE, SLEEP, etc.) — drawn next to type badges.
         if (rot.getStatus() != null && !rot.getStatus().equalsIgnoreCase("NONE")) {
             drawStatusBadge(g2, badgeFont, rot.getStatus(), bxAfter, badgeY, 14);
         }
@@ -1384,8 +1346,6 @@ public class BattleUI {
             default         -> new Color(130, 126, 118);
         };
     }
-
-    // ── Menu overlays ─────────────────────────────────────────────────────────
 
     private void drawMenu(Graphics2D g2, int boxY) {
         int menuW = 320, menuX = SCREEN_WIDTH - menuW - 10;
@@ -1417,11 +1377,9 @@ public class BattleUI {
             g2.setColor(sk.getCurrentUP() < 1 ? new Color(180, 180, 180) : new Color(44, 44, 42));
             drawFittingString(g2, sk.getName(), dx, dy, 200, 16f, Font.BOLD);
 
-            // Skill type badge under the move name
             if (sk.getType() != null)
                 drawTypeBadgeBattle(g2, badgeFont, sk.getType().name(), dx, dy + 4, 14);
 
-            // UP counter — right side of each row
             String upStr = "UP " + sk.getCurrentUP() + "/" + sk.getMaxUP();
             g2.setFont(getCustomFont(Font.BOLD, 11f));
             g2.setColor(sk.getCurrentUP() < 1 ? new Color(200, 80, 60) : new Color(80, 76, 70));
@@ -1458,8 +1416,6 @@ public class BattleUI {
         }
     }
 
-    // ── Dialogue text — vertically centred, no overlap ────────────────────────
-
     private void drawDialogueText(Graphics2D g2, int boxY, int boxH) {
         if ((dialogueLine1 == null || dialogueLine1.isEmpty())
                 && (dialogueLine2 == null || dialogueLine2.isEmpty())) return;
@@ -1478,12 +1434,6 @@ public class BattleUI {
             drawFittingString(g2, dialogueLine2, 30, startY + lineH, maxW, 15f, Font.BOLD);
     }
 
-    // ── Panel / box chrome ────────────────────────────────────────────────────
-
-    /**
-     * StarterUI-consistent border: cream fill, dark 3px → gold 2px → dark 1px.
-     * Used for all battle UI panels and the dialogue box.
-     */
     private void drawBattleBox(Graphics2D g2, int x, int y, int w, int h) {
         int arc = 12;
         g2.setColor(new Color(245, 242, 235));
@@ -1499,7 +1449,6 @@ public class BattleUI {
         g2.drawRoundRect(x + 3, y + 3, w - 6, h - 6, arc - 2, arc - 2);
     }
 
-    /** Same border with an optional title bar. */
     private void drawBattlePanel(Graphics2D g2, int x, int y, int w, int h, String title) {
         drawBattleBox(g2, x, y, w, h);
         if (!title.isEmpty()) {
@@ -1511,8 +1460,6 @@ public class BattleUI {
             g2.drawString(title, x + (w - fm.stringWidth(title)) / 2, y + 22);
         }
     }
-
-    // ── Shared helpers ────────────────────────────────────────────────────────
 
     private Font getCustomFont(int style, float size) {
         return AssetManager.pokemonGb != null
@@ -1540,7 +1487,6 @@ public class BattleUI {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_DEFAULT);
     }
 
-    /** Draws a type badge pill; returns its pixel width. */
     private int drawTypeBadgeBattle(Graphics2D g2, Font base, String typeName, int x, int y, int h) {
         g2.setFont(base.deriveFont(8f));
         FontMetrics fm = g2.getFontMetrics();
