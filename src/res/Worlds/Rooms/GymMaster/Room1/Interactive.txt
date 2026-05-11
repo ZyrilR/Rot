@@ -9,4 +9,4 @@
 0,0,0,0,0,0,0
 [METADATA]
 ToGymMaster|Teleporter|30|2|1|GYMMASTER~TOGYMMASTERROOM1~DOWN|Exiting Room
-Kaylo|TrainerNPC|3|2|6|CAPUCCINO ASSASSINO:25;UDIN DIN DIN DIN DUN:23;TUNG TUNG TUNG SAHUR:21;TRALALERO TRALALA:24|MODERATE STEW;MODERATE STEW;UP MEDIUM BOTTLE;UP MEDIUM BOTTLE|954|Do you think you are worthy?;To face thy gym master?;Before that, you have to go;through me first!
+Razor|TrainerNPC|3|2|6|CAPUCCINO ASSASSINO:64;UDIN DIN DIN DIN DUN:78;TUNG TUNG TUNG SAHUR:84;TRALALERO TRALALA:24|MODERATE STEW;MODERATE STEW;UP MEDIUM BOTTLE;UP MEDIUM BOTTLE|954|Do you think you are worthy to face thy Gym Master?;Sir Khai only speaks to those who have mastered the rhythm of the RotVerse.;Before that, you have to go through my mixed-meta party!;Don't let the espresso machine bite you on the way out![DEFEAT]Thy power is... absolute cinema.;I haven't felt a vibe this strong since the great server reset.;Go forth. The stairs are waiting.

@@ -1,7 +1,7 @@
 0,0,0,0,0,0,0
 0,0,30,0,0,0,0
 0,0,0,30,0,0,0
-0,0,0,30,0,0,0
+0,0,0,30,0,15,0
 0,0,0,0,0,0,0
 0,0,0,0,0,0,0
 0,0,0,30,0,0,0
@@ -10,3 +10,4 @@
 [METADATA]
 ToGymMaster|Teleporter|30|2|1|GYMMASTER~TOGYMMASTERROOM3~DOWN|Exiting Room 3...
 ToGymMasterCorridor|Teleporter|30|3|6|GYMMASTERCORRIDOR~TOGYMMASTERROOM3~UP|Entering corridor
+Moskov|TrainerNPC|3|5|3|BRR BRR PATAPIM:45;TUNG TUNG TUNG SAHUR:85;UDIN DIN DIN DIN DUN:67|SUPER STEW;UP FULL BOTTLE|3000|Stop. I am the silence before the storm.;Beyond this door lies the Gym Master, and beyond him, the Normie’s bitterness.;My Rots are ancient, older than the first meme. Can you handle a frequency this heavy?;If you lose here, the story ends. If you win, you face the Master.;Show me the weight of your badges![DEFEAT]Unbelievable. The frequency... it’s changing. You’re actually doing it.;The stairs are yours. Sir Khai is waiting on the top floor.;Don't let the Normie delete our joy. Win it all.

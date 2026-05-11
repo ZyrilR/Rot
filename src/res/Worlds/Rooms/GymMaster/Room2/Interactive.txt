@@ -8,6 +8,6 @@
 0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0
 [METADATA]
-Sasha|TrainerNPC|4|8|2|BOMBARDINO CROCODILO:24;BONECA AMBALABU:27;LIRILI LARILA:23|HEAVY CAPSULE;SUPER STEW;MILD STEW|897|Mwhahahahahhaha!;You are not getting out!
+Sasha|TrainerNPC|4|8|2|BOMBARDINO CROCODILO:77;BONECA AMBALABU:67;LIRILI LARILA:57|HEAVY CAPSULE;SUPER STEW;MILD STEW|2300|Mwhahahahahhaha! You thought this was a normal lobby?;The Anti-Vibe has turned this room into a loop! You are not getting out!;Stay here and rot with the rest of the mid-tier trainers!;Battle me until your battery runs out![DEFEAT]Connection timeout... you broke the loop!;How can one trainer have so much 'Main Character' energy?;Take the supplies from the bag and get out of here. You've got a world to save.
 Narrator|Backpack|32|1|6|Mild Stew;UP HIGH BOTTLE;UP MEDIUM BOTTLE;UP MEDIUM BOTTLE|You have received:
 ToGymMaster|Teleporter|30|4|1|GYMMASTER~TOGYMMASTERROOM2~DOWN|Exiting Room 3...
