@@ -1,0 +1,7 @@
+6,35,20,18,1
+Background:BACKGROUND
+Collision:BACKGROUND
+Stairs:BACKGROUND
+Decoration_Collision:DECORATION
+Building:BUILDING
+Interactive:INTERACTIVE

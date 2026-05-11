@@ -1,4 +1,4 @@
-8,30,70,3,26
+8,30,70,3,28
 Background:BACKGROUND
 Background2:BACKGROUND
 Wall_Collision:BACKGROUND

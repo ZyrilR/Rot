@@ -27,6 +27,7 @@ public enum Directories {
 
     //CAVES
     CAVE131("/res/Worlds/Caves/Cave131/", 30, 45, 8, 20),
+    GYMSTONE("/res/Worlds/Caves/Cave131/GymStone/", 30, 45, 8, 20),
 
     //ROOMS
     DEWDROPPIER("/res/Worlds/Rooms/DewdropPier/", 0, 0, 0, 0),
