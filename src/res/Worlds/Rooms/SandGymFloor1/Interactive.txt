@@ -27,3 +27,4 @@
 ToSandGymFloor2|Teleporter|27|10|1|SANDGYMFLOOR2~TOSANDGYMFLOOR1~DOWN|Entering Floor 2.
 Kyle|TrainerNPC|2|14|7|LIRILI LARILA:17||500|If you can beat me,;then only the leader remains.
 Dean|TrainerNPC|3|12|15|UDIN DIN DIN DIN DUN:15||430|It's been a while since I fought.
+ToRoute132|Teleporter|26|10|21|ROUTE132~TOSANDGYMFLOOR1~UP|Exiting Sand Gym...
