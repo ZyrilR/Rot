@@ -26,5 +26,5 @@
 [METADATA]
 ToDewdropPier_3|Teleporter|26|10|21|DEWDROPPIER~TOWATERGYMFLOOR1~UP|You are about to exit;Water Gym.
 ToWaterGymFloor2|Teleporter|30|10|1|WATERGYMFLOOR2~TOWATERGYMFLOOR1~DOWN|Entering floor 2.
-Dawn|TrainerNPC|4|5|14|BOMBARDINO CROCODILO:13||500|Are you sure you want;to go against our leader?
-Blue|TrainerNPC|1|16|10|LIRILI LARILA:11||450|Let's see what you've got.
+Dawn|TrainerNPC|4|5|14|BOMBARDINO CROCODILO:35|UP FULL BOTTLE;MILD STEW|2000|Hold up! You actually made it past the Pier? Not bad.;But Graine only battles trainers who are 'Main Character' material.;My Crocodilo is caffeinated chaos—are you sure you want to get ratioed?;Let's see if you can even handle the splash![DEFEAT]Okay, fine! Your drip is respectable.;You didn't just survive the splash, you rode the wave.;Floor 2 is waiting for you, but don't expect it to be easy!
+Blue|TrainerNPC|1|16|10|LIRILI LARILA:37|UP MEDIUM BOTTLE;NORMAL CAPSULE|2000|I’ve been watching you since you stepped off Route 132.;You move like someone who’s actually trying to fix the algorithm.;But here, we don't just 'fix' the rot—we flow with it.;Let’s see what you’ve got, or are you just another mid-tier tourist?[DEFEAT]Total brainblast... I couldn't keep up with your latency!;You’ve got that Gold Tier energy for sure.;Go on, Graine is upstairs waiting for someone to break her streak.
