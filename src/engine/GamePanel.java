@@ -63,6 +63,7 @@ public class GamePanel extends JPanel {
     public final DevConsole DEVCONSOLE    = new DevConsole(this);
     public final BadgeUI    BADGEUI    = new BadgeUI(this);
     public final BadgeToast BADGETOAST = new BadgeToast();
+    public final EndingUI ENDINGUI = new EndingUI(this);
 
     public final DarknessOverlay DARKNESSOVERLAY = new DarknessOverlay();
 
@@ -224,6 +225,7 @@ public class GamePanel extends JPanel {
             case "badges" -> BADGEUI.update();
             case "quests"    -> QUESTUI.update();
             case "map"       -> MAPUI.update();
+            case "ending"    -> ENDINGUI.update();
             case "inventory" -> {
                 INVENTORYUI.update();
                 if (encounterSystem.getActiveBattle() != null
@@ -462,6 +464,7 @@ public class GamePanel extends JPanel {
                     case "badges"    -> BADGEUI.draw(g2);
                     case "quests"    -> QUESTUI.draw(g2);
                     case "map"       -> MAPUI.draw(g2);
+                    case "ending"    -> ENDINGUI.draw(g2);
                 }
             }
         }

@@ -816,6 +816,12 @@ public class BattleUI {
                         progression.BadgeSystem.getInstance().onLeaderDefeated(badgeId);
                     }
 
+                    if (tr instanceof npc.GymMaster) {
+                        progression.BadgeSystem.getInstance().onLeaderDefeated("GYM_MASTER");
+                        // Queue ending after finish messages resolve
+                        stateAfterEnding = true;
+                    }
+
                     int trainerCoins = tr.getRotCoins();
                     if (trainerCoins > 0) {
                         gp.player.earnRotCoins(trainerCoins);
@@ -857,6 +863,8 @@ public class BattleUI {
         }
     }
 
+    private boolean stateAfterEnding = false;
+
     private void updateFinish() {
         if (dialogueTicks > 0) dialogueTicks--;
         if (kh.enterPressed || dialogueTicks <= 0) {
@@ -868,10 +876,18 @@ public class BattleUI {
 
             // 2. Trigger the normal fade, music, and state change
             gp.BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_OUT_TO_PLAY, 8);
-            gp.updateMusic();
-            gp.GAMESTATE = "play";
             gp.encounterSystem.clearBattle();
             inputCooldown = INPUT_DELAY;
+
+            if (stateAfterEnding) {
+                stateAfterEnding = false;
+                gp.GAMESTATE = "ending";
+                gp.ENDINGUI.open();
+                utils.AudioManager.playMusic(utils.Constants.BGM_VICTORY, false);
+            } else {
+                gp.updateMusic();
+                gp.GAMESTATE = "play";
+            }
 
             // 3. Set the hook!
             if (defeatedTrainer != null && playerWon) {
