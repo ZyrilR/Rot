@@ -1,0 +1,6 @@
+5,10,17,0,0
+Background:BACKGROUND
+Collision:DECORATION
+Building:BUILDING
+Interactive:INTERACTIVE
+healingCollision:DECORATION

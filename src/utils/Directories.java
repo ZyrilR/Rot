@@ -35,7 +35,7 @@ public enum Directories {
     DEWDROPPIER("/res/Worlds/Rooms/DewdropPier/", 0, 0, 0, 0),
     WATERGYMFLOOR1("/res/Worlds/Rooms/WaterGymFloor1/", 0, 0, 0, 0),
     WATERGYMFLOOR2("/res/Worlds/Rooms/WaterGymFloor2/", 0, 0, 0, 0),
-    MARKET("/res/Worlds/Rooms/Route130Market/", 0, 0, 0, 0),
+    DEWDROPPIERMARKET("/res/Worlds/Rooms/DewdropPier/Market/", 0, 0, 0, 0),
 
     SANDGYMFLOOR1("/res/Worlds/Rooms/SandGymFloor1/", 0, 0, 0, 0),
     SANDGYMFLOOR2("/res/Worlds/Rooms/SandGymFloor2/", 0, 0, 0, 0),
