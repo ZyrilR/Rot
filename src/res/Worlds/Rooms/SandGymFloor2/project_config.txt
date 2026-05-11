@@ -1,0 +1,7 @@
+6,25,21,10,20
+Background:BACKGROUND
+Walls_Collision:BACKGROUND
+Decoration:DECORATION
+Rocks_Collision:DECORATION
+Building:BUILDING
+Interactive:INTERACTIVE
