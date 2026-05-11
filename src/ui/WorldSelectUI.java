@@ -574,16 +574,16 @@ public class WorldSelectUI {
             g2.drawString("Play Time: " + formatPlayTime(slot.playTimeTicks), tx, ty + 34);
 
             // Slot badge
-            g2.setFont(base.deriveFont(8f));
-            FontMetrics bf = g2.getFontMetrics();
-            String badge   = "Slot " + slot.slotId;
-            int bw         = bf.stringWidth(badge) + 10;
-            int bx         = listX + listW - bw - 10;
-            int by         = rowTop + ROW_H - 22;
-            g2.setColor(new Color(180, 175, 165));
-            g2.fillRoundRect(bx, by, bw, 14, 4, 4);
-            g2.setColor(new Color(80, 76, 70));
-            g2.drawString(badge, bx + 5, by + 11);
+//            g2.setFont(base.deriveFont(8f));
+//            FontMetrics bf = g2.getFontMetrics();
+//            String badge   = "Slot " + slot.slotId;
+//            int bw         = bf.stringWidth(badge) + 10;
+//            int bx         = listX + listW - bw - 10;
+//            int by         = rowTop + ROW_H - 22;
+//            g2.setColor(new Color(180, 175, 165));
+//            g2.fillRoundRect(bx, by, bw, 14, 4, 4);
+//            g2.setColor(new Color(80, 76, 70));
+//            g2.drawString(badge, bx + 5, by + 11);
         }
         g2.setClip(prev);
 

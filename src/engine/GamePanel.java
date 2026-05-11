@@ -215,7 +215,8 @@ public class GamePanel extends JPanel {
             }
             case "battle" -> {
                 BATTLEUI.update();
-                if (encounterSystem.getActiveBattle() == null) GAMESTATE = "play";
+                if (encounterSystem.getActiveBattle() == null
+                        && GAMESTATE.equalsIgnoreCase("battle")) GAMESTATE = "play";
             }
             case "teleport"  -> updateTeleportState();
             case "dialogue"  -> DIALOGUEBOX.update();
@@ -372,6 +373,27 @@ public class GamePanel extends JPanel {
     private void handleTeleport(TileTeleporter tr) {
         Directories currentMapData = getByPath(CURRENT_PATH);
         String targetPath = getPath(tr.getLinkTo());
+
+        // Gym Master gate: block entry into the Gym Master tower unless all 5 leader badges are earned.
+        boolean enteringGymMaster = targetPath != null
+                && targetPath.toLowerCase().contains("/rooms/gymmaster")
+                && (CURRENT_PATH == null
+                    || !CURRENT_PATH.toLowerCase().contains("/rooms/gymmaster"));
+        if (enteringGymMaster
+                && !progression.BadgeSystem.getInstance().hasAllLeaderBadges()) {
+            int earned = progression.BadgeSystem.getInstance().badgeCount();
+            ArrayList<String> warning = new ArrayList<>();
+            warning.add("The Gym Master's tower is sealed.");
+            warning.add("Defeat all 5 Gym Leaders first.");
+            warning.add("Badges obtained: " + earned + " / 5");
+            DIALOGUEBOX.startDialogue("System", warning);
+
+            player.worldX -= (player.getDirection().equals("right") ? TILE_SIZE : 0);
+            player.worldX += (player.getDirection().equals("left")  ? TILE_SIZE : 0);
+            player.worldY -= (player.getDirection().equals("down")  ? TILE_SIZE : 0);
+            player.worldY += (player.getDirection().equals("up")    ? TILE_SIZE : 0);
+            return;
+        }
 
         if (!targetPath.equalsIgnoreCase(CURRENT_PATH)) {
             int totalRots = player.getPCSYSTEM().getPartySize() + player.getPCSYSTEM().getPCCount();

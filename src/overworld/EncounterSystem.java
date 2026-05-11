@@ -144,11 +144,22 @@ public class EncounterSystem {
         }
 
         int currentTile = TALL_GRASS_TILE;
+        String pathLower = gp.CURRENT_PATH.toLowerCase();
 
         // --- NEW: If we are in DewDropPier, FORCE the background to Water (Tile 556)! ---
-        if (gp.CURRENT_PATH.toLowerCase().contains("dewdroppier") || gp.CURRENT_PATH.toLowerCase().contains("watergymfloor1") || gp.CURRENT_PATH.toLowerCase().contains("watergymfloor2")) {
+        if (pathLower.contains("dewdroppier")
+                || pathLower.contains("watergymfloor1")
+                || pathLower.contains("watergymfloor2")) {
             currentTile = WATER_TILE; // 556
-        } else if(gp.CURRENT_PATH.toLowerCase().contains("route131")){
+        } else if (pathLower.contains("/routes/route130")
+                || pathLower.contains("/routes/route131")
+                || pathLower.contains("/routes/route132")
+                || pathLower.contains("/routes/route140")
+                || pathLower.contains("/routes/route230")
+                || pathLower.contains("/routes/route231")
+                || pathLower.contains("/rooms/")) {
+            // Trainer-style background for all listed routes and any room interior
+            // (DewDropPier already handled above and keeps the water bg).
             currentTile = 999;
         } else {
             // Otherwise, detect grass normally

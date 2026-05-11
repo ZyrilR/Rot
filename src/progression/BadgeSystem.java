@@ -93,6 +93,15 @@ public class BadgeSystem {
     public Badge        pollToast()  { return toastQueue.poll(); }
     public boolean      hasToast()   { return !toastQueue.isEmpty(); }
 
+    /** True iff all five gym leader badges (excluding GYM_MASTER) are obtained. */
+    public boolean hasAllLeaderBadges() {
+        for (Badge b : ordered) {
+            if (b.id.equalsIgnoreCase("GYM_MASTER")) continue;
+            if (!b.isDefeated()) return false;
+        }
+        return true;
+    }
+
     public int badgeCount() {
         int c = 0;
         for (Badge b : ordered) if (b.isDefeated()) c++;

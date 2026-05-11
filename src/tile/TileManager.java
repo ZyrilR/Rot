@@ -204,7 +204,7 @@ public class TileManager {
 
                             for (String brainrot : brainrots) {
                                 String[] rot = brainrot.split(":");
-                                party.add(BrainRotFactory.create(rot[0], Integer.parseInt(rot[1])));
+                                party.add(BrainRotFactory.createEnemy(rot[0], Integer.parseInt(rot[1])));
                             }
 
                             items = itemString.split(";");

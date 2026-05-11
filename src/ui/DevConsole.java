@@ -369,6 +369,7 @@ public class DevConsole {
             gp.world.loadMap(path, true);
             gp.CURRENT_PATH = path;
             gp.DARKNESSOVERLAY.setActive(path.toLowerCase().contains("cave"));
+            gp.updateMusic();
         }
         gp.player.teleport(new int[]{x, y});
         ok("Teleported to " + mapName + " (" + x + ", " + y + ")");

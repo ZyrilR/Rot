@@ -817,7 +817,6 @@ public class BattleUI {
                     }
 
                     if (tr instanceof npc.GymMaster) {
-                        progression.BadgeSystem.getInstance().onLeaderDefeated("GYM_MASTER");
                         // Queue ending after finish messages resolve
                         stateAfterEnding = true;
                     }
