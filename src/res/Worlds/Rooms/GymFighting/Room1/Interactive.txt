@@ -1,0 +1,13 @@
+0,0,0,0,0,0,0
+0,0,0,0,0,0,0
+0,0,0,6,0,0,0
+0,0,0,0,0,0,0
+0,0,0,0,0,0,0
+0,0,0,0,0,0,0
+0,0,0,0,0,0,0
+29,0,0,0,0,0,0
+0,0,0,0,0,0,0
+0,0,0,0,0,0,0
+[METADATA]
+Ryle|GymLeader|2|3|2|Fighting|TUNG TUNG TUNG SAHUR:17;UDIN DIN DIN DIN DUN:18;TUNG TUNG TUNG SAHUR:17||1245|Yooo!;I'll fight you barehanded!;Be prepared!
+ToGymFighting|Teleporter|29|0|7|GYMFIGHTING~TOGYMFIGHTINGROOM1~RIGHT|Exiting boss room...

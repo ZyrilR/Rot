@@ -8,6 +8,8 @@ public enum Directories {
     //Route130
     ROUTE130("/res/Worlds/Routes/Route130/", 25, 35, 8, 20),
     ROUTE130Market("/res/Worlds/Rooms/Route130Market/", 0, 0, 0, 0),
+    GYMFIGHTING("/res/Worlds/Rooms/GymFighting/", 0, 0, 0, 0),
+    GYMFIGHTINGROOM1("/res/Worlds/Rooms/GymFighting/Room1/", 0, 0, 0, 0),
 
     //Route131
     ROUTE131("/res/Worlds/Routes/Route131/", 1, 10, 5, 15),
@@ -34,6 +36,9 @@ public enum Directories {
     WATERGYMFLOOR1("/res/Worlds/Rooms/WaterGymFloor1/", 0, 0, 0, 0),
     WATERGYMFLOOR2("/res/Worlds/Rooms/WaterGymFloor2/", 0, 0, 0, 0),
     MARKET("/res/Worlds/Rooms/Route130Market/", 0, 0, 0, 0),
+
+    SANDGYMFLOOR1("/res/Worlds/Rooms/SandGymFloor1/", 0, 0, 0, 0),
+    SANDGYMFLOOR2("/res/Worlds/Rooms/SandGymFloor2/", 0, 0, 0, 0),
 
     SAVES("src/res/Saves/", 0, 0, 0, 0); // Kept exactly the same for DataManager!
 
