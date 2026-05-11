@@ -23,7 +23,7 @@ DIAMOND_COLLECTION;false;0;false
 BIG_SPENDER;false;0;false
 PEAK_ROT;false;0;false
 THE_ETERNAL_DRUM;false;0;false
-OUTLASTER;false;0;false
+OUTLASTER;true;1;false
 FRESH_KICKS;false;0;false
 LOYAL_CUSTOMER;false;0;false
 SORTIE;false;0;false
