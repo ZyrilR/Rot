@@ -78,11 +78,11 @@ ToRoute131_1|Teleporter|28|49|28|ROUTE131~TOROUTE130_1~LEFT|You are about to ent
 ToRoute131|Teleporter|28|49|10|ROUTE131~TOROUTE130~LEFT|You are about to enter;Route 131
 ToRoute131_2|Teleporter|28|49|46|ROUTE131~TOROUTE130_2~LEFT|You are about to enter;Route 131
 ToMarket|Teleporter|30|18|56|MARKET~TOROUTE130~DOWN|You are about to enter;Rot Marketplace
-Angelica|NPC|4|44|12||Welcome to Route130;This is where you make your Rot Stronger;And the Market is located at the bottom;Good luck!
-Chao|TrainerNPC|5|35|24|CAPUCCINO ASSASSINO:9;BRR BRR PATAPIM:12;TRALALERO TRALALA:9|MODERATE STEW;UP BOTTLE;NORMAL CAPSULE|2000|HMMMMMM...;So you are the adventurer?;Let's test your skill[DEFEAT]Good job on grinding!;Keep it up
-Erika|NPC|4|43|29||Hello there, This village was raided by the Brainrots;Save this world, and rememberr....;Become the Brainrot Legend by defeating the master of all!
-Bernard|NPC|3|36|38||Explore the world :);And most importantly have funn!!!!
-Jake|TrainerNPC|2|10|14|TRALALERO TRALALA:14;TUNG TUNG TUNG SAHUR:15;TUNG TUNG TUNG SAHUR:1|UP FULL BOTTLE;SLEEP CURE;MODERATE STEW|500|How dare you come;Let's battle![DEFEAT]AHHHHH GOODLUCK!;My comrades will look out for you...
+Angelica|NPC|4|44|12||Welcome to Route 130, the edge of the world.;The vibes are getting heavy, Trainer. You need to lock in early.;The Marketplace at the bottom has the items you need to survive the brainrot.;Don't get caught lacking.
+Chao|TrainerNPC|5|35|24|CAPUCCINO ASSASSINO:9;BRR BRR PATAPIM:12;TRALALERO TRALALA:9|MODERATE STEW;UP BOTTLE;NORMAL CAPSULE|2000|HMMMMMM... wait, let me check your engagement rate.;Zero? Truly a mid-tier traveler. Let's see if your strategy is as dry as your memes!;I'm the Gatekeeper of the Grindset![DEFEAT]Wait, you actually have aura? My bad.;I guess the algorithm chose you today. Keep that momentum going!
+Erika|NPC|4|43|29||The legend says this village was once normal. Then the internet bled out.;They say the 'Anti-Vibe' started here, pulling the joy out of the air.;If you want to save us, you have to face the Gym Master in his fortress.;But first... can you even handle a log-man at 4 AM?
+Bernard|NPC|3|36|38||The world is glitching, but at least the scenery is 'aesthetic', right?;Explore everything! Even the bugs are features in RotVerse.;Just have fun before the Anti-Vibe deletes our save files!
+Jake|TrainerNPC|2|10|14|TRALALERO TRALALA:14;TUNG TUNG TUNG SAHUR:15;TUNG TUNG TUNG SAHUR:1|UP FULL BOTTLE;SLEEP CURE;MODERATE STEW|500|Stop right there! You're entering a restricted 'No Cap' zone.;I won't let you pass until you prove your Brainrots aren't just 'Normal Tier' trash.;Let's go, chat! Battle time![DEFEAT]AHHHHH! My connection! It's dropping!;Go on then... my comrades ahead are way more unhinged than me.
 |Backpack|32|7|72|UP FULL BOTTLE;SUPER STEW;SPEED CAPSULE;HEAVY CAPSULE;MILD STEW|
 |Backpack|32|23|74|UP FULL BOTTLE;SUPER STEW;SPEED CAPSULE;HEAVY CAPSULE;MILD STEW|
 |Backpack|32|49|74|UP FULL BOTTLE;SUPER STEW;SPEED CAPSULE;HEAVY CAPSULE;MILD STEW|
@@ -108,7 +108,7 @@ Jake|TrainerNPC|2|10|14|TRALALERO TRALALA:14;TUNG TUNG TUNG SAHUR:15;TUNG TUNG T
 |Backpack|32|37|6|UP FULL BOTTLE;SUPER STEW;SPEED CAPSULE;HEAVY CAPSULE;MILD STEW|
 |Backpack|32|46|8|UP FULL BOTTLE;SUPER STEW;SPEED CAPSULE;HEAVY CAPSULE;MILD STEW|
 |Backpack|32|46|44|UP FULL BOTTLE;SUPER STEW;SPEED CAPSULE;HEAVY CAPSULE;MILD STEW|
-Delly|NPC|1|16|44||Quick tip for you..;Around this route there is a lot of backpack out here;Have fun looking around....
-Nelly|TrainerNPC|3|7|73|BONECA AMBALABU:20;LIRILI LARILA:25|DEBUFF TONIC;SLEEP CURE;BURN CURE;PARALYZE CURE;CONFUSION CURE;BLUE CAPSULE|10000|WHAT ARE YOU DOING HERE??;Did you know that i am the dako-dako here?;Dudee you are so dead![DEFEAT]WOAHH;Its my first time loosing to a Challenge....;You have my respect
-Jon|TrainerNPC|2|45|59|CAPUCCINO ASSASSINO:15;TUNG TUNG TUNG SAHUR:14;UDIN DIN DIN DIN DUN:7|UP MEDIUM BOTTLE;SUPER STEW;BLUE CAPSULE|0|Are you lost baby boy?;I am the most handsome trainer in this route;If you can defeat me, you will be the most handsome;grgrgrrr[DEFEAT]Okayy bro, calm down, chillll....;Go find some girls now!;You're so handsome
-Dora|NPC|4|42|48||Explore Explore Exploreee;Dora dora dora
+Delly|NPC|1|16|44||You see all these backpacks scattered around? That's what happens to trainers who don't 'lock in'.;The lag got them... or the Anti-Vibe.;Be a loot goblin and grab them all! You're gonna need the Stew.
+Nelly|TrainerNPC|3|7|73|BONECA AMBALABU:20;LIRILI LARILA:25|DEBUFF TONIC;SLEEP CURE;BURN CURE;PARALYZE CURE;CONFUSION CURE;BLUE CAPSULE|10000|WAIT! Stop the scroll! What are you doing in my territory?!;I'm the 'Dako-Dako' of Route 130! My Brainrots are literally peak fiction.;You're about to get ratioed in real life![DEFEAT]NO! My Diamond-tier dreams... crushed by a tourist!;I haven't lost since the great glitch of '24...;You have my respect. Go find the Gym Leaders. They need a challenge like you.
+Jon|TrainerNPC|2|45|59|CAPUCCINO ASSASSINO:15;TUNG TUNG TUNG SAHUR:14;UDIN DIN DIN DIN DUN:7|UP MEDIUM BOTTLE;SUPER STEW;BLUE CAPSULE|0|Are you lost, baby boy? Looking for the tutorial?;I'm officially the most handsome trainer in RotVerse. Look at this jawline.;If you defeat me, you inherit the title. If not... you stay mid forever.;Grgrgrrr, let's go![DEFEAT]Okay, okay! You're the main character, I get it!;Stop hitting me! I'm already beautiful enough!;Go find Graine at the Pier... maybe she'll find you handsome too.
+Dora|NPC|4|42|48||Explore! Explore! Explore!;I've been searching for the 'Map' for ten hours but I'm actually just staring at a wall.;Dora dora dora... wait, what was I saying? Oh yeah, the Cave is scary!

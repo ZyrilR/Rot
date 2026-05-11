@@ -1,78 +1,3 @@
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,21,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-29,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,19,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,28
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-29,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,33,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,14,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-29,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,11,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,28
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 [METADATA]
 ToRoute130|Teleporter|29|0|10|ROUTE130~TOROUTE131~RIGHT|You are about to enter;Route 130
 ToRoute132_1|Teleporter|28|49|59|ROUTE132~TOROUTE131_1~LEFT|You are about to enter;Route 132
@@ -80,21 +5,21 @@ ToCave131|Teleporter|30|33|4|CAVE131~TOROUTE131~DOWN|You are about to enter;Cave
 ToRoute130_1|Teleporter|29|0|28|ROUTE130~TOROUTE131_1~RIGHT|You are about to enter;Route 130
 ToRoute132|Teleporter|28|49|13|Route132~ToRoute131~LEFT|You are about to enter;Route 132
 System|Backpack|33|10|29|Normal Capsule;Mild Stew;Normal Capsule|You have received:
-Clara|NPC|4|13|48||Hello there! Are you new to RotVerse?;Let me explain how Brainrots work! They are chaotic entities born from the internet.;They evolve in three different Tiers based on their commitment to the bit.;Normal Tier Brainrots are just starting out. A little unpolished, but full of potential.;Gold Tier Brainrots have ascended! Their stats are much higher and they hit harder.;Diamond Tier is full enlightenment... or corruption. Maximum stats and pure chaos!;Genuinely frightening stuff! Anyway, good luck out there!
-Jigger|TrainerNPC|1|22|40|LIRILI LARILA:2;BOMBARDINO CROCODILO:3|Normal Capsule;BLUE CAPSULE;UP HIGH BOTTLE;UP HIGH BOTTLE;SUPER STEW;MODERATE STEW|7000|NO WAY. A new Trainer! I've been out here for six days. SIX DAYS;Do you know what it's like to only talk to Brainrots for six days?;Udin Din Din Din Dun scrambled my memories of my own name. I'm not even mad. ;It's kinda impressive. Anyway, BATTLE!
+Clara|NPC|4|13|48||Wait, are you actually real or just a high-res hallucination?;Look, the Brainrots here are basically physical manifestations of 3 AM doomscrolling.;They evolve through Tiers. Normal Tier is just 'I'm just a girl' energy.;Gold Tier is when they finally lock in and start seeing the matrix.;Diamond Tier? That's full 'Final Boss' vibes. Absolute cinema.;Don't get cooked out there. Use your brain (the non-rotted part).
+Jigger|TrainerNPC|1|22|40|LIRILI LARILA:2;BOMBARDINO CROCODILO:3|Normal Capsule;BLUE CAPSULE;UP HIGH BOTTLE;UP HIGH BOTTLE;SUPER STEW;MODERATE STEW|7000|NO WAY. A new Trainer! I've been out here for six days. SIX DAYS.;Do you know what it's like to only talk to Brainrots for six days?;Udin Din Din Din Dun scrambled my memories of my own name. I'm not even mad.;It's kinda impressive. Anyway, BATTLE!
 ToRoute130_2|Teleporter|29|0|46|ROUTE130~TOROUTE131_2~RIGHT|You are about to enter;Route 130
-Earl|NPC|1|18|70||Hello there newbie! ;Good luck on your journey on becoming a Brainrot trainer;Have fun!
-Zues|NPC|3|18|61||Explore Route131 noobie;You can go through bushes to make ur Rot strong;Enjoy!
-Kenji|NPC|3|32|57||Need something?;You can go to Route132 so that you can buy items;Make sure you have enough coins :)
-John|NPC|1|39|60||brrmm brmm brmmm....;The Route ahead requires you to be strong enough!;Make sure you are ready for the real challenge....
-Nelly|NPC|2|34|50||Warapskie!! you want some tips?;Before you go up, make sure you rot is Strong enough;Capture, level up, and train your rot first;Go on the green light grasses and find some rots!!
-|NPC|1|3|44||The Brainrot Market is on the route ahead.;Be resourceful :)
-RotTrainer|TrainerNPC|2|23|64|TUNG TUNG TUNG SAHUR:1;TRALALERO TRALALA:1|MILD STEW;SUPER STEW;MODERATE STEW;CONFUSION CURE;HEAVY CAPSULE;SPEED CAPSULE;UP FULL BOTTLE;UP FULL BOTTLE;UP FULL BOTTLE;BLUE CAPSULE;BLUE CAPSULE;SLEEP CURE|5000|wazzupp! Before you go on the real adventure;I'll teach you one simple strategy;Make sure to utilize your use points;And train your rot to a whole new level
-Angela|NPC|4|10|37||How was your first Battle with a Trainer?;Quite exhausting isn't it?;Make your rot stronger so it will be easy to defeat them.
-Vince|TrainerNPC|2|6|31|UDIN DIN DIN DIN DUN:10|;SUPER STEW;SUPER STEW;HEAVY CAPSULE;HEAVY CAPSULE;UP FULL BOTTLE|3000|SURPRISE!!!!!!;You thought I am friendly?;HELL NAHHH BRUHHHH;TRALALALALALA;BWHAAUHWHAHAHA........[DEFEAT]AHHHH THE NEWBIE DEFEATED ME..;FAHHHHHHHH;NO WAY NO WAY
-Heaven|NPC|3|2|24||Becareful next time!;There are so many bullies around here;BYERSSS
-Bob|TrainerNPC|3|31|29|CAPUCCINO ASSASSINO:6;TRALALERO TRALALA:6|PARALYZE CURE;DEBUFF TONIC;CONFUSION CURE;MILD STEW|700|You though you can fish here?;HELLL NAHH BRAH;Come and get some SHIIIIIIIIIII
-Berto|NPC|3|23|18||How are you?;skrt skrttt sheshhh;You're almost there!!;Keep up the good work skrtt skrtt brttttt.....
-Jigger|TrainerNPC|1|25|10|BRR BRR PATAPIM:9;LIRILI LARILA:8|NORMAL CAPSULE;SPEED CAPSULE;SUPER STEW|1000|You dare to appoach? HAHAHA;Big mistake vellahh!;COME COME COME TO ME
-Leo|TrainerNPC|2|11|11|BONECA AMBALABU:10;LIRILI LARILA:9|UP HIGH BOTTLE;CONFUSION CURE;MILD STEW|4000|What do u want?;U want me? ohh come and get me;FAHHHH
-Wella|NPC|4|3|12||Before you go, becareful pls;Don't die please, I will miss you so muchh;FAHHHH skrtt brtt...
+Earl|NPC|1|18|70||Oh look, a fresh spawn. Your aura is currently neutral.;Good luck out here. Try not to let a log-man thump you into the next patch update.;Keep your vibes immaculate.
+Zues|NPC|3|18|61||Yo, welcome to the grindset. Route 131 is for the real ones.;Touch some grass—specifically the grass with wild Rots in it so you can level up.;If you don't grind, you're basically an NPC. Oh wait...
+Kenji|NPC|3|32|57||You look like you're running on 1% battery and a dream.;Go to Route 132 if you need to buy stuff. The Market NPCs accept RotCoins.;No coins? No items. That's just capitalism, baby.
+John|NPC|1|39|60||*Vibrates at a low frequency* ...The path ahead is not for the faint of heart.;The algorithm is getting spicy. If your Rot isn't Gold Tier yet, you're cooked.;Go back or get slapped. Your choice.
+Nelly|NPC|2|34|50||SHEESH! You want the secret sauce? The meta-knowledge?;Before you go up, your Rot needs to be 'Built Different'.;Capture everything. Level up. Don't be a mid trainer.;The tall grass is literally screaming for you to come fight.
+|NPC|1|3|44||The Brainrot Market is just ahead.;Being resourceful is a major W. Don't go broke.
+RotTrainer|TrainerNPC|2|23|64|TUNG TUNG TUNG SAHUR:1;TRALALERO TRALALA:1|MILD STEW;SUPER STEW;MODERATE STEW;CONFUSION CURE;HEAVY CAPSULE;SPEED CAPSULE;UP FULL BOTTLE;UP FULL BOTTLE;UP FULL BOTTLE;BLUE CAPSULE;BLUE CAPSULE;SLEEP CURE|5000|Wazzup! Before you go on the real adventure, let's check your stats.;I'll teach you one simple strategy: Don't die.;Utilize your Use Points (UP) or it's over for you.;Let's see if you're a Main Character or just a side quest!
+Angela|NPC|4|10|37||How was that battle? You looked a little panicked for a second.;Quite exhausting, isn't it? The brainrot hits hard.;If you want to stay winning, you gotta juice up your party.
+Vince|TrainerNPC|2|6|31|UDIN DIN DIN DIN DUN:10|;SUPER STEW;SUPER STEW;HEAVY CAPSULE;HEAVY CAPSULE;UP FULL BOTTLE|3000|SURPRISE!!!!!! You thought I was a friendly background character?;HELL NAHHH BRUHHHH! I'M THE ANTIPATHY!;TRALALALALALA! GET ROTTED!;BWHAAUHWHAHAHA........[DEFEAT]NO! My win-streak! My engagement! It's gone!;You really just 'No U'd' my entire strategy.;I'm reporting you to the Gym Master! (Not really, I'm just salty).
+Heaven|NPC|3|2|24||Watch out for the 'Normies' and the trolls.;There are so many bullies around here trying to ruin the vibe.;Stay hydrated. Stay unhinged. BYERS.
+Bob|TrainerNPC|3|31|29|CAPUCCINO ASSASSINO:6;TRALALERO TRALALA:6|PARALYZE CURE;DEBUFF TONIC;CONFUSION CURE;MILD STEW|700|You thought this was a peaceful fishing spot? In this economy?;HELLL NAHH BRAH! This is a 1v1 zone!;Come and get some SHIIIIIIIIIII—!
+Berto|NPC|3|23|18||How's the journey? Still sane? Barely?;Skrt skrttt! Sheesh! You're actually making progress.;Keep that same energy. You're almost at the next hub! Brttttt!
+Jigger|TrainerNPC|1|25|10|BRR BRR PATAPIM:9;LIRILI LARILA:8|NORMAL CAPSULE;SPEED CAPSULE;SUPER STEW|1000|You dare to approach? You're actually walking towards me?;Big mistake, vellah! My Rots have 999+ ping and they're still faster than you!;COME COME COME TO ME!
+Leo|TrainerNPC|2|11|11|BONECA AMBALABU:10;LIRILI LARILA:9|UP HIGH BOTTLE;CONFUSION CURE;MILD STEW|4000|What do you want? My autograph? My RotCoins?;You want a piece of this? Oh, come and get it then.;FAHHHH! Let's see those hands!
+Wella|NPC|4|3|12||Wait! Before you go... don't do anything cringe.;The world is getting weirder and I don't want you to despawn yet.;Skrrt brtt... see you on the flip side!
