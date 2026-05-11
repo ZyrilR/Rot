@@ -42,6 +42,16 @@ public class InventoryUI {
     private items.Item selectedItemForBattle = null;
 
     private final Map<String, BufferedImage> imgCache = new HashMap<>();
+    private BufferedImage coinIcon   = null;
+    private boolean       coinIconLoaded = false;
+
+    private BufferedImage coinIcon() {
+        if (!coinIconLoaded) {
+            coinIcon      = AssetManager.loadImage("/res/Templates/Items/7.png");
+            coinIconLoaded = true;
+        }
+        return coinIcon;
+    }
 
     public InventoryUI(GamePanel gp) {
         this.gp = gp;
@@ -459,6 +469,28 @@ public class InventoryUI {
                     btnY + (btnH - fm.getHeight()) / 2 + fm.getAscent());
             right = btnX - gap;
         }
+
+        // Coin display — left of the tab buttons
+        String coinText = String.valueOf(gp.player.getRotCoins());
+        g2.setFont(base.deriveFont(Font.BOLD, 12f));
+        FontMetrics coinFm   = g2.getFontMetrics();
+        int         coinNumW = coinFm.stringWidth(coinText);
+        int         iconSize = 20, iconGap = 6;
+        int         coinBlockW = iconSize + iconGap + coinNumW;
+        int         coinBlockX = right - 8 - coinBlockW; // right = left edge of first tab btn
+        int         coinBlockCY = winY + 26;
+
+        BufferedImage icon = coinIcon();
+        if (icon != null) {
+            g2.drawImage(icon, coinBlockX, coinBlockCY - iconSize / 2, iconSize, iconSize, null);
+        } else {
+            g2.setColor(new Color(216, 184, 88));
+            g2.fillOval(coinBlockX, coinBlockCY - iconSize / 2, iconSize, iconSize);
+        }
+        g2.setColor(new Color(241, 239, 232));
+        g2.drawString(coinText,
+                coinBlockX + iconSize + iconGap,
+                coinBlockCY + coinFm.getAscent() / 2 );
 
         g2.setColor(new Color(216, 184, 88));
         g2.drawLine(winX + 8, winY + 46, winX + winW - 8, winY + 46);

@@ -177,11 +177,11 @@ public class ShopUI {
         int         iconSize = 24, iconGap = 4;
         int         blockW   = iconSize + iconGap + numW;
         int         blockX   = winX + winW - 18 - blockW;
-        int         blockCY  = winY + 28;
+        int         blockCY  = winY + 26;
 
         BufferedImage icon = coinIcon();
         if (icon != null) {
-            g2.drawImage(icon, blockX, blockCY - iconSize / 2 - 2, iconSize, iconSize, null);
+            g2.drawImage(icon, blockX, blockCY - iconSize / 2, iconSize, iconSize, null);
         } else {
             g2.setColor(new Color(216, 184, 88));
             g2.fillOval(blockX, blockCY - iconSize / 2, iconSize, iconSize);
@@ -262,7 +262,7 @@ public class ShopUI {
             if (icon != null) g2.drawImage(icon, tx - 4, iconY, iconSize, iconSize, null);
             else { g2.setColor(new Color(216, 184, 88)); g2.fillOval(tx, iconY, iconSize, iconSize); }
             g2.setColor(new Color(15, 110, 86));
-            g2.drawString(priceStr, tx + iconSize + 1, ty);
+            g2.drawString(priceStr, tx + iconSize + 4, ty);
         }
 
         g2.setClip(prevClip);
