@@ -849,12 +849,25 @@ public class BattleUI {
         if (dialogueTicks > 0) dialogueTicks--;
         if (kh.enterPressed || dialogueTicks <= 0) {
             kh.enterPressed = false;
-            gp.GAMESTATE = "play";
+
+            // 1. Grab the trainer info BEFORE clearing the battle!
+            npc.TrainerNPC defeatedTrainer = battle.getTrainer();
+            boolean playerWon = (battle.getResult() == BattleManager.BattleResult.PLAYER_WIN);
+
+            // 2. Trigger the normal fade, music, and state change
             gp.BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_OUT_TO_PLAY, 8);
+            gp.updateMusic();
+            gp.GAMESTATE = "play";
             gp.encounterSystem.clearBattle();
             inputCooldown = INPUT_DELAY;
 
-            gp.updateMusic();
+            // 3. Set the hook!
+            if (defeatedTrainer != null && playerWon) {
+                defeatedTrainer.wantsToTalkAfterBattle = true;
+                // Wait exactly 60 frames (1 second) AFTER the state hits "play"
+                // This gives the screen enough time to fade in before popping the box.
+                defeatedTrainer.postBattleTalkDelay = 60;
+            }
         }
     }
 
