@@ -1,4 +1,4 @@
-0,0,0,0,0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,32,0,0,0,0,27,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -113,3 +113,4 @@ Nelly|TrainerNPC|3|7|73|BONECA AMBALABU:20;LIRILI LARILA:25|DEBUFF TONIC;SLEEP C
 Jon|TrainerNPC|2|45|59|CAPUCCINO ASSASSINO:15;TUNG TUNG TUNG SAHUR:14;UDIN DIN DIN DIN DUN:7|UP MEDIUM BOTTLE;SUPER STEW;BLUE CAPSULE|0|Are you lost, baby boy? Looking for the tutorial?;I'm officially the most handsome trainer in RotVerse. Look at this jawline.;If you defeat me, you inherit the title. If not... you stay mid forever.;Grgrgrrr, let's go![DEFEAT]Okay, okay! You're the main character, I get it!;Stop hitting me! I'm already beautiful enough!;Go find Graine at the Pier... maybe she'll find you handsome too.
 Dora|NPC|4|42|48||Explore! Explore! Explore!;I've been searching for the 'Map' for ten hours but I'm actually just staring at a wall.;Dora dora dora... wait, what was I saying? Oh yeah, the Cave is scary!
 ToGymFighting|Teleporter|30|30|23|GYMFIGHTING~TOROUTE130~DOWN|You are about to enter;Fighting Gym
+ToRoute230|Teleporter|27|13|0|ROUTE230~TOROUTE130~DOWN|You are about to enter;Route 230
