@@ -9,6 +9,6 @@
 0,30,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0
 [METADATA]
-KingScholarship|TrainerNPC|3|6|2|TUNG TUNG TUNG SAHUR:10;UDIN DIN DIN DIN DUN:15|Fighting Capsule;Moderate Stew;Mild Stew|867|Eat shit
+KingScholarship|TrainerNPC|3|6|2|TUNG TUNG TUNG SAHUR:52;UDIN DIN DIN DIN DUN:55|Fighting Capsule;Moderate Stew;Mild Stew|2000|You think you can just skip the grind?;Your aura is weak and your footwork is mid. I’m the scholarship recipient of the School of Hard Knocks!;Eat my dust and get back to the lobby! BATTLE![DEFEAT]Alright, fine... your grind is real.;Your Rots hit like a corrupted file. You’re cleared to enter the main room.;Don't keep Ryle waiting, he's on his 500th set of push-ups.
 ToGymFightingRoom1|Teleporter|28|9|7|GYMFIGHTINGROOM1~TOGYMFIGHTING~LEFT|Entering boss room...
 ToRoute130|Teleporter|30|1|8|ROUTE130~TOGYMFIGHTING~UP|You are about to exit;Gym Fighting

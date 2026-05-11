@@ -17,7 +17,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,19,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -27,3 +27,4 @@
 ToFlyingGymFloor2|Teleporter|30|18|0|FLYINGGYMFLOOR2~TOFLYINGGYMFLOOR1~DOWN|You are about to enter the;2nd Floor of the Gym
 ToFlyingGymFloor1|Teleporter|30|18|3|FLYINGGYMFLOOR1~TOFLYINGGYMFLOOR2~LEFT|You are about to enter the;1st Floor of the Gym
 Clara|GymLeader|4|9|20|Flying|BOMBARDINO CROCODILO:26;TRALALERO TRALALA:23;BONECA AMBALABU:23;BOMBARDINO CROCODILO:20|MODERATE STEW;DEBUFF TONIC;UP BOTTLE;MODERATE STEW;DEBUFF TONIC|2345|Winds are about to bring you back to reality!;Mwhahahahhahah!
+Vincent|GymLeader|2|9|19||LIRILI LARILA:40;BOMBARDINO CROCODILO:50|SUPER STEW;SUPER STEW;UP FULL BOTTLE;UP FULL BOTTLE;HEAVY CAPSULE|5000|I respect the hustle, Trainer! Getting up both floors? That’s cardio. That’s commitment to the bit.;Up here, the Anti-Vibe can't touch us. The air is too thin for boring thoughts and slow strategies.;You’ve got a party full of potential, but do you have the altitude to see the whole map?;My Bombardino doesn’t appreciate hesitation. We don't just fight; we break the sound barrier!;Lock in! Let's see if your team has wings or if you're just falling with style![DEFEAT]Engine failure! I haven't been grounded like that since the last server wipe.;You’ve got a real 'Diamond-tier' spirit in you. You rose above the noise and stayed frame-perfect.;Take the AIRSTRIKE BADGE. It’s a reminder that the sky isn't the limit—it’s just the beginning.;Sir Khai was right about you. Go find Ryle next. But be warned...;The Fighting Gym doesn't care about your wings. They only care about your footwork!

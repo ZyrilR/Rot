@@ -2,7 +2,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-29,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+29,0,0,0,0,0,0,0,0,0,0,13,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,28,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -11,3 +11,4 @@
 [METADATA]
 ToFlyingGymFloor1|Teleporter|28|26|6|FLYINGGYMFLOOR1~TOROUTE231~LEFT|You are about to enter;Flying Gym
 ToRoute230|Teleporter|29|0|4|ROUTE230~TOROUTE231~RIGHT|You are about to enter;Route 230
+Mach|TrainerNPC|3|11|4|BRR BRR PATAPIM:42;BONECA AMBALABU:32|DEBUFF TONIC;MILD STEW;SUPER STEW;UP MEDIUM BOTTLE;BLUE CAPSULE|3000|NYOOOOM! Did you see that? That was my reaction time!;I’ve been overclocking my Rots with pure espresso and 5G signals.;You’re moving too slow, Trainer!;If you can’t keep up with my frames-per-second,;Vincent will just dodge every move you make.;Let's see if you're a Speed Demon or just a Speed Bump![DEFEAT]System crash! My CPU couldn't handle your playstyle.;You’re not just fast—you’re frame-perfect;Vincent is on the second floor of the Gym waiting for a dogfight.;Don't forget your oxygen mask, because the vibe is about to get sky-high!

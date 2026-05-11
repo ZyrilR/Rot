@@ -24,5 +24,5 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 [METADATA]
-Angelo|GymLeader|5|10|10|Sand|LIRILI LARILA:20;BRR BRR PATAPIM:18;BONECA AMBALABU:19||1200|Come! Let's see what you've got.
+Angelo|GymLeader|5|10|10|Sand|LIRILI LARILA:80|TIME WARP BADGE;SUPER STEW;HEAVY CAPSULE|8000|You’re late. Not to the battle, but to the entire situation.;The Anti-Vibe has been building for months. Lirili felt it first... she started carrying extra clocks.;This world is losing its rhythm, but you? You're moving at a frequency I haven't seen in a century.;They say patience is a virtue, but in the Sand Gym, it's a weapon.;Come! Let’s see if your aura can survive the sands of time, or if you’ll just be another 'repost' in history![DEFEAT]The clocks... they've all synchronized. For the first time in ages, the glitching has stopped.;You aren't just a Trainer; you’re the system update this world desperately needs.;Take the TIME WARP BADGE. With this, you have the full set.;The path to Sir Khai’s fortress is open. But be warned: the 'Normie' is waiting for you.;He doesn't understand the chaos. He wants to delete it. Don't let him.
 ToSandGymFloor1|Teleporter|26|10|21|SANDGYMFLOOR1~TOSANDGYMFLOOR2~UP|Exiting Floor 2.

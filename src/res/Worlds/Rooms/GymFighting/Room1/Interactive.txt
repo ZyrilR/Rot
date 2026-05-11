@@ -9,5 +9,5 @@
 0,0,0,0,0,0,0
 0,0,0,0,0,0,0
 [METADATA]
-Ryle|GymLeader|2|3|2|Fighting|TUNG TUNG TUNG SAHUR:17;UDIN DIN DIN DIN DUN:18;TUNG TUNG TUNG SAHUR:17||1245|Yooo!;I'll fight you barehanded!;Be prepared!
+Ryle|GymLeader|2|3|2|Fighting|UDIN DIN DIN DIN DUN:60|BEATDOWN BADGE;SUPER STEW;HEAVY CAPSULE|2400|...sixty-seven... sixty-eight... sixty-nine. *Exhales*;Oh. You're here. Perfect. I needed a warmup that wasn't a literal concrete wall.;You've got a few badges, but do you have the grit to survive a memory scramble?;Udin! Get out here and show them why I forgot my third-grade teacher's face!;I'll fight you barehanded if I have to! Lock in, Trainer. Let’s see your footwork![DEFEAT]Seventy... seventy-one... okay, you win. I'm actually out of breath.;Your strategy isn't just vibes; it’s raw power. I respect the hustle.;Take the BEATDOWN BADGE. You earned it with every hit.;The Anti-Vibe is getting stronger, kid. I can feel it in my joints.;Go find Derrick in the Deep Archives. He's got the lore you're gonna need to survive the Cave.
 ToGymFighting|Teleporter|29|0|7|GYMFIGHTING~TOGYMFIGHTINGROOM1~RIGHT|Exiting boss room...
