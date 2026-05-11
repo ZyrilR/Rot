@@ -10,6 +10,6 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 [METADATA]
 Clara|NPC|4|16|6||Well hello there young fella!
-ToRoute130|Teleporter|30|1|8|ROUTE130~TOMARKET~UP|You are about to exit;Rot Marketplace
+ToRoute130|Teleporter|30|1|8|ROUTE130~TOROUTE130MARKET~UP|You are about to exit;Rot Marketplace
 HealingMachine|NPC|30|1|3||Healing all brainrots...;...
 CHUYA|MarketNPC|1|0|5||Hello there, what can I do for you?

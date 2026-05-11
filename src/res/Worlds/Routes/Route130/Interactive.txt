@@ -21,7 +21,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,21,0,0,0,0,0,32,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -77,7 +77,7 @@
 ToRoute131_1|Teleporter|28|49|28|ROUTE131~TOROUTE130_1~LEFT|You are about to enter;Route131
 ToRoute131|Teleporter|28|49|10|ROUTE131~TOROUTE130~LEFT|You are about to enter;Route 131
 ToRoute131_2|Teleporter|28|49|46|ROUTE131~TOROUTE130_2~LEFT|You are about to enter;Route 131
-ToMarket|Teleporter|30|18|56|MARKET~TOROUTE130~DOWN|You are about to enter;Rot Marketplace
+ToRoute130Market|Teleporter|30|18|56|ROUTE130MARKET~TOROUTE130~DOWN|You are about to enter;Rot Marketplace
 Angelica|NPC|4|44|12||Welcome to Route 130, the edge of the world.;The vibes are getting heavy, Trainer. You need to lock in early.;The Marketplace at the bottom has the items you need to survive the brainrot.;Don't get caught lacking.
 Chao|TrainerNPC|5|35|24|CAPUCCINO ASSASSINO:9;BRR BRR PATAPIM:12;TRALALERO TRALALA:9|MODERATE STEW;UP BOTTLE;NORMAL CAPSULE|2000|HMMMMMM... wait, let me check your engagement rate.;Zero? Truly a mid-tier traveler. Let's see if your strategy is as dry as your memes!;I'm the Gatekeeper of the Grindset![DEFEAT]Wait, you actually have aura? My bad.;I guess the algorithm chose you today. Keep that momentum going!
 Erika|NPC|4|43|29||The legend says this village was once normal. Then the internet bled out.;They say the 'Anti-Vibe' started here, pulling the joy out of the air.;If you want to save us, you have to face the Gym Master in his fortress.;But first... can you even handle a log-man at 4 AM?
@@ -112,3 +112,4 @@ Delly|NPC|1|16|44||You see all these backpacks scattered around? That's what hap
 Nelly|TrainerNPC|3|7|73|BONECA AMBALABU:20;LIRILI LARILA:25|DEBUFF TONIC;SLEEP CURE;BURN CURE;PARALYZE CURE;CONFUSION CURE;BLUE CAPSULE|10000|WAIT! Stop the scroll! What are you doing in my territory?!;I'm the 'Dako-Dako' of Route 130! My Brainrots are literally peak fiction.;You're about to get ratioed in real life![DEFEAT]NO! My Diamond-tier dreams... crushed by a tourist!;I haven't lost since the great glitch of '24...;You have my respect. Go find the Gym Leaders. They need a challenge like you.
 Jon|TrainerNPC|2|45|59|CAPUCCINO ASSASSINO:15;TUNG TUNG TUNG SAHUR:14;UDIN DIN DIN DIN DUN:7|UP MEDIUM BOTTLE;SUPER STEW;BLUE CAPSULE|0|Are you lost, baby boy? Looking for the tutorial?;I'm officially the most handsome trainer in RotVerse. Look at this jawline.;If you defeat me, you inherit the title. If not... you stay mid forever.;Grgrgrrr, let's go![DEFEAT]Okay, okay! You're the main character, I get it!;Stop hitting me! I'm already beautiful enough!;Go find Graine at the Pier... maybe she'll find you handsome too.
 Dora|NPC|4|42|48||Explore! Explore! Explore!;I've been searching for the 'Map' for ten hours but I'm actually just staring at a wall.;Dora dora dora... wait, what was I saying? Oh yeah, the Cave is scary!
+ToGymFighting|Teleporter|30|30|23|GYMFIGHTING~TOROUTE130~DOWN|You are about to enter;Fighting Gym

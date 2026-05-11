@@ -6,13 +6,13 @@ public enum Directories {
     //ROUTES
 
     //Route130
-    ROUTE130("/res/Worlds/Routes/Route130/", 25, 35, 8, 20),
-    ROUTE130Market("/res/Worlds/Rooms/Route130Market/", 0, 0, 0, 0),
+    ROUTE130("/res/Worlds/Routes/Route130/", 0, 0, 0, 0),
+    ROUTE130MARKET("/res/Worlds/Rooms/Route130Market/", 0, 0, 0, 0),
     GYMFIGHTING("/res/Worlds/Rooms/GymFighting/", 0, 0, 0, 0),
     GYMFIGHTINGROOM1("/res/Worlds/Rooms/GymFighting/Room1/", 0, 0, 0, 0),
 
     //Route131
-    ROUTE131("/res/Worlds/Routes/Route131/", 1, 10, 5, 15),
+    ROUTE131("/res/Worlds/Routes/Route131/", 0, 0, 0, 0),
 
     //Route132
     ROUTE132("/res/Worlds/Routes/Route132/", 10, 25, 8, 30),
