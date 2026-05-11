@@ -181,26 +181,11 @@ public class EndingUI {
 
         drawCard(g2, cardX, cardY, cardW, cardH);
 
-        // ── Previous lines (dimmed) ───────────────────────────────────────────
-        int lineH      = 28;
-        int maxVisible = 8;                       // how many old lines to show
-        int textX      = cardX + 40;
-        int textW      = cardW - 80;
+        // Side margins for text inside the card
+        int textX = cardX + 40;
+        int textW = cardW - 80;
 
-        // Start position for the CURRENT line (anchored in lower portion)
-        int currentLineY = cardY + cardH - 100;
-        // Previous lines stack above it
-        int startOldIdx = Math.max(0, displayed.size() - maxVisible);
-
-        for (int i = startOldIdx; i < displayed.size(); i++) {
-            int slot  = i - startOldIdx;
-            int posY  = currentLineY - (displayed.size() - i) * lineH;
-            float dimAlpha = Math.max(0.15f, 0.55f - (displayed.size() - 1 - i) * 0.08f);
-            drawLine(g2, base, displayed.get(i), textX, posY, textW,
-                    new Color(200, 190, 160, (int)(dimAlpha * 255)), 13f, false);
-        }
-
-        // ── Current line (typewriter + fade in) ───────────────────────────────
+        // ── Current line (centered, word-wrapped, typewriter + fade in) ──────
         if (!allDone && lineIndex < LINES.length) {
             String full    = LINES[lineIndex];
             String partial = full.substring(0, charIndex);
@@ -208,35 +193,60 @@ public class EndingUI {
             float fadeAlpha = Math.min(1f, (float) fadeInTick / FADE_IN_TICKS);
             int   alpha     = (int)(fadeAlpha * 255);
 
-            // Highlight for the current active line
             boolean isClosingLine = lineIndex >= LINES.length - 2; // last 2 lines
             Color   textColor     = isClosingLine
                     ? new Color(216, 184, 88, alpha)
                     : new Color(241, 239, 232, alpha);
 
-            float fontSize = isClosingLine ? 16f : 14f;
-            drawLine(g2, base, partial, textX, currentLineY, textW, textColor, fontSize, isClosingLine);
+            float fontSize = isClosingLine ? 18f : 15f;
 
-            // Blinking cursor
-            if (lineComplete && (System.currentTimeMillis() / 500) % 2 == 0) {
-                g2.setFont(base.deriveFont(14f));
-                FontMetrics fm = g2.getFontMetrics();
-                int cx = textX + fm.stringWidth(full) + 6;
-                g2.setColor(new Color(216, 184, 88, 200));
-                g2.fillRect(cx, currentLineY - 14, 8, 16);
+            // Word-wrap the full line so we know how many rows it occupies,
+            // then center the block vertically inside the card.
+            g2.setFont(base.deriveFont(isClosingLine ? Font.BOLD : Font.PLAIN, fontSize));
+            FontMetrics fm = g2.getFontMetrics();
+            int lineGap = (int)(fontSize + 10);
+
+            java.util.List<String> fullRows    = wrap(full,    fm, textW);
+            java.util.List<String> partialRows = wrap(partial, fm, textW);
+
+            int blockH = fullRows.size() * lineGap;
+            int blockTop = cardY + (cardH - blockH) / 2 + fm.getAscent();
+
+            for (int i = 0; i < partialRows.size(); i++) {
+                String row = partialRows.get(i);
+                int rowW   = fm.stringWidth(row);
+                int rowX   = cardX + (cardW - rowW) / 2; // horizontally centered
+                int rowY   = blockTop + i * lineGap;
+                g2.setColor(textColor);
+                g2.drawString(row, rowX, rowY);
+
+                // Blinking caret on the last typed row while line is complete.
+                if (lineComplete && i == partialRows.size() - 1
+                        && (System.currentTimeMillis() / 500) % 2 == 0) {
+                    g2.setColor(new Color(216, 184, 88, 200));
+                    g2.fillRect(rowX + rowW + 4, rowY - fm.getAscent() + 2,
+                            6, fm.getAscent());
+                }
             }
         }
 
-        // ── Hint ──────────────────────────────────────────────────────────────
-        if (!allDone && lineComplete) {
+        // ── Progress + hint footer ────────────────────────────────────────────
+        if (!allDone) {
             g2.setFont(base.deriveFont(8f));
-            g2.setColor(new Color(140, 136, 128,
-                    (int)(Math.abs(Math.sin(System.currentTimeMillis() / 600.0)) * 200)));
-            String hint = "ENTER Continue";
-            FontMetrics fm = g2.getFontMetrics();
-            g2.drawString(hint,
-                    cardX + cardW - fm.stringWidth(hint) - 20,
-                    cardY + cardH - 16);
+            FontMetrics ffm = g2.getFontMetrics();
+
+            String progress = (lineIndex + 1) + " / " + LINES.length;
+            g2.setColor(new Color(140, 136, 128, 180));
+            g2.drawString(progress, cardX + 20, cardY + cardH - 16);
+
+            if (lineComplete) {
+                int blink = (int)(Math.abs(Math.sin(System.currentTimeMillis() / 600.0)) * 200);
+                g2.setColor(new Color(216, 184, 88, blink));
+                String hint = "ENTER Continue";
+                g2.drawString(hint,
+                        cardX + cardW - ffm.stringWidth(hint) - 20,
+                        cardY + cardH - 16);
+            }
         }
 
         // ── Exit fade overlay ─────────────────────────────────────────────────
@@ -267,26 +277,22 @@ public class EndingUI {
         g2.setStroke(new BasicStroke(1));
     }
 
-    private void drawLine(Graphics2D g2, Font base, String text,
-                          int x, int y, int maxW,
-                          Color color, float size, boolean bold) {
-        g2.setFont(base.deriveFont(bold ? Font.BOLD : Font.PLAIN, size));
-        g2.setColor(color);
-        FontMetrics fm = g2.getFontMetrics();
+    /** Word-wrap {@code text} into rows that each fit within {@code maxW} pixels. */
+    private java.util.List<String> wrap(String text, FontMetrics fm, int maxW) {
+        java.util.List<String> rows = new java.util.ArrayList<>();
+        if (text == null || text.isEmpty()) { rows.add(""); return rows; }
 
-        // Simple word-wrap
         StringBuilder line = new StringBuilder();
-        int cy = y;
         for (String word : text.split(" ")) {
-            String test = line.isEmpty() ? word : line + " " + word;
-            if (fm.stringWidth(test) > maxW && !line.isEmpty()) {
-                g2.drawString(line.toString(), x, cy);
-                cy += (int)(size + 6);
+            String test = line.length() == 0 ? word : line + " " + word;
+            if (fm.stringWidth(test) > maxW && line.length() > 0) {
+                rows.add(line.toString());
                 line = new StringBuilder(word);
             } else {
                 line = new StringBuilder(test);
             }
         }
-        if (!line.isEmpty()) g2.drawString(line.toString(), x, cy);
+        if (line.length() > 0) rows.add(line.toString());
+        return rows;
     }
 }
