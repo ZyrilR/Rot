@@ -6,27 +6,21 @@ import java.io.InputStream;
 public class AudioManager {
 
     private static AudioTrack currentTrack;
-    private static AudioTrack savedOverworldTrack;
+
+    // Holds ANY background map music (Overworld, Cave, Water, etc.) safely
+    private static AudioTrack savedBackgroundTrack;
 
     // --- MASTER VOLUME CONTROL (0 to 10) ---
     public static int volume = 7;
 
-    /**
-     * Hacks into the Java Audio hardware to dynamically change the volume
-     * of all ACTIVE audio lines across the JVM.
-     */
     public static void applyVolume() {
         try {
-            // Clamp volume bounds
             volume = Math.max(0, Math.min(10, volume));
-
-            // Convert 0-10 linear slider scale to decibels (logarithmic)
             float db = (volume == 0) ? -80.0f : (float) (20.0 * Math.log10(volume / 10.0));
 
             for (javax.sound.sampled.Mixer.Info info : javax.sound.sampled.AudioSystem.getMixerInfo()) {
                 javax.sound.sampled.Mixer mixer = javax.sound.sampled.AudioSystem.getMixer(info);
 
-                // CRITICAL FIX: Grab active source instances, not info classes
                 for (javax.sound.sampled.Line line : mixer.getSourceLines()) {
                     try {
                         if (line.isOpen() && line.isControlSupported(javax.sound.sampled.FloatControl.Type.MASTER_GAIN)) {
@@ -42,31 +36,66 @@ public class AudioManager {
     }
 
     /**
-     * Smart play method. Automatically saves the Overworld track if interrupted.
+     * Smart play method. Protects the saved map track through the entire battle and victory sequence!
      */
     public static void playMusic(String path, boolean loop) {
-        if (currentTrack != null && currentTrack.path.equals(path)) {
+        if (path == null) return;
+
+        // 1. If requesting the exact track that's already playing, just unpause it
+        if (currentTrack != null && currentTrack.path.equalsIgnoreCase(path)) {
             if (currentTrack.isPaused) currentTrack.resumeTrack();
             return;
         }
 
+        // Define what tracks belong to the "Battle Sequence"
+        boolean isNewInterruption = path.equalsIgnoreCase(Constants.BGM_WILD_BATTLE) ||
+                path.equalsIgnoreCase(Constants.BGM_TRAINER_BATTLE) ||
+                path.equalsIgnoreCase(Constants.BGM_VICTORY) ||
+                path.equalsIgnoreCase(Constants.BGM_CAUGHT_ROT);
+
         if (currentTrack != null) {
-            if (currentTrack.path.equals(Constants.BGM_OVERWORLD)) {
+            boolean isCurrentInterruption = currentTrack.path.equalsIgnoreCase(Constants.BGM_WILD_BATTLE) ||
+                    currentTrack.path.equalsIgnoreCase(Constants.BGM_TRAINER_BATTLE) ||
+                    currentTrack.path.equalsIgnoreCase(Constants.BGM_VICTORY) ||
+                    currentTrack.path.equalsIgnoreCase(Constants.BGM_CAUGHT_ROT);
+
+            // 2. Map -> Battle (Save map track)
+            if (isNewInterruption && !isCurrentInterruption) {
                 currentTrack.pauseTrack();
-                savedOverworldTrack = currentTrack;
-            } else {
+                savedBackgroundTrack = currentTrack;
+                System.out.println("[AudioManager] Paused map track: " + savedBackgroundTrack.path);
+            }
+            // 3. Battle -> Victory (Transition between interruptions, keep map track saved!)
+            else if (isNewInterruption && isCurrentInterruption) {
                 currentTrack.stopTrack();
+                // Notice we do NOT touch savedBackgroundTrack here!
+            }
+            // 4. Battle/Victory -> Map (Restore saved map track)
+            else if (savedBackgroundTrack != null && savedBackgroundTrack.path.equalsIgnoreCase(path)) {
+                System.out.println("[AudioManager] Smoothly Resuming map track: " + savedBackgroundTrack.path);
+                currentTrack.stopTrack(); // Kill the battle/victory music
+                currentTrack = savedBackgroundTrack; // Restore the map music
+                currentTrack.resumeTrack();
+                savedBackgroundTrack = null;
+                applyVolume();
+                return; // Exit early because we seamlessly resumed!
+            }
+            // 5. Map -> Different Map (e.g., Grass to Cave, kill everything, start fresh)
+            else {
+                currentTrack.stopTrack();
+                if (savedBackgroundTrack != null) {
+                    savedBackgroundTrack.stopTrack();
+                    savedBackgroundTrack = null;
+                }
             }
         }
 
+        // Start the brand new track
         currentTrack = new AudioTrack(path, loop);
         currentTrack.start();
-        System.out.println("[AudioManager] Playing: " + path);
+        System.out.println("[AudioManager] Playing NEW track: " + path);
     }
 
-    /**
-     * Plays a short sound effect once OVER the background music.
-     */
     public static void playSFX(String path) {
         new Thread(() -> {
             try {
@@ -74,44 +103,26 @@ public class AudioManager {
                 if (is == null) return;
 
                 Player sfxPlayer = new Player(is);
-
-                // THE TRICK: Play exactly 1 frame to force Java to open the audio line
                 sfxPlayer.play(1);
-                applyVolume(); // Immediately clamp the volume to the user's setting
+                applyVolume();
 
-                sfxPlayer.play(); // Play the rest of the sound
-                sfxPlayer.close(); // Clean up
+                sfxPlayer.play();
+                sfxPlayer.close();
             } catch (Exception e) {
                 System.err.println("[AudioManager] SFX Error: " + e.getMessage());
             }
         }).start();
     }
 
-    /**
-     * Restores the exact paused state of the Overworld music.
-     */
-    public static void resumeOverworldMusic() {
-        if (currentTrack != null) currentTrack.stopTrack();
-
-        if (savedOverworldTrack != null && savedOverworldTrack.isPlaying) {
-            currentTrack = savedOverworldTrack;
-            currentTrack.resumeTrack();
-            savedOverworldTrack = null;
-            applyVolume(); // Re-apply volume in case it changed during battle
-        } else {
-            playMusic(Constants.BGM_OVERWORLD, true);
-        }
-    }
-
     public static void stopMusic() {
         if (currentTrack != null) currentTrack.stopTrack();
-        if (savedOverworldTrack != null) savedOverworldTrack.stopTrack();
+        if (savedBackgroundTrack != null) savedBackgroundTrack.stopTrack();
         currentTrack = null;
-        savedOverworldTrack = null;
+        savedBackgroundTrack = null;
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // INNER CLASS: AudioTrack (Immortal Thread with Volume Hooks)
+    // INNER CLASS: AudioTrack
     // ══════════════════════════════════════════════════════════════════════════
     private static class AudioTrack {
         String path;
@@ -142,12 +153,10 @@ public class AudioManager {
                                 }
                                 player = new Player(is);
 
-                                // THE TRICK: Decode 1 frame to open the line, then apply volume
                                 player.play(1);
                                 AudioManager.applyVolume();
                             }
 
-                            // Play smoothly in 2-frame chunks
                             if (!player.play(2)) {
                                 if (loop) {
                                     player.close();
@@ -171,7 +180,7 @@ public class AudioManager {
 
         void resumeTrack() {
             isPaused = false;
-            AudioManager.applyVolume(); // Ensure volume is right when unpausing
+            AudioManager.applyVolume();
         }
 
         void stopTrack() { isPlaying = false; isPaused = false; }

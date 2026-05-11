@@ -73,8 +73,11 @@ public class Constants {
     //AUDIOO
     public static final String SND_SPLASH = "/res/Sounds/Splash_Screen.mp3";
     public static final String BGM_WILD_BATTLE = "/res/Sounds/Wild_Battle.mp3";
-    public static final String BGM_TRAINER_BATTLE = "/res/Sounds/Rot_Trainer_Battle_Music.mp3";
+    public static final String BGM_TRAINER_BATTLE = "/res/Sounds/NPCBattle.mp3";
+    public static final String BGM_GYM_BATTLE = "/res/Sounds/TrainerBattle.mp3";
     public static final String BGM_OVERWORLD   = "/res/Sounds/Overworld.mp3";
+    public static final String BGM_CAVE = "/res/Sounds/CaveBG.mp3";
+    public static final String BGM_WATER = "/res/Sounds/WaterBG.mp3";
     public static final String BGM_VICTORY     = "/res/Sounds/Victory_Music.mp3";
     public static final String BGM_CAUGHT_ROT  = "/res/Sounds/CaughtRot.mp3";
     public static final String SFX_SELECT      = "/res/Sounds/SelectSoundEffect.mp3";

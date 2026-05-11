@@ -129,7 +129,8 @@ public class BattleUI {
     private BufferedImage grassBg;
     private BufferedImage darkGrassBg;
     private BufferedImage caveBg;
-    private BufferedImage waterBg; // <-- NEW
+    private BufferedImage waterBg;
+    private BufferedImage trainerBg;
     public int currentBgTile = 2;
 
     public BattleUI(GamePanel gp, KeyboardHandler kh) {
@@ -147,7 +148,8 @@ public class BattleUI {
         grassBg = AssetManager.loadImage("/res/BattleBG/GrassBattleBG.png");
         darkGrassBg = AssetManager.loadImage("/res/BattleBG/DarkGrassBG.png");
         caveBg = AssetManager.loadImage("/res/BattleBG/CaveBattleBG.png");
-        waterBg = AssetManager.loadImage("/res/BattleBG/WaterBattleBG.png"); // <-- NEW
+        waterBg = AssetManager.loadImage("/res/BattleBG/WaterBattleBG.png");
+        trainerBg = AssetManager.loadImage("/res/BattleBG/TrainerBattleBG.png");
     }
 
     // Shield to prevent fading from overwriting the background tile
@@ -852,7 +854,7 @@ public class BattleUI {
             gp.encounterSystem.clearBattle();
             inputCooldown = INPUT_DELAY;
 
-            utils.AudioManager.resumeOverworldMusic();
+            gp.updateMusic();
         }
     }
 
@@ -917,7 +919,9 @@ public class BattleUI {
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         // --- NEW BATTLE BACKGROUND LOGIC WITH WATER ---
-        if (currentBgTile == 556 && waterBg != null) {
+        if(currentBgTile == 999 && trainerBg != null){
+            g2.drawImage(trainerBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
+        }else if (currentBgTile == 556 && waterBg != null) {
             g2.drawImage(waterBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);
         } else if (currentBgTile == 16 && darkGrassBg != null) {
             g2.drawImage(darkGrassBg, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, null);

@@ -146,8 +146,10 @@ public class EncounterSystem {
         int currentTile = TALL_GRASS_TILE;
 
         // --- NEW: If we are in DewDropPier, FORCE the background to Water (Tile 556)! ---
-        if (gp.CURRENT_PATH.toLowerCase().contains("dewdroppier")) {
+        if (gp.CURRENT_PATH.toLowerCase().contains("dewdroppier") || gp.CURRENT_PATH.toLowerCase().contains("watergymfloor1") || gp.CURRENT_PATH.toLowerCase().contains("watergymfloor2")) {
             currentTile = WATER_TILE; // 556
+        } else if(gp.CURRENT_PATH.toLowerCase().contains("route131")){
+            currentTile = 999;
         } else {
             // Otherwise, detect grass normally
             int gridX = player.worldX / TILE_SIZE;

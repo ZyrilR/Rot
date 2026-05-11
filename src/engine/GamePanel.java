@@ -68,6 +68,9 @@ public class GamePanel extends JPanel {
 
     public final WorldLoader world = new WorldLoader(this);
     public String CURRENT_PATH;
+    private String  pendingTeleportPath;
+    private String  pendingTeleportName;
+    private TileTeleporter pendingTeleportTile;
 
     // ── Persistent runtime state (saved/loaded across slots) ──────────────────
     /** Game time in ticks (frames). Advances only while updatePlayState is running. */
@@ -315,23 +318,25 @@ public class GamePanel extends JPanel {
 
         progression.NarrativeManager.checkTriggers(this);
     }
-
-    // Pending teleport target captured before the spin animation runs
-    private String  pendingTeleportPath;
-    private String  pendingTeleportName;
-    private TileTeleporter pendingTeleportTile;
-
     private void updateTeleportState() {
         boolean phaseDone = TELEPORTEFFECT.update();
         if (!phaseDone) return;
 
         switch (TELEPORTEFFECT.getPhase()) {
             case SPIN_IN -> {
+                // 1. CAPTURE THE OLD PATH
+                String oldPath = CURRENT_PATH;
+
                 // Swap maps, reposition player, then spin out
                 TELEPORTEFFECT.markReadyToSwap();
                 CURRENT_PATH = pendingTeleportPath;
                 world.loadMap(CURRENT_PATH, true);
                 DARKNESSOVERLAY.setActive(CURRENT_PATH.toLowerCase().contains("cave"));
+
+                // 2. CHECK IF WE NEED TO CHANGE MUSIC
+                if (oldPath != null && !oldPath.equalsIgnoreCase(CURRENT_PATH)) {
+                    updateMusic();
+                }
 
                 int[] coords = new int[2];
                 for (TileTeleporter tile : getWorldInteractiveLayer().getTeleporters()) {
@@ -476,5 +481,31 @@ public class GamePanel extends JPanel {
 
         DEVCONSOLE.draw(g2);
         g2.dispose();
+    }
+
+    /**
+     * Checks the current map path and plays the correct background music.
+     */
+    /**
+     * Checks the current map path and plays the correct background music.
+     */
+    public void updateMusic() {
+        if (CURRENT_PATH == null) return;
+
+        String pathLower = CURRENT_PATH.toLowerCase();
+
+        if (pathLower.contains("cave")) {
+            utils.AudioManager.playMusic(utils.Constants.BGM_CAVE, true);
+        }
+        // ── NEW: WATER MAPS MUSIC ──
+        else if (pathLower.contains("dewdroppier") ||
+                pathLower.contains("watergymfloor1") ||
+                pathLower.contains("watergymfloor2")) {
+            utils.AudioManager.playMusic(utils.Constants.BGM_WATER, true);
+        }
+        // ── DEFAULT OVERWORLD MUSIC ──
+        else {
+            utils.AudioManager.playMusic(utils.Constants.BGM_OVERWORLD, true);
+        }
     }
 }

@@ -340,7 +340,7 @@ public class WorldSelectUI {
         gp.GAMESTATE = "play";
         System.out.println("[WorldSelectUI] Loaded slot " + sel.slotId);
 
-        utils.AudioManager.playMusic(utils.Constants.BGM_OVERWORLD, true);
+        gp.updateMusic();
     }
 
     private void startNamingNew() {
@@ -377,8 +377,7 @@ public class WorldSelectUI {
         progression.NarrativeManager.playIntroSequence(gp);
         System.out.println("[WorldSelectUI] New world \"" + name + "\" — spawned at (13, 68).");
 
-        if (gp.GAMESTATE.equalsIgnoreCase("play"))
-            utils.AudioManager.playMusic(utils.Constants.BGM_OVERWORLD, true);
+        gp.updateMusic();
     }
 
     private void startRename() {
