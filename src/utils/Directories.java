@@ -20,6 +20,10 @@ public enum Directories {
     GYMMASTER("/res/Worlds/Rooms/GymMaster/", 35, 50, 8, 35),
     GYMMASTERROOM1("/res/Worlds/Rooms/GymMaster/Room1/", 35, 50, 8, 35),
     GYMMASTERROOM2("/res/Worlds/Rooms/GymMaster/Room2/", 35, 50, 8, 35),
+    GYMMASTERROOM3("/res/Worlds/Rooms/GymMaster/Room3/", 35, 50, 8, 35),
+    GYMMASTERCORRIDOR("/res/Worlds/Rooms/GymMaster/Corridor/", 35, 50, 8, 35),
+    GYMMASTERSTAIRS("/res/Worlds/Rooms/GymMaster/Stairs/", 35, 50, 8, 35),
+    GYMMASTERFINALFLOOR("/res/Worlds/Rooms/GymMaster/FinalFloor/", 35, 50, 8, 35),
 
     //CAVES
     CAVE131("/res/Worlds/Caves/Cave131/", 30, 45, 8, 20),

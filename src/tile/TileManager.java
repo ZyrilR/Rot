@@ -184,14 +184,19 @@ public class TileManager {
                         case "TRAINERNPC", "GYMLEADER", "GYMMASTER":
 
                             ArrayList<BrainRot> party = new ArrayList<>();
+//                            if (parts[1].equalsIgnoreCase("GYMMASTER"))
+                                System.out.println(line);
                             String rots = parts[5];
                             String itemString = parts[6];
-                            if (!parts[1].equalsIgnoreCase("TRAINERNPC")) {
+                            if (parts[1].equalsIgnoreCase("GYMLEADER")) {
                                 rots = parts[6];
                                 itemString = parts[7];
+                                System.out.println("NEW:\n\n");
+                                System.out.println("ROTS: " + rots);
+                                System.out.println("ITEM STRING: " + itemString);
                             }
 
-//                            System.out.println(rots);
+                            System.out.println(rots);
 
                             String[] brainrots = rots.split(";");
 //                            System.out.println(line);
@@ -215,7 +220,7 @@ public class TileManager {
                             npc1 = switch(parts[1].toUpperCase()) {
                                 case "TRAINERNPC" -> new TrainerNPC(parts[0], folderId, npcX, npcY, inventory, party, Integer.parseInt(parts[7]));
                                 case "GYMLEADER" -> new GymLeader(parts[0], folderId, npcX, npcY, inventory, party, Integer.parseInt(parts[8]), parts[5]);
-                                case "GYMMASTER" -> new GymMaster(parts[0], folderId, npcX, npcY, inventory, party, Integer.parseInt(parts[8]));
+                                case "GYMMASTER" -> new GymMaster(parts[0], folderId, npcX, npcY, inventory, party, Integer.parseInt(parts[7]));
                                 default -> null;
                             };
                             if (npc1 != null && facing != null) {

@@ -1,4 +1,4 @@
-3,9,10,4,2
-Floor:BACKGROUND
+3,7,23,19,1
+Background:BACKGROUND
 Collision:BACKGROUND
 Interactive:INTERACTIVE

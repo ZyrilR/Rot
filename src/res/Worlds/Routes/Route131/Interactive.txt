@@ -83,5 +83,5 @@ Jackman|TrainerNPC|2|13|12|BRR BRR PATAPIM:4;LIRILI LARILA:3|;Normal Capsule;Red
 System|Backpack|33|10|29|Normal Capsule;Mild Stew;Normal Capsule|You have received:
 Clara|NPC|4|13|48||Hello there! Are you new to RotVerse?;Let me explain how Brainrots work! They are chaotic entities born from the internet.;They evolve in three different Tiers based on their commitment to the bit.;Normal Tier Brainrots are just starting out. A little unpolished, but full of potential.;Gold Tier Brainrots have ascended! Their stats are much higher and they hit harder.;Diamond Tier is full enlightenment... or corruption. Maximum stats and pure chaos!;Genuinely frightening stuff! Anyway, good luck out there!
 Jenger|TrainerNPC|1|22|40|LIRILI LARILA:2;BOMBARDINO CROCODILO:3|Normal Capsule|135|0|NO WAY. A new Trainer! I've been out here for six days. SIX DAYS.;Do you know what it's like to only talk to Brainrots for six days?;Udin Din Din Din Dun scrambled my memories of my own name.;I'm not even mad. It's kinda impressive. Anyway, BATTLE!
-asfafa|GymMaster|1|8|8|Water|TUNG TUNG TUNG SAHUR:1;TUNG TUNG TUNG SAHUR:1|NORMAL CAPSULE|0|saasfsafsa
+Test|TrainerNPC|1|8|8|TUNG TUNG TUNG SAHUR:1;TUNG TUNG TUNG SAHUR:1|NORMAL CAPSULE|0|saasfsafsa
 ToRoute130_2|Teleporter|29|0|46|ROUTE130~TOROUTE131_2~RIGHT|You are about to enter;Route 130

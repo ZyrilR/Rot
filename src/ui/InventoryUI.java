@@ -47,7 +47,7 @@ public class InventoryUI {
 
     private BufferedImage coinIcon() {
         if (!coinIconLoaded) {
-            coinIcon      = AssetManager.loadImage("/res/Templates/Items/7.png");
+            coinIcon      = AssetManager.loadImage("/res/Items/Rotcoin.png");
             coinIconLoaded = true;
         }
         return coinIcon;

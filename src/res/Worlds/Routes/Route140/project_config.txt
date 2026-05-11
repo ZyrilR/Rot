@@ -1,7 +1,10 @@
-6,50,75,34,26
+9,50,75,34,26
 Background:BACKGROUND
-GymBuilding:BACKGROUND
-Decoration_Collision2:DECORATION
-Decoration_Collision1:DECORATION
+Path:BACKGROUND
+Background_Collision:BACKGROUND
+GymsCollision:BACKGROUND
+Decora:DECORATION
+TreesCollision:DECORATION
 Building:BUILDING
+symnbol:BUILDING
 Interactive:INTERACTIVE

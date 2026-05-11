@@ -33,7 +33,7 @@ public class ShopUI {
 
     private BufferedImage coinIcon() {
         if (!iconLoaded) {
-            coinIcon   = AssetManager.loadImage("/res/Templates/Items/7.png");
+            coinIcon   = AssetManager.loadImage("/res/Items/Rotcoin.png");
             iconLoaded = true;
         }
         return coinIcon;

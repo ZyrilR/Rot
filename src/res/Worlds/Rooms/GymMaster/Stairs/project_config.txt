@@ -1,0 +1,5 @@
+4,7,7,0,0
+Background:BACKGROUND
+Collision:BACKGROUND
+Stairs:BACKGROUND
+Interactive:INTERACTIVE

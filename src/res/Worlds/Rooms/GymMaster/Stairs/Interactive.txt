@@ -1,0 +1,10 @@
+0,0,0,0,0,30,0
+0,0,30,0,0,0,0
+0,0,0,0,0,0,0
+0,0,0,0,0,0,30
+0,0,0,0,0,0,0
+0,0,0,0,0,0,0
+0,0,0,0,0,0,0
+[METADATA]
+ToGymMasterFinalFloor|Teleporter|30|5|0|GYMMASTERFINALFLOOR~TOGYMMASTERSTAIRS~DOWN|Entering Final Floor...
+ToGymMasterCorridor|Teleporter|30|2|1|GYMMASTERCORRIDOR~TOGYMMASTERSTAIRS~DOWN|Entering Corridor...
