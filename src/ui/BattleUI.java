@@ -397,8 +397,9 @@ public class BattleUI {
         if (gp.GAMESTATE.equalsIgnoreCase("battle")) {
             Item chosen = gp.INVENTORYUI.getSelectedItemForBattle();
             if (chosen != null) {
+                BrainRot chosenTarget = gp.INVENTORYUI.getSelectedTargetForBattle();
                 gp.INVENTORYUI.clearSelectedItemForBattle();
-                executeItemTurn(chosen);
+                executeItemTurn(chosen, chosenTarget);
             } else {
                 setPrompt();
                 currentState = BattleState.MENU;
@@ -406,7 +407,9 @@ public class BattleUI {
         }
     }
 
-    private void executeItemTurn(Item item) {
+    private void executeItemTurn(Item item) { executeItemTurn(item, null); }
+
+    private void executeItemTurn(Item item, BrainRot chosenTarget) {
         playerMovesFirst = true;
         if (item instanceof Capsule) {
             if (!battle.isWildBattle()) {
@@ -437,12 +440,13 @@ public class BattleUI {
                 playNextMessage(BattleState.ENEMY_AI);
             }
         } else {
-            int oldHp = battle.getPlayerRot().getCurrentHp();
-            item.use(battle.getPlayerRot());
-            int healed = battle.getPlayerRot().getCurrentHp() - oldHp;
+            BrainRot target = chosenTarget != null ? chosenTarget : battle.getPlayerRot();
+            int oldHp = target.getCurrentHp();
+            item.use(target);
+            int healed = target.getCurrentHp() - oldHp;
             queueMessage("Used " + item.getName() + "!", "", 1);
             if (healed > 0)
-                queueMessage(battle.getPlayerRot().getName(), "recovered " + healed + " HP!", 1);
+                queueMessage(target.getName(), "recovered " + healed + " HP!", 1);
             gp.player.getInventory().removeItem(item);
             playerChosenIndex = -2;
             playNextMessage(BattleState.ENEMY_AI);
@@ -803,6 +807,14 @@ public class BattleUI {
                             + (tr.worldX / TILE_SIZE) + ","
                             + (tr.worldY / TILE_SIZE);
                     gp.defeatedTrainers.put(key, gp.getGameTime());
+
+                    // Gym leaders / masters award a badge and are one-time fights.
+                    String badgeId = null;
+                    if (tr instanceof npc.GymLeader gl) badgeId = gl.getBadgeId();
+                    else if (tr instanceof npc.GymMaster gm) badgeId = gm.getBadgeId();
+                    if (badgeId != null) {
+                        progression.BadgeSystem.getInstance().onLeaderDefeated(badgeId);
+                    }
 
                     int trainerCoins = tr.getRotCoins();
                     if (trainerCoins > 0) {
