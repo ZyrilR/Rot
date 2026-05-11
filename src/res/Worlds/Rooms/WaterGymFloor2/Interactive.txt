@@ -24,5 +24,5 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 [METADATA]
-Graine|GymLeader|3|10|8|Water|TRALALERO TRALALA:19;BOMBARDINO CROCODILO:17;LIRILI LARILA:16||1000|If you want to battle the Gym Master,;prove you are worthy;right here, right now!
+Graineyy|GymLeader|3|10|8|Water|TRALALERO TRALALA:40;BOMBARDINO CROCODILO:17;LIRILI LARILA:16|DRIP BADGE;SUPER STEW;BLUE CAPSULE|1000|Ah, the traveler from the sunrise. My hype crew says you've got 'Main Character' energy.;Let me guess... you picked your Brainrot based on vibes and have zero strategy?;[PLAYER]: I have a strategy. It's called winning.;Valid. But on this floor, the algorithm flows through ME. ;The Anti-Vibe is draining the world's color, but my drip is eternal!;Prove you are worthy of seeing Sir Khai. Let's see if you sink or dance![DEFEAT]Actually peak performance. Your strategy is terrible, but it worked.;That’s the beauty of the RotVerse, I suppose. It rewards the unhinged.;You've earned the DRIP BADGE. Wear it with absolutely zero shame.;Go now. The Sand Gym awaits, and the clocks are already ticking.
 ToWaterGymFloor1|Teleporter|26|10|21|WATERGYMFLOOR1~TOWATERGYMFLOOR2~UP|Exiting floor 2.
