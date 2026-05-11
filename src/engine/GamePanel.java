@@ -4,6 +4,7 @@ import brainrots.BrainRot;
 import brainrots.BrainRotFactory;
 import brainrots.Tier;
 import input.KeyboardHandler;
+import items.Item;
 import map.WorldLoader;
 import overworld.EncounterSystem;
 import overworld.Player;
@@ -119,26 +120,79 @@ public class GamePanel extends JPanel {
 
         // Open splash on startup
         SPLASHSCREEN.open();
+
     }
 
     // ── Dev helpers (commented out for production) ────────────────────────────
 
-    private void seedTestParty() {
+    public void seedTestParty() {
+        player.earnRotCoins(125125215);
         PCSystem PCSYSTEM = player.getPCSYSTEM();
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", 15));
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    25));
-        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", 30));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 65));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 24));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 40));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 65));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 24));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 40));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 65));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 24));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 40));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 65));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 24));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("LIRILI LARILA", 40));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("TUNG TUNG TUNG SAHUR", 100));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("TRALALERO TRALALA",    100));
+//        PCSYSTEM.addBrainRot(BrainRotFactory.create("BOMBARDINO CROCODILO", 100));
 
-        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
-        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
-        player.getInventory().addItem(ItemRegistry.getItem("NORMAL CAPSULE"));
-        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
-        player.getInventory().addItem(ItemRegistry.getItem("Focus Stance Scroll"));
-
-        for (BrainRot rot : PCSYSTEM.getParty()) {
-            rot.gainXp(RandomUtil.range(100, 10000));
-        }
-        System.out.println("[DEV] XP awarded.");
+//        for (Item item : ItemRegistry.getAllItems()) {
+//            if (!item.getName().toUpperCase().contains("SCROLL"))
+//                continue;
+//            for (int i = 0; i < (int)(Math.random() * 10) + 1; i++)
+//                player.getInventory().addItem(item);
+//        }
+//
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MILD STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MODERATE STEW"));
+//        player.getInventory().addItem(ItemRegistry.getItem("NORMAL CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("MASTER CAPSULE"));
+//        player.getInventory().addItem(ItemRegistry.getItem("Focus Stance Scroll"));
     }
 
     private void testQuests() {

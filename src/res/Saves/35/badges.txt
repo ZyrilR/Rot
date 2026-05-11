@@ -1,1 +1,0 @@
-WATER:false,FLYING:true,FIGHTING:false,ROCK:false,SAND:true,GYM_MASTER:false

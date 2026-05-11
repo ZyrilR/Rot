@@ -1,6 +1,7 @@
 package ui;
 
 import engine.GamePanel;
+import progression.BadgeSystem;
 import progression.QuestSystem;
 import save.DataManager;
 import utils.AssetManager;
@@ -368,6 +369,8 @@ public class WorldSelectUI {
         gp.GAMESTATE = "play";
         System.out.println("[WorldSelectUI] Loaded slot " + sel.slotId);
 
+//        BadgeSystem.getAllBadgesExceptMaster();
+//        gp.seedTestParty();
         gp.updateMusic();
     }
 

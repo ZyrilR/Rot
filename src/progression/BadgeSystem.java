@@ -26,6 +26,14 @@ public class BadgeSystem {
 
     public static void reset() { instance = new BadgeSystem(); }
 
+    public static void getAllBadgesExceptMaster() {
+        for (Badge badge : instance.registry.values()) {
+            if (badge.badgeName.equalsIgnoreCase("ROT MASTER BADGE"))
+                continue;
+            badge.setDefeated(true);
+        }
+    }
+
     // ── Badge definition ──────────────────────────────────────────────────────
 
     public static class Badge {

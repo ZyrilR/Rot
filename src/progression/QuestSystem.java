@@ -49,6 +49,12 @@ public class QuestSystem {
     private final Set<String> capturedNames     = new HashSet<>();
     private final Set<String> categoriesUsed    = new HashSet<>();
 
+    public static void getAllQuests() {
+        for (Quest quest : instance.registry.values()) {
+            quest.complete();
+        }
+    }
+
     // Per-BrainRot win counters — key = BrainRot name uppercase
     private final Map<String, Integer> rotWins = new HashMap<>();
     private int               shopPurchaseCount = 0;
