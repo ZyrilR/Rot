@@ -66,7 +66,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,15,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -89,3 +89,4 @@ Blob|NPC|5|7|54||DAWGGGG! You better leave! The algorithm in Cave 131 is literal
 Sandy|NPC|4|9|59||The sand here feels... thirsty. Like it’s trying to drain my energy.;Angelo is inside this fortress adjusting his backup clocks.;He says time is a circle, but I think he just likes watching trainers walk in the wrong direction for hours.;If you’re going in, make sure your Rot is ready to hit hard and fast
 Bouncer|TrainerNPC|3|16|69|CAPUCCINO ASSASSINO:30;TUNG TUNG TUNG SAHUR:23|UP HIGH BOTTLE;SUPER STEW;HEAVY CAPSULE;PARALYZE CURE|4000|If you’re going in, make sure your Rot is ready to hit hard and fast.;and I don't let anyone through these doors unless their vibes are perfectly synced;Angelo is inside deep-cleaning his clocks, and he hates it when 'mid' trainers disrupt his flow;You think you can handle the Time Warp?;Prove it by surviving my rotation![DEFEAT]My timing... it was off! You didn't just break my rotation;you shattered the whole clock;Fine. The schedule has shifted.
 Gabrielle|NPC|4|22|57||Keep your posture!
+ToSandgymfloor1|Teleporter|30|15|68|SANDGYMFLOOR1~TOROUTE132~DOWN|You are about to enter;Sand Gym
