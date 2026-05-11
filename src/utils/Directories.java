@@ -16,6 +16,8 @@ public enum Directories {
 
     //Route132
     ROUTE132("/res/Worlds/Routes/Route132/", 10, 25, 8, 30),
+    SANDGYMFLOOR1("/res/Worlds/Rooms/SandGymFloor1/", 0, 0, 0, 0),
+    SANDGYMFLOOR2("/res/Worlds/Rooms/SandGymFloor2/", 0, 0, 0, 0),
 
     //Route140
     ROUTE140("/res/Worlds/Routes/Route140/", 35, 50, 8, 35),
@@ -27,6 +29,14 @@ public enum Directories {
     GYMMASTERSTAIRS("/res/Worlds/Rooms/GymMaster/Stairs/", 35, 50, 8, 35),
     GYMMASTERFINALFLOOR("/res/Worlds/Rooms/GymMaster/FinalFloor/", 35, 50, 8, 35),
 
+    //Route230
+    ROUTE230("/res/Worlds/Routes/Route230/", 0, 0, 0, 0),
+
+    //Route231
+    ROUTE231("/res/Worlds/Routes/Route231/", 0, 0, 0, 0),
+    FLYINGGYMFLOOR1("/res/Worlds/Rooms/FlyingGymFloor1/", 0, 0, 0, 0),
+    FLYINGGYMFLOOR2("/res/Worlds/Rooms/FlyingGymFloor2/", 0, 0, 0, 0),
+
     //CAVES
     CAVE131("/res/Worlds/Caves/Cave131/", 30, 45, 8, 20),
     GYMSTONE("/res/Worlds/Caves/Cave131/GymStone/", 30, 45, 8, 20),
@@ -36,9 +46,6 @@ public enum Directories {
     WATERGYMFLOOR1("/res/Worlds/Rooms/WaterGymFloor1/", 0, 0, 0, 0),
     WATERGYMFLOOR2("/res/Worlds/Rooms/WaterGymFloor2/", 0, 0, 0, 0),
     MARKET("/res/Worlds/Rooms/Route130Market/", 0, 0, 0, 0),
-
-    SANDGYMFLOOR1("/res/Worlds/Rooms/SandGymFloor1/", 0, 0, 0, 0),
-    SANDGYMFLOOR2("/res/Worlds/Rooms/SandGymFloor2/", 0, 0, 0, 0),
 
     SAVES("src/res/Saves/", 0, 0, 0, 0); // Kept exactly the same for DataManager!
 

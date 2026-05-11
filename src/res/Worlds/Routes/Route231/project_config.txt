@@ -1,0 +1,7 @@
+6,10,40,1,4
+Path:BACKGROUND
+Background:BACKGROUND
+GymCollision:BACKGROUND
+Collision:DECORATION
+Building:BUILDING
+Interactive:INTERACTIVE
