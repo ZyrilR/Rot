@@ -37,6 +37,9 @@ public enum Directories {
     WATERGYMFLOOR2("/res/Worlds/Rooms/WaterGymFloor2/", 0, 0, 0, 0),
     MARKET("/res/Worlds/Rooms/Route130Market/", 0, 0, 0, 0),
 
+    SANDGYMFLOOR1("/res/Worlds/Rooms/SandGymFloor1/", 0, 0, 0, 0),
+    SANDGYMFLOOR2("/res/Worlds/Rooms/SandGymFloor2/", 0, 0, 0, 0),
+
     SAVES("src/res/Saves/", 0, 0, 0, 0); // Kept exactly the same for DataManager!
 
     private final String path;
