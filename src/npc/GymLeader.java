@@ -13,4 +13,8 @@ public class GymLeader extends TrainerNPC {
         super(name, folderId, x, y, inventory, party, rotCoins);
         this.type = Type.getType(type);
     }
+
+    public Type getType() { return type; }
+
+    public String getBadgeId() { return type == null ? null : type.name(); }
 }

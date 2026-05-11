@@ -40,6 +40,7 @@ public class InventoryUI {
     // --- BATTLE HOOKS ---
     private boolean openedInBattle = false;
     private items.Item selectedItemForBattle = null;
+    private BrainRot   selectedTargetForBattle = null;
 
     private final Map<String, BufferedImage> imgCache = new HashMap<>();
     private BufferedImage coinIcon   = null;
@@ -63,7 +64,12 @@ public class InventoryUI {
 
     public void clearSelectedItemForBattle() {
         selectedItemForBattle = null;
+        selectedTargetForBattle = null;
         openedInBattle = false;
+    }
+
+    public BrainRot getSelectedTargetForBattle() {
+        return selectedTargetForBattle;
     }
 
     public void open() {
@@ -207,6 +213,7 @@ public class InventoryUI {
 
             if (openedInBattle) {
                 this.selectedItemForBattle = pendingItem;
+                this.selectedTargetForBattle = target;
                 return;
             }
 

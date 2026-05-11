@@ -9,4 +9,6 @@ public class GymMaster extends TrainerNPC {
     public GymMaster(String name, int folderId, int x, int y, Inventory inventory, ArrayList<BrainRot> party, int rotCoins) {
         super(name, folderId, x, y, inventory, party, rotCoins);
     }
+
+    public String getBadgeId() { return "GYM_MASTER"; }
 }

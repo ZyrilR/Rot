@@ -25,12 +25,14 @@ public class WorldSelectUI {
         public       String      worldName;
         public       String      mapPath;
         public       BufferedImage screenshot;
+        public       long        playTimeTicks;
 
-        public SaveSlot(int slotId, String worldName, String mapPath, BufferedImage screenshot) {
-            this.slotId     = slotId;
-            this.worldName  = worldName;
-            this.mapPath    = mapPath;
-            this.screenshot = screenshot;
+        public SaveSlot(int slotId, String worldName, String mapPath, BufferedImage screenshot, long playTimeTicks) {
+            this.slotId        = slotId;
+            this.worldName     = worldName;
+            this.mapPath       = mapPath;
+            this.screenshot    = screenshot;
+            this.playTimeTicks = playTimeTicks;
         }
     }
 
@@ -121,7 +123,8 @@ public class WorldSelectUI {
                     slotId,
                     readWorldName(dir, slotId),
                     readMapPath(new File(dir, "data.txt")),
-                    readScreenshot(dir)
+                    readScreenshot(dir),
+                    readGameTime(new File(dir, "data.txt"))
             ));
         }
         System.out.println("[WorldSelectUI] Found " + slots.size() + " slot(s).");
@@ -154,6 +157,31 @@ public class WorldSelectUI {
         String p = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
         int last = p.lastIndexOf('/');
         return last >= 0 ? p.substring(last + 1) : p;
+    }
+
+    private long readGameTime(File dataFile) {
+        if (!dataFile.exists()) return 0L;
+        try (BufferedReader br = new BufferedReader(new FileReader(dataFile))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().equalsIgnoreCase("[GAMETIME]")) {
+                    String t = br.readLine();
+                    if (t == null) return 0L;
+                    try { return Long.parseLong(t.trim()); }
+                    catch (NumberFormatException e) { return 0L; }
+                }
+            }
+        } catch (IOException e) { /* ignore */ }
+        return 0L;
+    }
+
+    private String formatPlayTime(long ticks) {
+        long seconds = ticks / Math.max(1, FPS);
+        long h = seconds / 3600;
+        long m = (seconds % 3600) / 60;
+        long s = seconds % 60;
+        if (h > 0) return String.format("%d:%02d:%02d", h, m, s);
+        return String.format("%d:%02d", m, s);
     }
 
     private BufferedImage readScreenshot(File dir) {
@@ -543,6 +571,7 @@ public class WorldSelectUI {
             g2.setFont(base.deriveFont(9f));
             g2.setColor(new Color(100, 96, 90));
             g2.drawString("Location: " + slot.mapPath, tx, ty + 18);
+            g2.drawString("Play Time: " + formatPlayTime(slot.playTimeTicks), tx, ty + 34);
 
             // Slot badge
             g2.setFont(base.deriveFont(8f));

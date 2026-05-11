@@ -183,7 +183,9 @@ public class GamePanel extends JPanel {
                 String key = CURRENT_PATH + "@" + (trainer.worldX / TILE_SIZE) + "," + (trainer.worldY / TILE_SIZE);
                 Long defAt = defeatedTrainers.get(key);
                 if (defAt != null) {
-                    if (gameTime - defAt >= TrainerNPC.COOLDOWN_TICKS) {
+                    boolean permanent = trainer instanceof npc.GymLeader
+                            || trainer instanceof npc.GymMaster;
+                    if (!permanent && gameTime - defAt >= TrainerNPC.COOLDOWN_TICKS) {
                         defeatedTrainers.remove(key);
                     } else {
                         trainer.restoreDefeatedState(defAt);
