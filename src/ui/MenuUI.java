@@ -25,6 +25,7 @@ public class MenuUI {
     private enum MenuItem {
         BACKPACK  ("BACKPACK"),
         BRAINROTS ("BRAINROTS"),
+        BADGES  ("BADGES"),
         QUESTS    ("QUESTS"),
         SAVE      ("SAVE"),
         VOLUME    ("VOLUME"), // <-- NEW VOLUME OPTION
@@ -154,6 +155,11 @@ public class MenuUI {
                 System.out.println("[MenuUI] Returning to Splash Screen.");
                 utils.AudioManager.playMusic(utils.Constants.SND_SPLASH, true);
                 gp.GAMESTATE = "splash";
+            }
+            case BADGES -> {
+                System.out.println("[MenuUI] Opening Badges UI.");
+                gp.BADGEUI.open();
+                gp.GAMESTATE = "badges";
             }
         }
     }

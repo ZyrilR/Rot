@@ -18,4 +18,4 @@ TUNG TUNG TUNG SAHUR;17;0;FIGHTING;null;NORMAL;83;83;48;25;17;1.0;1.0;1.0;NONE;0
 [PICKEDLOOTS]
 
 [DEFEATEDTRAINERS]
-/res/Worlds/Routes/Route131/@8,8=1351;/res/Worlds/Rooms/GymMaster/FinalFloor/@10,3=3261;/res/Worlds/Rooms/GymMaster/Corridor/@5,1=2697;/res/Worlds/Routes/Route131/@13,12=701;/res/Worlds/Routes/Route131/@22,40=1871
+/res/Worlds/Routes/Route131/@8,8=1351;/res/Worlds/Rooms/GymMaster/Corridor/@5,1=2697;/res/Worlds/Routes/Route131/@13,12=701;/res/Worlds/Routes/Route131/@22,40=1871

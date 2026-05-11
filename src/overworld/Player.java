@@ -3,11 +3,13 @@ package overworld;
 import engine.GamePanel;
 import input.KeyboardHandler;
 import items.Inventory;
+import npc.HealerMachine;
 import storage.PCSystem;
 import tile.TileChecker;
 import tile.TileLoot;
 import tile.TileManager;
 import tile.TileTeleporter;
+import ui.DevConsole;
 import utils.AssetManager;
 
 import java.awt.*;
@@ -290,6 +292,11 @@ public class Player {
                 if (npcGridX == targetGridX && npcGridY == targetGridY) {
                     System.out.println("FOUND NPC: " + npc.name); // Debug print
                     npc.interact(gp); // Triggers the Dialogue!
+                    if (npc.name.equalsIgnoreCase("HealingMachine")) {
+                        DevConsole dc = new DevConsole(gp);
+                        dc.cmdHealAll();
+                        dc.close();
+                    }
                     return;
                 }
             }

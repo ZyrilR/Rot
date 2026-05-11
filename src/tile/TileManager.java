@@ -180,20 +180,21 @@ public class TileManager {
 
                     NPC npc1 = null;
 
+                    if (parts[0].equalsIgnoreCase("HealerMachine")) {
+                        npc1 = new HealerMachine(Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
+                        NPCs.add(npc1);
+                        continue;
+                    }
+
                     switch (parts[1].toUpperCase()) {
                         case "TRAINERNPC", "GYMLEADER", "GYMMASTER":
 
                             ArrayList<BrainRot> party = new ArrayList<>();
-//                            if (parts[1].equalsIgnoreCase("GYMMASTER"))
-                                System.out.println(line);
                             String rots = parts[5];
                             String itemString = parts[6];
                             if (parts[1].equalsIgnoreCase("GYMLEADER")) {
                                 rots = parts[6];
                                 itemString = parts[7];
-                                System.out.println("NEW:\n\n");
-                                System.out.println("ROTS: " + rots);
-                                System.out.println("ITEM STRING: " + itemString);
                             }
 
                             System.out.println(rots);
@@ -275,7 +276,7 @@ public class TileManager {
 
         System.out.println("[TileManager] Loaded " + size + " Tiles");
 
-        size = 424;
+        size = 430;
         System.out.println("[TileManager] Loading Decorations...");
         //Decorations
         for (int i = 1; i <= size; i++) {

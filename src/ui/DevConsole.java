@@ -286,7 +286,7 @@ public class DevConsole {
         }
     }
 
-    private void cmdHealAll() {
+    public void cmdHealAll() {
         int size = gp.player.getPCSYSTEM().getPartySize();
         if (size == 0) { err("Party is empty."); return; }
         for (int i = 0; i < size; i++) {
