@@ -41,6 +41,7 @@ public class InventoryUI {
     private boolean openedInBattle = false;
     private items.Item selectedItemForBattle = null;
     private BrainRot   selectedTargetForBattle = null;
+    private int        selectedSkillIndexForBattle = -1;
 
     private final Map<String, BufferedImage> imgCache = new HashMap<>();
     private BufferedImage coinIcon   = null;
@@ -65,11 +66,16 @@ public class InventoryUI {
     public void clearSelectedItemForBattle() {
         selectedItemForBattle = null;
         selectedTargetForBattle = null;
+        selectedSkillIndexForBattle = -1;
         openedInBattle = false;
     }
 
     public BrainRot getSelectedTargetForBattle() {
         return selectedTargetForBattle;
+    }
+
+    public int getSelectedSkillIndexForBattle() {
+        return selectedSkillIndexForBattle;
     }
 
     public void open() {
@@ -212,6 +218,19 @@ public class InventoryUI {
             BrainRot target = gp.player.getPCSYSTEM().getPartyMember(partyCursor);
 
             if (openedInBattle) {
+                // UPBottle needs an extra skill-pick step before we can commit.
+                if (pendingItem instanceof UPBottle) {
+                    if (target == null || target.getMoves().isEmpty()) {
+                        setStatus("No skills to restore!");
+                        inputCooldown = INPUT_DELAY;
+                        return;
+                    }
+                    pendingScrollTarget = target;
+                    moveCursor = 0;
+                    layout = Layout.MOVE_SWAP;
+                    clearStatus();
+                    return;
+                }
                 this.selectedItemForBattle = pendingItem;
                 this.selectedTargetForBattle = target;
                 return;
@@ -356,6 +375,16 @@ public class InventoryUI {
                     setStatus(chosenSkill.getName() + " already at max UP!");
                     inputCooldown = INPUT_DELAY;
                     return; // stay in MOVE_SWAP so player can pick another
+                }
+                if (openedInBattle) {
+                    // Defer the actual UP restore to BattleUI so it consumes a battle turn
+                    // and gets logged in the battle message queue with the rest.
+                    this.selectedItemForBattle    = pendingItem;
+                    this.selectedTargetForBattle  = pendingScrollTarget;
+                    this.selectedSkillIndexForBattle = moveCursor;
+                    pendingScrollTarget = null;
+                    inputCooldown = INPUT_DELAY;
+                    return;
                 }
                 bottle.use(pendingScrollTarget, moveCursor);
                 consumePendingItem();

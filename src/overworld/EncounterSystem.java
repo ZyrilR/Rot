@@ -194,10 +194,6 @@ public class EncounterSystem {
     private BrainRot spawnRandomWildBrainRot(int level, TerrainType terrain) {
         String[] pool = (terrain == TerrainType.TALL_GRASS) ? WILD_BRAINROT_NAMES : CAVE_BRAINROT_NAMES;
         BrainRot wild = BrainRotFactory.createEnemy(pool[(int)(Math.random() * pool.length)], level);
-
-        if (level > 1) {
-            for (int i = 1; i < level; i++) wild.gainXp(wild.getXpToNextLevel());
-        }
         wild.restoreForBattle();
 
         if (terrain == TerrainType.CAVE)                 { wild.modifyAttack(0.20); wild.modifyDefense(0.20); }

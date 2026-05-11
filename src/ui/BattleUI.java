@@ -398,8 +398,9 @@ public class BattleUI {
             Item chosen = gp.INVENTORYUI.getSelectedItemForBattle();
             if (chosen != null) {
                 BrainRot chosenTarget = gp.INVENTORYUI.getSelectedTargetForBattle();
+                int chosenSkillIdx    = gp.INVENTORYUI.getSelectedSkillIndexForBattle();
                 gp.INVENTORYUI.clearSelectedItemForBattle();
-                executeItemTurn(chosen, chosenTarget);
+                executeItemTurn(chosen, chosenTarget, chosenSkillIdx);
             } else {
                 setPrompt();
                 currentState = BattleState.MENU;
@@ -407,9 +408,13 @@ public class BattleUI {
         }
     }
 
-    private void executeItemTurn(Item item) { executeItemTurn(item, null); }
+    private void executeItemTurn(Item item) { executeItemTurn(item, null, -1); }
 
     private void executeItemTurn(Item item, BrainRot chosenTarget) {
+        executeItemTurn(item, chosenTarget, -1);
+    }
+
+    private void executeItemTurn(Item item, BrainRot chosenTarget, int chosenSkillIdx) {
         playerMovesFirst = true;
         if (item instanceof Capsule) {
             if (!battle.isWildBattle()) {
@@ -439,6 +444,21 @@ public class BattleUI {
                 playerChosenIndex = -2;
                 playNextMessage(BattleState.ENEMY_AI);
             }
+        } else if (item instanceof items.UPBottle) {
+            BrainRot target = chosenTarget != null ? chosenTarget : battle.getPlayerRot();
+            int idx = (chosenSkillIdx >= 0 && chosenSkillIdx < target.getMoves().size())
+                    ? chosenSkillIdx : 0;
+            skills.Skill sk = target.getMoves().get(idx);
+            int beforeUP = sk.getCurrentUP();
+            item.use(target, idx);
+            int restored = sk.getCurrentUP() - beforeUP;
+            queueMessage("Used " + item.getName() + "!", "", 1);
+            queueMessage(target.getName() + "'s " + sk.getName(),
+                    "regained " + restored + " UP!", 1);
+            gp.player.getInventory().removeItem(item);
+            progression.QuestSystem.getInstance().onItemUsed("UP_BOTTLE");
+            playerChosenIndex = -2;
+            playNextMessage(BattleState.ENEMY_AI);
         } else {
             BrainRot target = chosenTarget != null ? chosenTarget : battle.getPlayerRot();
             int oldHp = target.getCurrentHp();

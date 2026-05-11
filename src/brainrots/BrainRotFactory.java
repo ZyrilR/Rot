@@ -11,6 +11,11 @@ import static utils.Constants.getDescription;
 
 /**
  * Creates BrainRot instances with randomized stats within tier ranges.
+ *
+ * Stats are rolled at level 1 (small ranges around HP 15-20) and then
+ * scaled up to the target level via the same per-level growth used by
+ * normal level-ups, so a freshly-created level-N rot has the same stat
+ * trajectory as one that grinded its way there.
  */
 public class BrainRotFactory {
 
@@ -19,26 +24,42 @@ public class BrainRotFactory {
      * derived from the level via {@link Tier#fromLevel(int)}.
      */
     public static BrainRot create(String name, int level) {
-        Tier tier = Tier.fromLevel(level);
         return switch (name.toUpperCase()) {
-            case "TUNG TUNG TUNG SAHUR" -> makeTungTung(tier, level);
-            case "TRALALERO TRALALA"    -> makeTrala(tier, level);
-            case "BOMBARDINO CROCODILO" -> makeBombardino(tier, level);
-            case "LIRILI LARILA"        -> makeLirili(tier, level);
-            case "BRR BRR PATAPIM"      -> makePatapim(tier, level);
-            case "BONECA AMBALABU"      -> makeBoneca(tier, level);
-            case "UDIN DIN DIN DIN DUN" -> makeUdin(tier, level);
-            case "CAPUCCINO ASSASSINO"  -> makeCapuccino(tier, level);
+            case "TUNG TUNG TUNG SAHUR" -> makeTungTung(level);
+            case "TRALALERO TRALALA"    -> makeTrala(level);
+            case "BOMBARDINO CROCODILO" -> makeBombardino(level);
+            case "LIRILI LARILA"        -> makeLirili(level);
+            case "BRR BRR PATAPIM"      -> makePatapim(level);
+            case "BONECA AMBALABU"      -> makeBoneca(level);
+            case "UDIN DIN DIN DIN DUN" -> makeUdin(level);
+            case "CAPUCCINO ASSASSINO"  -> makeCapuccino(level);
             default -> throw new IllegalArgumentException("Unknown BrainRot: " + name);
         };
     }
 
+    /**
+     * Builds a BrainRot at level 1 with the supplied base stats, then scales it
+     * up to {@code targetLevel} by simulating level-ups (applying the normal
+     * StatGrowth gains), and finally assigns its starting moveset.
+     */
     private static BrainRot build(String name,
-                                  Type primary, Type secondary, Tier tier, int level,
-                                  int hp, int atk, int def, int spd, SkillType poolType) {
-        BrainRot rot = new BrainRot(name, primary, secondary, tier, level, hp, atk, def, spd);
-        assignStartingMoves(rot, name, poolType, level);
+                                  Type primary, Type secondary,
+                                  int targetLevel,
+                                  int hp, int atk, int def, int spd,
+                                  SkillType poolType) {
+        BrainRot rot = new BrainRot(name, primary, secondary, Tier.NORMAL, 1, hp, atk, def, spd);
+        scaleToLevel(rot, targetLevel);
+        assignStartingMoves(rot, name, poolType, rot.getLevel());
+        rot.restoreForBattle();
         return rot;
+    }
+
+    /** Advances {@code rot} to {@code target} level using the in-game gainXp pipeline. */
+    private static void scaleToLevel(BrainRot rot, int target) {
+        int safety = 0;
+        while (rot.getLevel() < target && safety++ < 200) {
+            rot.gainXp(rot.getXpToNextLevel());
+        }
     }
 
     private static void assignStartingMoves(BrainRot rot, String name, SkillType poolType, int level) {
@@ -65,92 +86,87 @@ public class BrainRotFactory {
         return t == null ? null : SkillType.valueOf(t.name());
     }
 
-    // ---------- BrainRot creators ----------
-    private static BrainRot makeTungTung(Tier tier, int level) {
-        int hp, atk, def, spd;
-        switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(80,120);  spd = RandomUtil.range(18,28); def = RandomUtil.range(30,50); atk = RandomUtil.range(45,80);  }
-            case DIAMOND -> { hp = RandomUtil.range(120,170); spd = RandomUtil.range(28,35); def = RandomUtil.range(50,65); atk = RandomUtil.range(80,110); }
-            default      -> { hp = RandomUtil.range(35,80);   spd = RandomUtil.range(8,18);  def = RandomUtil.range(15,30); atk = RandomUtil.range(20,45);  }
-        }
+    // ── Level-1 base stat creators ────────────────────────────────────────────
+    // HP is anchored at 15–20 per request; ATK/DEF/SPD nudge toward each rot's
+    // type role (tank, glass cannon, balanced) while staying small.
+
+    private static BrainRot makeTungTung(int level) {
         return build("TUNG TUNG TUNG SAHUR",
-                Type.FIGHTING, null, tier, level, hp, atk, def, spd, SkillType.FIGHTING);
+                Type.FIGHTING, null, level,
+                RandomUtil.range(17, 20),  // hp
+                RandomUtil.range(11, 13),  // atk
+                RandomUtil.range(6, 8),    // def
+                RandomUtil.range(6, 8),    // spd
+                SkillType.FIGHTING);
     }
 
-    private static BrainRot makeTrala(Tier tier, int level) {
-        int hp, atk, def, spd;
-        switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(70,110);  spd = RandomUtil.range(28,40); def = RandomUtil.range(20,35); atk = RandomUtil.range(50,85);  }
-            case DIAMOND -> { hp = RandomUtil.range(110,150); spd = RandomUtil.range(40,45); def = RandomUtil.range(35,50); atk = RandomUtil.range(85,115); }
-            default      -> { hp = RandomUtil.range(30,70);   spd = RandomUtil.range(15,28); def = RandomUtil.range(8,20);  atk = RandomUtil.range(25,50);  }
-        }
+    private static BrainRot makeTrala(int level) {
         return build("TRALALERO TRALALA",
-                Type.WATER, Type.PSYCHIC, tier, level, hp, atk, def, spd, SkillType.WATER);
+                Type.WATER, Type.PSYCHIC, level,
+                RandomUtil.range(15, 18),
+                RandomUtil.range(11, 13),
+                RandomUtil.range(5, 7),
+                RandomUtil.range(9, 11),
+                SkillType.WATER);
     }
 
-    private static BrainRot makeBombardino(Tier tier, int level) {
-        int hp, atk, def, spd;
-        switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(85,130);  spd = RandomUtil.range(22,32); def = RandomUtil.range(30,55); atk = RandomUtil.range(50,85);  }
-            case DIAMOND -> { hp = RandomUtil.range(130,175); spd = RandomUtil.range(32,42); def = RandomUtil.range(55,75); atk = RandomUtil.range(85,110); }
-            default      -> { hp = RandomUtil.range(40,85);   spd = RandomUtil.range(12,22); def = RandomUtil.range(15,30); atk = RandomUtil.range(22,50);  }
-        }
+    private static BrainRot makeBombardino(int level) {
         return build("BOMBARDINO CROCODILO",
-                Type.WATER, Type.FLYING, tier, level, hp, atk, def, spd, SkillType.WATER);
+                Type.WATER, Type.FLYING, level,
+                RandomUtil.range(18, 20),
+                RandomUtil.range(11, 13),
+                RandomUtil.range(7, 9),
+                RandomUtil.range(7, 9),
+                SkillType.WATER);
     }
 
-    private static BrainRot makeLirili(Tier tier, int level) {
-        int hp, atk, def, spd;
-        switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(100,150); spd = RandomUtil.range(12,22); def = RandomUtil.range(40,65); atk = RandomUtil.range(35,70); }
-            case DIAMOND -> { hp = RandomUtil.range(150,210); spd = RandomUtil.range(22,30); def = RandomUtil.range(65,85); atk = RandomUtil.range(70,95); }
-            default      -> { hp = RandomUtil.range(55,100);  spd = RandomUtil.range(5,12);  def = RandomUtil.range(20,40); atk = RandomUtil.range(15,35); }
-        }
+    private static BrainRot makeLirili(int level) {
         return build("LIRILI LARILA",
-                Type.SAND, null, tier, level, hp, atk, def, spd, SkillType.SAND);
+                Type.SAND, null, level,
+                RandomUtil.range(19, 20),
+                RandomUtil.range(9, 11),
+                RandomUtil.range(9, 11),
+                RandomUtil.range(4, 6),
+                SkillType.SAND);
     }
 
-    private static BrainRot makePatapim(Tier tier, int level) {
-        int hp, atk, def, spd;
-        switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(95,145);  spd = RandomUtil.range(15,24); def = RandomUtil.range(35,60); atk = RandomUtil.range(40,75);  }
-            case DIAMOND -> { hp = RandomUtil.range(145,200); spd = RandomUtil.range(24,30); def = RandomUtil.range(60,85); atk = RandomUtil.range(75,100); }
-            default      -> { hp = RandomUtil.range(50,95);   spd = RandomUtil.range(6,15);  def = RandomUtil.range(20,35); atk = RandomUtil.range(20,40);  }
-        }
+    private static BrainRot makePatapim(int level) {
         return build("BRR BRR PATAPIM",
-                Type.GRASS, Type.ROCK, tier, level, hp, atk, def, spd, SkillType.GRASS);
+                Type.GRASS, Type.ROCK, level,
+                RandomUtil.range(18, 20),
+                RandomUtil.range(10, 12),
+                RandomUtil.range(8, 10),
+                RandomUtil.range(5, 7),
+                SkillType.GRASS);
     }
 
-    private static BrainRot makeBoneca(Tier tier, int level) {
-        int hp, atk, def, spd;
-        switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(95,145);  spd = RandomUtil.range(15,24); def = RandomUtil.range(35,60); atk = RandomUtil.range(40,75);  }
-            case DIAMOND -> { hp = RandomUtil.range(145,200); spd = RandomUtil.range(24,30); def = RandomUtil.range(60,85); atk = RandomUtil.range(75,100); }
-            default      -> { hp = RandomUtil.range(50,95);   spd = RandomUtil.range(6,15);  def = RandomUtil.range(20,35); atk = RandomUtil.range(20,40);  }
-        }
+    private static BrainRot makeBoneca(int level) {
         return build("BONECA AMBALABU",
-                Type.FIRE, Type.ROCK, tier, level, hp, atk, def, spd, SkillType.FIRE);
+                Type.FIRE, Type.ROCK, level,
+                RandomUtil.range(18, 20),
+                RandomUtil.range(10, 12),
+                RandomUtil.range(8, 10),
+                RandomUtil.range(5, 7),
+                SkillType.FIRE);
     }
 
-    private static BrainRot makeUdin(Tier tier, int level) {
-        int hp, atk, def, spd;
-        switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(85,135);  spd = RandomUtil.range(18,28); def = RandomUtil.range(30,50); atk = RandomUtil.range(50,85);  }
-            case DIAMOND -> { hp = RandomUtil.range(135,180); spd = RandomUtil.range(28,35); def = RandomUtil.range(50,65); atk = RandomUtil.range(85,110); }
-            default      -> { hp = RandomUtil.range(40,85);   spd = RandomUtil.range(8,18);  def = RandomUtil.range(15,30); atk = RandomUtil.range(25,50);  }
-        }
+    private static BrainRot makeUdin(int level) {
         return build("UDIN DIN DIN DIN DUN",
-                Type.FIGHTING, null, tier, level, hp, atk, def, spd, SkillType.FIGHTING);
+                Type.FIGHTING, null, level,
+                RandomUtil.range(17, 20),
+                RandomUtil.range(11, 13),
+                RandomUtil.range(6, 8),
+                RandomUtil.range(6, 8),
+                SkillType.FIGHTING);
     }
 
-    private static BrainRot makeCapuccino(Tier tier, int level) {
-        int hp, atk, def, spd;
-        switch (tier) {
-            case GOLD    -> { hp = RandomUtil.range(65,105);  spd = RandomUtil.range(30,42); def = RandomUtil.range(20,35); atk = RandomUtil.range(55,90);  }
-            case DIAMOND -> { hp = RandomUtil.range(105,145); spd = RandomUtil.range(42,45); def = RandomUtil.range(35,50); atk = RandomUtil.range(90,120); }
-            default      -> { hp = RandomUtil.range(25,65);   spd = RandomUtil.range(18,30); def = RandomUtil.range(8,20);  atk = RandomUtil.range(30,55);  }
-        }
+    private static BrainRot makeCapuccino(int level) {
         return build("CAPUCCINO ASSASSINO",
-                Type.DARK, Type.POISON, tier, level, hp, atk, def, spd, SkillType.DARK);
+                Type.DARK, Type.POISON, level,
+                RandomUtil.range(15, 17),
+                RandomUtil.range(12, 14),
+                RandomUtil.range(5, 7),
+                RandomUtil.range(9, 11),
+                SkillType.DARK);
     }
 }

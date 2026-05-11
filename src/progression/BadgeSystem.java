@@ -56,10 +56,10 @@ public class BadgeSystem {
 
     private BadgeSystem() {
         register(new Badge("WATER",      "DRIP BADGE",       "Graine"));
-        register(new Badge("FLYING",     "AIRSTRIKE BADE",  "Vincent"));
+        register(new Badge("FLYING",     "AIRSTRIKE BADGE",  "Vincent"));
         register(new Badge("FIGHTING",   "BEATDOWN BADGE",   "Ryle"));
         register(new Badge("ROCK",       "ARCHIVE BADGE",    "Derrick"));
-        register(new Badge("SAND",       "TIME WARP BADE",  "Angelo"));
+        register(new Badge("SAND",       "TIME WARP BADGE",  "Angelo"));
         register(new Badge("GYM_MASTER", "ROT MASTER BADGE", "Sir Khai"));
     }
 
