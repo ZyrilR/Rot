@@ -1,0 +1,14 @@
+0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,11,0,0,0
+0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,28
+0,30,0,0,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0
+[METADATA]
+KingScholarship|TrainerNPC|3|6|2|TUNG TUNG TUNG SAHUR:10;UDIN DIN DIN DIN DUN:15|Fighting Capsule;Moderate Stew;Mild Stew|867|Eat shit
+ToGymFightingRoom1|Teleporter|28|9|7|GYMFIGHTINGROOM1~TOGYMFIGHTING~LEFT|Entering boss room...
+ToRoute130|Teleporter|30|1|8|ROUTE130~TOGYMFIGHTING~UP|You are about to exit;Gym Fighting
