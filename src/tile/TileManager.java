@@ -146,6 +146,9 @@ public class TileManager {
             // Continue until we've filled all rows
             while (row < tile_row) {
                 String line = br.readLine();
+                if(line.contains("METADATA")){
+                    continue;
+                }
 
                 // Safety check: if the file ends early, stop
                 if (line == null)
