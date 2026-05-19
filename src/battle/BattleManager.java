@@ -29,6 +29,27 @@ public class BattleManager {
     private BattleReward.Result reward    = null;
     private int                 turnCount = 0;
 
+    // ── Per-battle stat tracking for quest hooks ─────────────────────────────
+    private final BrainRot originalPlayerRot;
+    private final BrainRot originalEnemyRot;
+    private final String   originalEnemyType;
+    private boolean        enemyActed         = false;
+    private boolean        playerTookDamage   = false;
+    private int            playerMinHp;
+    private int            itemsUsedInBattle  = 0;
+    private boolean        battleWonHookFired = false;
+
+    public BrainRot getOriginalPlayerRot()  { return originalPlayerRot; }
+    public BrainRot getOriginalEnemyRot()   { return originalEnemyRot; }
+    public String   getOriginalEnemyType()  { return originalEnemyType; }
+    public boolean  getEnemyActed()         { return enemyActed; }
+    public boolean  getPlayerTookDamage()   { return playerTookDamage; }
+    public int      getPlayerMinHp()        { return playerMinHp; }
+    public int      getItemsUsedInBattle()  { return itemsUsedInBattle; }
+    public void     incrementItemsUsed()    { itemsUsedInBattle++; }
+    public boolean  hasFiredBattleWonHook() { return battleWonHookFired; }
+    public void     markBattleWonHookFired(){ battleWonHookFired = true; }
+
     public BattleManager(BrainRot playerRot, BrainRot enemyRot,
                          List<BrainRot> playerTeam, Player player, boolean wildBattle) {
         this.playerRot  = playerRot;
@@ -37,6 +58,12 @@ public class BattleManager {
         this.player     = player;
         this.wildBattle = wildBattle;
         this.caveBonus  = player.gp.CURRENT_PATH.toLowerCase().contains("cave");
+
+        this.originalPlayerRot = playerRot;
+        this.originalEnemyRot  = enemyRot;
+        this.originalEnemyType = (enemyRot != null && enemyRot.getPrimaryType() != null)
+                ? enemyRot.getPrimaryType().name() : null;
+        this.playerMinHp       = (playerRot != null) ? playerRot.getCurrentHp() : 0;
 
         // ── GUARD: if enemy is null or has no moves, end immediately ──────────
         if (enemyRot == null) {
@@ -90,7 +117,9 @@ public class BattleManager {
 
         if (skill.getPower() > 0) {
             int dmg = DamageCalculator.calculate(skill, playerRot, enemyRot, player.gp);
+            int enemyMaxHp = enemyRot.getMaxHp();
             enemyRot.takeDamage(dmg);
+            QuestSystem.getInstance().onDamageDealt(dmg, enemyMaxHp);
             System.out.println(enemyRot.getName() + " took " + dmg + " damage! ("
                     + enemyRot.getCurrentHp() + "/" + enemyRot.getMaxHp() + " HP)");
         }
@@ -100,6 +129,7 @@ public class BattleManager {
     }
 
     public void executeEnemyTurn(int skillIndex) {
+        enemyActed = true;
         if (result != BattleResult.ONGOING) return;
         if (enemyRot == null) { result = BattleResult.ENEMY_WIN; return; }
         if (!StatusEffectManager.canAct(enemyRot)) { endTurnCleanup(); return; }
@@ -121,6 +151,8 @@ public class BattleManager {
         if (skill.getPower() > 0) {
             int dmg = DamageCalculator.calculate(skill, enemyRot, playerRot, player.gp);
             playerRot.takeDamage(dmg);
+            if (dmg > 0) playerTookDamage = true;
+            if (playerRot.getCurrentHp() < playerMinHp) playerMinHp = playerRot.getCurrentHp();
             System.out.println(playerRot.getName() + " took " + dmg + " damage! ("
                     + playerRot.getCurrentHp() + "/" + playerRot.getMaxHp() + " HP)");
         }
@@ -142,6 +174,7 @@ public class BattleManager {
      */
     public void executeStruggleTurn(boolean isPlayerSide) {
         if (result != BattleResult.ONGOING) return;
+        if (!isPlayerSide) enemyActed = true;
         BrainRot attacker = isPlayerSide ? playerRot : enemyRot;
         BrainRot defender = isPlayerSide ? enemyRot : playerRot;
         if (attacker == null || defender == null) return;
@@ -151,11 +184,23 @@ public class BattleManager {
         Skill struggle = SkillRegistry.struggle();
         int dmg = DamageCalculator.calculate(struggle, attacker, defender, player.gp);
         if (dmg < 1) dmg = 1;
-        defender.takeDamage(dmg);
+        if (isPlayerSide) {
+            int enemyMaxHp = defender.getMaxHp();
+            defender.takeDamage(dmg);
+            QuestSystem.getInstance().onDamageDealt(dmg, enemyMaxHp);
+        } else {
+            defender.takeDamage(dmg);
+            playerTookDamage = true;
+            if (defender.getCurrentHp() < playerMinHp) playerMinHp = defender.getCurrentHp();
+        }
 
         // Recoil: 1/4 of damage dealt, minimum 1.
         int recoil = Math.max(1, dmg / 4);
         attacker.takeDamage(recoil);
+        if (isPlayerSide && attacker == playerRot
+                && playerRot.getCurrentHp() < playerMinHp) {
+            playerMinHp = playerRot.getCurrentHp();
+        }
         lastStruggleRecoil = recoil;
 
         System.out.println(attacker.getName() + " has no UP left and used Struggle! "

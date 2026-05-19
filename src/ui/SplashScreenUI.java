@@ -24,7 +24,7 @@ public class SplashScreenUI {
     private final Color COLOR_MAROON = new Color(85, 14, 14); // #550E0E
     private final Color COLOR_TEXT_UNSELECTED = new Color(240, 240, 240);
 
-    private static final String[] BUTTON_LABELS = { "PLAY", "CREDITS", "QUIT" };
+    private static final String[] BUTTON_LABELS = { "PLAY", "LEADERBOARDS", "CREDITS", "QUIT" };
     private int cursor = 0;
     private int inputCooldown = 0;
     private int tick = 0;
@@ -84,11 +84,10 @@ public class SplashScreenUI {
 
     private void handleSelection() {
         switch (cursor) {
-            case 0 -> {
-                gp.WORLDSELECTUI.open();
-            }
-            case 1 -> state = State.CREDITS;
-            case 2 -> System.exit(0);
+            case 0 -> gp.WORLDSELECTUI.open();
+            case 1 -> gp.LEADERBOARDSUI.open();
+            case 2 -> state = State.CREDITS;
+            case 3 -> System.exit(0);
         }
     }
 

@@ -416,6 +416,7 @@ public class BattleUI {
 
     private void executeItemTurn(Item item, BrainRot chosenTarget, int chosenSkillIdx) {
         playerMovesFirst = true;
+        if (battle != null) battle.incrementItemsUsed();
         if (item instanceof Capsule) {
             if (!battle.isWildBattle()) {
                 queueMessage("You can't catch", "a trainer's BrainRot!");
@@ -423,6 +424,7 @@ public class BattleUI {
                 return;
             }
             gp.player.getInventory().removeItem(item);
+            progression.QuestSystem.getInstance().onItemUsed("CAPSULE");
             boolean success = battle.executeCapture(item);
 
             String rotName = battle.getEnemyRot().getName();
@@ -468,6 +470,12 @@ public class BattleUI {
             if (healed > 0)
                 queueMessage(target.getName(), "recovered " + healed + " HP!", 1);
             gp.player.getInventory().removeItem(item);
+            if (item instanceof items.Stew)
+                progression.QuestSystem.getInstance().onItemUsed("STEW");
+            else if (item instanceof items.Antidote)
+                progression.QuestSystem.getInstance().onItemUsed("ANTIDOTE");
+            else if (item instanceof items.Scroll)
+                progression.QuestSystem.getInstance().onItemUsed("SCROLL");
             playerChosenIndex = -2;
             playNextMessage(BattleState.ENEMY_AI);
         }
@@ -839,6 +847,10 @@ public class BattleUI {
                     if (tr instanceof npc.GymMaster) {
                         // Queue ending after finish messages resolve
                         stateAfterEnding = true;
+
+                        // Record this run on the leaderboards
+                        String worldName = readWorldNameForSlot(utils.Constants.CURRENT_LOAD);
+                        ui.LeaderboardsUI.recordCompletion(worldName, gp.getGameTime());
                     }
 
                     int trainerCoins = tr.getRotCoins();
@@ -893,6 +905,28 @@ public class BattleUI {
             npc.TrainerNPC defeatedTrainer = battle.getTrainer();
             boolean playerWon = (battle.getResult() == BattleManager.BattleResult.PLAYER_WIN);
 
+            // Fire end-of-battle quest hooks once, with the stats accumulated
+            // across the entire battle (works for both wild and trainer battles).
+            if (!battle.hasFiredBattleWonHook()) {
+                battle.markBattleWonHookFired();
+                if (playerWon) {
+                    progression.QuestSystem.getInstance().onBattleWon(
+                            battle.getOriginalPlayerRot(),
+                            battle.getOriginalEnemyRot(),
+                            battle.getEnemyActed(),
+                            battle.getPlayerTookDamage(),
+                            battle.getPlayerMinHp(),
+                            battle.getItemsUsedInBattle() == 0,
+                            !battle.isWildBattle(),
+                            battle.getOriginalEnemyType());
+                    if (battle.getItemsUsedInBattle() >= 5) {
+                        progression.QuestSystem.getInstance().onBattleItemThreshold();
+                    }
+                } else if (battle.getResult() == BattleManager.BattleResult.ENEMY_WIN) {
+                    progression.QuestSystem.getInstance().onBattleLost();
+                }
+            }
+
             // 2. Trigger the normal fade, music, and state change
             gp.BLACKFADEEFFECT.start(BlackFadeEffect.FadeMode.FADE_OUT_TO_PLAY, 8);
             gp.encounterSystem.clearBattle();
@@ -915,6 +949,17 @@ public class BattleUI {
                 // This gives the screen enough time to fade in before popping the box.
                 defeatedTrainer.postBattleTalkDelay = 60;
             }
+        }
+    }
+
+    private String readWorldNameForSlot(int slotId) {
+        java.io.File f = new java.io.File("src/res/Saves/" + slotId + "/world_name.txt");
+        if (!f.exists()) return "Save " + slotId;
+        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(f))) {
+            String line = br.readLine();
+            return (line != null && !line.isBlank()) ? line.trim() : "Save " + slotId;
+        } catch (java.io.IOException e) {
+            return "Save " + slotId;
         }
     }
 

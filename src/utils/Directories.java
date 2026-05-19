@@ -6,16 +6,16 @@ public enum Directories {
     //ROUTES
 
     //Route130
-    ROUTE130("/res/Worlds/Routes/Route130/", 0, 0, 0, 0),
+    ROUTE130("/res/Worlds/Routes/Route130/", 5, 12, 0, 0),
     ROUTE130MARKET("/res/Worlds/Rooms/Route130Market/", 0, 0, 0, 0),
     GYMFIGHTING("/res/Worlds/Rooms/GymFighting/", 0, 0, 0, 0),
     GYMFIGHTINGROOM1("/res/Worlds/Rooms/GymFighting/Room1/", 0, 0, 0, 0),
 
     //Route131
-    ROUTE131("/res/Worlds/Routes/Route131/", 0, 0, 0, 0),
+    ROUTE131("/res/Worlds/Routes/Route131/", 3, 10, 0, 0),
 
     //Route132
-    ROUTE132("/res/Worlds/Routes/Route132/", 10, 25, 8, 30),
+    ROUTE132("/res/Worlds/Routes/Route132/", 10, 22, 8, 25),
     SANDGYMFLOOR1("/res/Worlds/Rooms/SandGymFloor1/", 0, 0, 0, 0),
     SANDGYMFLOOR2("/res/Worlds/Rooms/SandGymFloor2/", 0, 0, 0, 0),
 
@@ -30,10 +30,10 @@ public enum Directories {
     GYMMASTERFINALFLOOR("/res/Worlds/Rooms/GymMaster/FinalFloor/", 35, 50, 8, 35),
 
     //Route230
-    ROUTE230("/res/Worlds/Routes/Route230/", 0, 0, 0, 0),
+    ROUTE230("/res/Worlds/Routes/Route230/", 18, 30, 0, 0),
 
     //Route231
-    ROUTE231("/res/Worlds/Routes/Route231/", 0, 0, 0, 0),
+    ROUTE231("/res/Worlds/Routes/Route231/", 25, 38, 0, 0),
     FLYINGGYMFLOOR1("/res/Worlds/Rooms/FlyingGymFloor1/", 0, 0, 0, 0),
     FLYINGGYMFLOOR2("/res/Worlds/Rooms/FlyingGymFloor2/", 0, 0, 0, 0),
 

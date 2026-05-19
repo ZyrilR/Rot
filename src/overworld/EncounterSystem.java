@@ -105,11 +105,38 @@ public class EncounterSystem {
         if (leader == null) return;
 
         Directories currentMap = Directories.getByPath(gp.CURRENT_PATH);
-        int finalMax = Math.min(leader.getLevel(), currentMap.getMaxLevel());
-        finalMax     = Math.max(finalMax, currentMap.getMinLevel());
-        int finalMin = Math.max(currentMap.getMinLevel(), finalMax - 2);
+        int mapMin = Math.max(2, currentMap.getMinLevel());
+        int mapMax = Math.max(mapMin, currentMap.getMaxLevel());
 
-        int wildLevel = utils.RandomUtil.range(finalMin, finalMax);
+        // Terrain biases the level band so short/light grass stays gentle for
+        // new players, while dark/tall grass and caves push toward mid/high.
+        int bandMin, bandMax;
+        switch (terrain) {
+            case TALL_GRASS -> {
+                // Lower 60% of the map's range
+                bandMin = mapMin;
+                bandMax = mapMin + Math.max(2, (int)((mapMax - mapMin) * 0.55));
+            }
+            case DARK_TALL_GRASS -> {
+                // Upper 60% of the map's range
+                bandMin = mapMin + Math.max(0, (int)((mapMax - mapMin) * 0.45));
+                bandMax = mapMax;
+            }
+            case CAVE -> {
+                // Upper 70% — caves are dangerous
+                bandMin = mapMin + Math.max(0, (int)((mapMax - mapMin) * 0.35));
+                bandMax = mapMax;
+            }
+            default -> { bandMin = mapMin; bandMax = mapMax; }
+        }
+
+        // Soft-cap to the leader's level + 2 so the world never spikes
+        // far above the player's current strength.
+        int leaderCap = Math.max(bandMin, leader.getLevel() + 2);
+        bandMax = Math.min(bandMax, leaderCap);
+        if (bandMin > bandMax) bandMin = bandMax;
+
+        int wildLevel = utils.RandomUtil.range(bandMin, bandMax);
         BrainRot wild = spawnRandomWildBrainRot(wildLevel, terrain);
 
         startWildBattle(player, wild, gp, tileNum);

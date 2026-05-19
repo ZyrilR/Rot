@@ -36,10 +36,14 @@ public class BadgeSystem {
         private boolean defeated = false;
 
         public Badge(String id, String badgeName, String leaderName) {
+            this(id, badgeName, leaderName, id);
+        }
+
+        public Badge(String id, String badgeName, String leaderName, String assetName) {
             this.id         = id;
             this.badgeName  = badgeName;
             this.leaderName = leaderName;
-            this.assetPath  = "/res/Achievements/GYM_BADGES/" + id + ".png";
+            this.assetPath  = "/res/Achievements/GYM_BADGES/" + assetName + ".png";
         }
 
         public boolean isDefeated()          { return defeated; }
@@ -58,7 +62,7 @@ public class BadgeSystem {
         register(new Badge("WATER",      "DRIP BADGE",       "Graine"));
         register(new Badge("FLYING",     "AIRSTRIKE BADGE",  "Vincent"));
         register(new Badge("FIGHTING",   "BEATDOWN BADGE",   "Ryle"));
-        register(new Badge("ROCK",       "ARCHIVE BADGE",    "Derrick"));
+        register(new Badge("ROCK",       "STONE BADGE",      "Derrick", "STONE"));
         register(new Badge("SAND",       "TIME WARP BADGE",  "Angelo"));
         register(new Badge("GYM_MASTER", "ROT MASTER BADGE", "Sir Khai"));
     }

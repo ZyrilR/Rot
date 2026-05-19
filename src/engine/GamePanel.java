@@ -46,6 +46,7 @@ public class GamePanel extends JPanel {
     // ── UI systems ────────────────────────────────────────────────────────────
     public final SplashScreenUI   SPLASHSCREEN   = new SplashScreenUI(this);
     public final WorldSelectUI  WORLDSELECTUI  = new WorldSelectUI(this);
+    public final LeaderboardsUI LEADERBOARDSUI = new LeaderboardsUI(this);
 
     public BlackFadeEffect BLACKFADEEFFECT = new BlackFadeEffect();
     public BattleUI        BATTLEUI        = new BattleUI(this, KEYBOARDHANDLER);
@@ -204,6 +205,7 @@ public class GamePanel extends JPanel {
         switch (GAMESTATE.toLowerCase()) {
             case "splash"       -> SPLASHSCREEN.update();
             case "world_select" -> WORLDSELECTUI.update();
+            case "leaderboards" -> LEADERBOARDSUI.update();
             case "starter"      -> STARTERUI.update();
             case "play"         -> updatePlayState();
             case "battle_fade"  -> {
@@ -444,6 +446,8 @@ public class GamePanel extends JPanel {
             case "splash" -> SPLASHSCREEN.draw(g2);
 
             case "world_select" -> WORLDSELECTUI.draw(g2);
+
+            case "leaderboards" -> LEADERBOARDSUI.draw(g2);
 
             case "starter" -> STARTERUI.draw(g2);
 
