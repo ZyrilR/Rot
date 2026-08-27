@@ -47,6 +47,17 @@ java -cp "out:libs/jl1.0.1.jar" main.Main
 
 On Windows, replace the runtime classpath separator (`:`) with `;`.
 
+## Tests
+
+Run the dependency-free battle regression suite with a JDK installed:
+
+```sh
+sh scripts/test.sh
+```
+
+Pull requests and updates to `main` run the same compilation and tests through
+GitHub Actions using JDK 17.
+
 ## Project layout
 
 ```text
