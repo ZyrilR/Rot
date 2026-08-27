@@ -31,8 +31,8 @@ earn badges, and build a six-member party backed by PC storage.
 
 ## Running the game
 
-The project requires a JDK with modern switch-expression support (Java 17 or
-newer is recommended) and the bundled `libs/jl1.0.1.jar` audio dependency.
+The project requires JDK 21 or newer and the bundled `libs/jl1.0.1.jar` audio
+dependency. Java 21 is required because the game uses sequenced-collection APIs.
 
 In IntelliJ IDEA, open the `Rot` directory, set the project SDK, and run
 `src/main/Main.java`.
@@ -46,6 +46,17 @@ java -cp "out:libs/jl1.0.1.jar" main.Main
 ```
 
 On Windows, replace the runtime classpath separator (`:`) with `;`.
+
+## Tests
+
+Run the dependency-free battle regression suite with a JDK installed:
+
+```sh
+sh scripts/test.sh
+```
+
+Pull requests and updates to `main` run the same compilation and tests through
+GitHub Actions using JDK 21.
 
 ## Project layout
 
