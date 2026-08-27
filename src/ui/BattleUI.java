@@ -1,6 +1,8 @@
 package ui;
 
 import battle.BattleManager;
+import battle.BattleAI;
+import battle.DamageCalculator;
 import battle.BattleReward;
 import brainrots.BrainRot;
 import brainrots.LevelUpResult;
@@ -179,6 +181,9 @@ public class BattleUI {
         this.revealTick = 0;
         this.trainerPoseSprite = null;
         this.messageQueue.clear();
+        if (battle != null && battle.getPlayerRot() != null && battle.getEnemyRot() != null) {
+            this.playerMovesFirst = battle.getPlayerRot().getSpeed() >= battle.getEnemyRot().getSpeed();
+        }
         this.inputCooldown = INPUT_DELAY * 2;
     }
 
@@ -369,7 +374,9 @@ public class BattleUI {
                     BrainRot pr = battle.getPlayerRot();
                     if (pr != null && pr.isOutOfUP()) {
                         playerChosenIndex = battle.STRUGGLE_INDEX;
-                        currentState = playerMovesFirst ? BattleState.ENEMY_AI : BattleState.ANIMATION;
+                        enemyChosenIndex = BattleAI.chooseMove(
+                                battle.getEnemyRot(), pr, battle.getTrainer() != null);
+                        currentState = BattleState.ANIMATION;
                     } else {
                         int moveCount = pr.getMoves().size();
                         if (skillCursor >= moveCount) skillCursor = 0;
@@ -483,7 +490,11 @@ public class BattleUI {
                 playNextMessage(BattleState.SKILL_SELECT);
             } else {
                 playerChosenIndex = skillCursor;
-                currentState = playerMovesFirst ? BattleState.ENEMY_AI : BattleState.ANIMATION;
+                // Refresh the opponent's choice after the player commits. This is
+                // also essential on the opening turn when the enemy is faster.
+                enemyChosenIndex = BattleAI.chooseMove(
+                        battle.getEnemyRot(), battle.getPlayerRot(), battle.getTrainer() != null);
+                currentState = BattleState.ANIMATION;
             }
             inputCooldown = INPUT_DELAY;
         }
@@ -657,13 +668,7 @@ public class BattleUI {
 
     private void updateEnemyAI() {
         BrainRot er = battle.getEnemyRot();
-        if (er != null && er.isOutOfUP()) {
-            enemyChosenIndex = battle.STRUGGLE_INDEX;
-        } else if (er != null && !er.getMoves().isEmpty()) {
-            enemyChosenIndex = utils.RandomUtil.range(0, er.getMoves().size() - 1);
-        } else {
-            enemyChosenIndex = battle.STRUGGLE_INDEX;
-        }
+        enemyChosenIndex = BattleAI.chooseMove(er, battle.getPlayerRot(), battle.getTrainer() != null);
         currentState = playerMovesFirst ? BattleState.ANIMATION : BattleState.MENU;
     }
 
@@ -1059,7 +1064,7 @@ public class BattleUI {
         if (dialogueBoxFrame != null) g2.drawImage(dialogueBoxFrame, 6, boxY, SCREEN_WIDTH - 12, boxH, null);
         else drawBattleBox(g2, 10, boxY, SCREEN_WIDTH - 20, boxH);
 
-        drawDialogueText(g2, boxY - 4, boxH);
+        if (currentState != BattleState.SKILL_SELECT) drawDialogueText(g2, boxY - 4, boxH);
 
         if (currentState == BattleState.MENU)                      drawMenu(g2, boxY);
         else if (currentState == BattleState.SKILL_SELECT)         drawSkillSelect(g2, boxY);
@@ -1413,6 +1418,8 @@ public class BattleUI {
         int menuW = 480, menuX = SCREEN_WIDTH - menuW - 10;
         drawBattleBox(g2, menuX, boxY, menuW, 126);
 
+        drawSelectedSkillReadout(g2, boxY, menuX - 20);
+
         Font badgeFont = getCustomFont(Font.PLAIN, 10);
         List<Skill> moves = battle.getPlayerRot().getMoves();
         for (int i = 0; i < moves.size(); i++) {
@@ -1433,6 +1440,56 @@ public class BattleUI {
 
             if (i == skillCursor) drawCursor(g2, dx - 25, dy - 14);
         }
+    }
+
+    /** Draws a compact, live combat forecast beside the move grid. */
+    private void drawSelectedSkillReadout(Graphics2D g2, int boxY, int maxRight) {
+        List<Skill> moves = battle.getPlayerRot().getMoves();
+        if (moves.isEmpty() || skillCursor < 0 || skillCursor >= moves.size()) return;
+
+        Skill skill = moves.get(skillCursor);
+        DamageCalculator.DamageRange range = DamageCalculator.preview(
+                skill, battle.getPlayerRot(), battle.getEnemyRot());
+
+        int x = 28;
+        int availableW = Math.max(120, maxRight - x);
+        g2.setFont(getCustomFont(Font.BOLD, 10f));
+        g2.setColor(new Color(110, 104, 96));
+        g2.drawString("BATTLE READOUT", x, boxY + 27);
+
+        String damageText = range.max > 0 ? "DAMAGE  " + range.min + "-" + range.max : "STATUS MOVE";
+        g2.setFont(getCustomFont(Font.BOLD, 14f));
+        g2.setColor(new Color(44, 44, 42));
+        drawFittingString(g2, damageText, x, boxY + 53, availableW, 14f, Font.BOLD);
+
+        String matchup;
+        Color matchupColor;
+        if (range.effectiveness > 1.0) {
+            matchup = "SUPER EFFECTIVE";
+            matchupColor = new Color(42, 150, 78);
+        } else if (range.effectiveness < 1.0) {
+            matchup = "RESISTED";
+            matchupColor = new Color(190, 84, 62);
+        } else {
+            matchup = "NEUTRAL MATCHUP";
+            matchupColor = new Color(100, 96, 90);
+        }
+        g2.setFont(getCustomFont(Font.BOLD, 10f));
+        g2.setColor(matchupColor);
+        g2.drawString(matchup, x, boxY + 76);
+
+        boolean actsFirst = battle.getPlayerRot().getSpeed() >= battle.getEnemyRot().getSpeed();
+        g2.setColor(actsFirst ? new Color(58, 118, 190) : new Color(180, 92, 52));
+        g2.drawString(actsFirst ? "YOU MOVE FIRST" : "ENEMY MOVES FIRST", x, boxY + 98);
+
+        String power = skill.getPower() > 0 ? "POWER " + skill.getPower() : effectLabel(skill.getEffect());
+        g2.setColor(new Color(110, 104, 96));
+        drawFittingString(g2, power, x, boxY + 117, availableW, 9f, Font.BOLD);
+    }
+
+    private String effectLabel(String effect) {
+        if (effect == null || effect.equalsIgnoreCase("NONE")) return "UTILITY";
+        return effect.replace('_', ' ');
     }
 
     private void drawLevelupConfirm(Graphics2D g2, int boxY) {

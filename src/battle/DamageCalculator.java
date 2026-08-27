@@ -12,14 +12,53 @@ import skills.SkillType;
  */
 public class DamageCalculator {
 
+    /**
+     * Non-random damage information used by the battle UI and tactical AI.
+     * Keeping previews here guarantees they stay in sync with real combat math.
+     */
+    public static final class DamageRange {
+        public final int min;
+        public final int max;
+        public final double effectiveness;
+
+        private DamageRange(int min, int max, double effectiveness) {
+            this.min = min;
+            this.max = max;
+            this.effectiveness = effectiveness;
+        }
+
+        public int average() {
+            return (min + max) / 2;
+        }
+    }
+
     public static int calculate(Skill skill, BrainRot attacker, BrainRot defender, GamePanel gp) {
+        if (skill.getPower() <= 0) return 0;
+
+        double randomFactor = 0.90 + (Math.random() * 0.10);
+        return calculateAtFactor(skill, attacker, defender, randomFactor);
+    }
+
+    /** Returns the possible damage range without consuming combat randomness. */
+    public static DamageRange preview(Skill skill, BrainRot attacker, BrainRot defender) {
+        if (skill == null || attacker == null || defender == null || skill.getPower() <= 0) {
+            return new DamageRange(0, 0, 1.0);
+        }
+
+        int min = calculateAtFactor(skill, attacker, defender, 0.90);
+        int max = calculateAtFactor(skill, attacker, defender, 1.00);
+        return new DamageRange(Math.min(min, max), Math.max(min, max),
+                effectiveness(skill, defender));
+    }
+
+    private static int calculateAtFactor(Skill skill, BrainRot attacker,
+                                         BrainRot defender, double randomFactor) {
         if (skill.getPower() <= 0) return 0;
 
         double raw = ((double) skill.getPower() * attacker.getAttack()) / (defender.getDefense() + 15);
         double baseDamage = (raw * 0.85) + 5;
 
         double typeMultiplier = getTypeMultiplier(skill.getType(), defender.getPrimaryType(), defender.getSecondaryType());
-        double randomFactor = 0.90 + (Math.random() * 0.10);
 
         int finalDamage = (int)(baseDamage * typeMultiplier * randomFactor);
         finalDamage = Math.max(1, finalDamage);
